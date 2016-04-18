@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
+from cgi import escape
 from datetime import datetime
 
 from django.http import HttpResponse
@@ -56,7 +57,8 @@ class RoomMessageView(RoomPostView):
     def generate_response(self, request):
         post = Post(room=self.room, author=request.user)
         post.save()
-        content = PostContent(author=request.user, post=post, content=request.POST.get('message'))
+        content = PostContent(author=request.user, post=post, content=escape(
+            request.POST.get('message')).replace("'","&#39;").replace("\n","<br/>"))
         content.save()
         message = {
             'type': 'msg',
@@ -64,7 +66,7 @@ class RoomMessageView(RoomPostView):
                 'name': request.user.username,
                 'id': request.user.id
             },
-            'content': request.POST.get('message'),
+            'content': post.markdown,
             'id': post.id
         }
         self.publisher.publish_message(RedisMessage(json.dumps(message)))
