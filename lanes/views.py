@@ -57,7 +57,10 @@ class RoomMessageView(RoomPostView):
         content.save()
         message = {
             'type': 'msg',
-            'author': request.user.get_full_name(),
+            'author': {
+                'name': request.user.username,
+                'id': request.user.id
+            },
             'content': request.POST.get('message'),
             'id': post.id
         }

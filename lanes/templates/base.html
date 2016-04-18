@@ -112,29 +112,43 @@
       }
     });
 
+    function appendMessage(msg) {
+      var message = $('<div class="message"></div>')
+        .append($('<div class="content"></div>').text(msg.content));
+      var controls = $('<div class="controls"></div>')
+      var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
+      var id = msg.id;
+      pin.on('click', function(){
+        $.ajax({
+          method: "post",
+          url: "{% url 'room_pin' room.id %}",
+          data: {
+            id: id,
+            pin: true
+          }
+        });
+      });
+      controls.append(pin);
+      message.append(controls);
+      message.addClass("msg-" + id);
+      // Is the last post by the same author? If so, concat
+      var last = messages.find('.author').last();
+      if (last.attr('data-id') == msg.author.id){
+        last.append(message);
+      } else {
+        messages.append($('<div class="author"></div>')
+          .text(msg.author.name)
+          .attr('data-id', msg.author.id)
+          .append(message));
+      }
+      messages.scrollTop(messages.scrollTop() + 25);
+    }
+
     function receiveMessage(msg) {
       console.log(msg);
       var msg = JSON.parse(msg);
       if (msg.type == "msg"){
-        var message = $('<div class="message"></div>').append($('<div class="content"></div>').text(msg.content));
-        var controls = $('<div class="controls"></div>')
-        var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
-        var id = msg.id;
-        pin.on('click', function(){
-          $.ajax({
-            method: "post",
-            url: "{% url 'room_pin' room.id %}",
-            data: {
-              id: id,
-              pin: true
-            }
-          });
-        });
-        controls.append(pin);
-        message.append(controls);
-        message.addClass("msg-" + id);
-        messages.append(message);
-        messages.scrollTop(messages.scrollTop() + 25);
+        appendMessage(msg);
       } else if (msg.type == "pin") {
         if (msg.action == "pin") {
           var message = $("#messages .msg-" + msg.content);
