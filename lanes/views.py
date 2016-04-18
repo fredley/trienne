@@ -2,6 +2,7 @@
 import json
 import re
 import collections
+import logging
 
 from cgi import escape
 from datetime import datetime
@@ -17,6 +18,7 @@ from ws4redis.publisher import RedisPublisher
 from .models import *
 
 url_dot_test = re.compile(ur'.+\..+')
+logger = logging.getLogger('django')
 
 
 def link_formatter(match_obj):
@@ -35,7 +37,22 @@ md_rules[re.compile(r'^&gt; (.*)')] = r'<blockquote>\1</blockquote>' # quote
 md_rules[re.compile(r'`(.*?)`')] = r'<code>\1</code>' # inline code
 
 
-def markdown(text):
+def process_text(text):
+    # Check for entire block indented by 4 spaces
+    logger.debug("Hello")
+    is_code = True
+    code = ""
+    for line in text.split("\n"):
+        logger.debug("line")
+        if line[0:4] == "    ":
+            code += line[4:] + "\n"
+        else:
+            is_code = False
+            break
+    if is_code:
+        return "<pre>{}</pre>".format(escape(code).replace("'","&#39;"))
+    text = escape(text).replace("'","&#39;").replace("\n","<br>")
+    # Apply Markdown rules
     for regex, replacement in md_rules.items():
       text = re.sub(regex, replacement, text)
     return text.strip()
@@ -84,12 +101,12 @@ class RoomMessageView(RoomPostView):
     def generate_response(self, request):
         post = Post(room=self.room, author=request.user)
         post.save()
-        raw = request.POST.get('message').strip()
+        raw = request.POST.get('message')
         content = PostContent(
             author=request.user, 
             post=post, 
             raw=raw,
-            content=markdown(escape(raw).replace("'","&#39;").replace("\n","<br>")))
+            content=process_text(raw))
         content.save()
         message = {
             'type': 'msg',

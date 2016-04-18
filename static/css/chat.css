@@ -5,6 +5,13 @@ nav{
 	height:50px;
 	border-bottom:1px #999;
 }
+pre {
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+}
 #main .row{
 	height:100%;
 }

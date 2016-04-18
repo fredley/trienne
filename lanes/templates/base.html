@@ -1,3 +1,4 @@
+{% load safe_js %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -102,7 +103,7 @@
               name: "{{ post.author.username }}",
               id: {{ post.author.id }}
           },
-          content: '{{ post.content|safe }}',
+          content: '{{ post.content|multiline|safe }}',
           id: {{ post.id }}
         },
       {% endfor %}
@@ -115,7 +116,7 @@
               name: "{{ post.author.username }}",
               id: {{ post.author.id }}
           },
-          content: "{{ post.content|safe }}",
+          content: "{{ post.content|multiline|safe }}",
           id: {{ post.id }}
         },
       {% endfor %}
