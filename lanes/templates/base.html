@@ -127,12 +127,14 @@
         var id = nextid;
         pin.on('click', function(){
           $(this).addClass('active');
-          var msg = {
-            type: "pin",
-            content: id,
-            action: "pin"
-          }
-          sock.send_message(JSON.stringify(msg));
+          $.ajax({
+            method: "post",
+            url: "{% url 'room_pin' room.id %}",
+            data: {
+              id: id,
+              pin: true
+            }
+          });
         });
         controls.append(pin);
         message.append(controls);

@@ -11,6 +11,20 @@ from ws4redis.publisher import RedisPublisher
 from .models import *
 
 
+class RoomPostView(View):
+
+    @csrf_exempt
+    def dispatch(self, *args, **kwargs):
+        return super(RoomPostView, self).dispatch(*args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            raise PermissionDenied
+        self.room = Room.objects.get(id=kwargs['room_id'])
+        self.publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
+        return self.generate_response(request)
+
+
 class RoomView(TemplateView):
     template_name = 'room.html'
 
@@ -19,26 +33,32 @@ class RoomView(TemplateView):
         context.update(room=Room.objects.get(id=kwargs['room_id']))
         return context
 
+class RoomPinView(RoomPostView):
 
-class RoomMessageView(View):
-    @csrf_exempt
-    def dispatch(self, *args, **kwargs):
-        return super(RoomMessageView, self).dispatch(*args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        user = request.user
-        if not user.is_authenticated():
-            raise PermissionDenied
-        room = Room.objects.get(id=kwargs['room_id'])
-        post = Post(room=room, author=user)
+    def generate_response(self, request):
+        post = Post.objects.get(id=request.POST.get('id'))
+        action = 'unpin' if post.pinned else 'pin'
+        post.pinned = not post.pinned
         post.save()
-        content = PostContent(author=user, post=post, content=request.POST.get('message'))
+        message = {
+            'type': 'pin',
+            'action': action,
+            'content': post.id
+        }
+        self.publisher.publish_message(RedisMessage(json.dumps(message)))
+        return HttpResponse('OK')
+
+class RoomMessageView(RoomPostView):
+
+    def generate_response(self, request):
+        post = Post(room=self.room, author=request.user)
+        post.save()
+        content = PostContent(author=request.user, post=post, content=request.POST.get('message'))
         content.save()
-        redis_publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
         message = {
             'type': 'msg',
-            'author': user.get_full_name(),
+            'author': request.user.get_full_name(),
             'content': request.POST.get('message')
         }
-        redis_publisher.publish_message(RedisMessage(json.dumps(message)))
+        self.publisher.publish_message(RedisMessage(json.dumps(message)))
         return HttpResponse('OK')
