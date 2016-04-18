@@ -58,7 +58,8 @@ class RoomMessageView(RoomPostView):
         message = {
             'type': 'msg',
             'author': request.user.get_full_name(),
-            'content': request.POST.get('message')
+            'content': request.POST.get('message'),
+            'id': post.id
         }
         self.publisher.publish_message(RedisMessage(json.dumps(message)))
         return HttpResponse('OK')

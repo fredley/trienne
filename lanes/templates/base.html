@@ -63,14 +63,11 @@
     {% block main_content %}
     <div class="row">
       <div class="col-sm-4 pane" id="slow">
-        <h1>Slow</h1>
         {% block introduction %}{% endblock introduction %}
       </div>
       <div class="col-sm-4 pane" id="medium">
-        <h1>Medium</h1>
       </div>
       <div class="col-sm-4 pane" id="fast">
-        <h1>Fast</h1>
         <div id="messages"></div>
       </div>
     </div>
@@ -90,8 +87,6 @@
   <script src="/static/js/ws4redis.js" type="text/javascript"></script>
   <script type="text/javascript">
   jQuery(document).ready(function($) {
-
-    var nextid=1;
 
     var sock = WS4Redis({
       uri: '{{ WEBSOCKET_URI }}room_{{ room.id }}?subscribe-broadcast&publish-broadcast&echo',
@@ -123,10 +118,9 @@
       if (msg.type == "msg"){
         var message = $('<div class="message"></div>').append($('<div class="content"></div>').text(msg.content));
         var controls = $('<div class="controls"></div>')
-        var pin = $('<i class="glyphicon glyphicon-pushpin"></i>');
-        var id = nextid;
+        var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
+        var id = msg.id;
         pin.on('click', function(){
-          $(this).addClass('active');
           $.ajax({
             method: "post",
             url: "{% url 'room_pin' room.id %}",
@@ -140,12 +134,16 @@
         message.append(controls);
         message.addClass("msg-" + id);
         messages.append(message);
-        nextid += 1;
         messages.scrollTop(messages.scrollTop() + 25);
       } else if (msg.type == "pin") {
         if (msg.action == "pin") {
           var message = $("#messages .msg-" + msg.content);
-          message.clone().appendTo($("#medium"));
+          message.clone(true).appendTo($("#medium"));
+          $('.msg-' + msg.content).find('.pin').addClass('active');
+        } else if (msg.action == "unpin") {
+          var message = $("#medium .msg-" + msg.content);
+          message.remove();
+          $('.msg-' + msg.content).find('.pin').removeClass('active');
         }
       }
     }
