@@ -1,4 +1,3 @@
-{% load tutorial_tags %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -24,14 +23,8 @@
       </div>
       <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
         <ul class="nav navbar-nav">
-          <li class="{% active request 'broadcast_chat' %}">
-            <a href="{% url 'broadcast_chat' %}">Broadcast Chat</a>
-          </li>
-          <li class="{% active request 'user_chat' %}">
-            <a href="{% url 'user_chat' %}">User Chat</a>
-          </li>
-          <li class="{% active request 'group_chat' %}">
-            <a href="{% url 'group_chat' %}">Group Chat</a>
+          <li class="">
+            <a href="{% url 'room' 1 %}">Room 1</a>
           </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
@@ -101,7 +94,7 @@
     var nextid=1;
 
     var sock = WS4Redis({
-      uri: '{{ WEBSOCKET_URI }}chat?subscribe-broadcast&publish-broadcast&echo',
+      uri: '{{ WEBSOCKET_URI }}room_{{ room.id }}?subscribe-broadcast&publish-broadcast&echo',
       receive_message: receiveMessage,
       heartbeat_msg: {{ WS4REDIS_HEARTBEAT }}
     });
@@ -112,11 +105,13 @@
         ev.preventDefault();
         var message = $('#megaphone').val();
         if (message !== ""){
-          var msg = {
-            type: "msg",
-            content: message
-          }
-          sock.send_message(JSON.stringify(msg));
+          $.ajax({
+            method: "post",
+            url: "{% url 'room_post' room.id %}",
+            data: {
+              message: message
+            }
+          });
           $('#megaphone').val("");
         }
       }

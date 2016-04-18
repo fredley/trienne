@@ -9,7 +9,8 @@ admin.autodiscover()
 
 
 urlpatterns = [
-    url(r'^room/(?P<room_id>\d+)/$', RoomChatView.as_view(), name='chat_room'),
+    url(r'^room/(?P<room_id>\d+)/$', RoomView.as_view(), name='room'),
+    url(r'^room/(?P<room_id>\d+)/post/$', RoomMessageView.as_view(), name='room_post'),
     url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', RedirectView.as_view(url=reverse_lazy('broadcast_chat'))),
