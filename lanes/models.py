@@ -19,6 +19,18 @@ class Room(models.Model):
   created = models.DateTimeField(auto_now_add=True)
   owners = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='owners')
 
+  def get_history(self):
+    posts = Post.objects.filter(room=self).order_by('-created')[:100]
+    return posts[::-1]
+
+  history = property(get_history)
+
+  def get_pinned(self):
+    posts = Post.objects.filter(room=self, pinned=True).order_by('-pinned_at')[:20]
+    return posts[::-1]
+
+  pinned = property(get_pinned)
+
   def __unicode__(self):
     return self.name
 
@@ -28,17 +40,18 @@ class Post(models.Model):
   author = models.ForeignKey(settings.AUTH_USER_MODEL)
   created = models.DateTimeField(auto_now_add=True)
   pinned = models.BooleanField(default=False)
+  pinned_at = models.DateTimeField(null=True, default=None)
   deleted = models.BooleanField(default=False)
 
   def get_content(self):
     if self.deleted:
       return "(deleted)"
-    return self.author.username + ' - ' + PostContent.objects.filter(post=self).order_by('-created')[0].content
+    return PostContent.objects.filter(post=self).order_by('-created')[0].content
 
   content = property(get_content)
 
   def __unicode__(self):
-    return self.content
+    return self.author.username + ' - ' + self.content
 
 
 class PostContent(models.Model):

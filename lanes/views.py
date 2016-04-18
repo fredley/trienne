@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 
+from datetime import datetime
+
 from django.http import HttpResponse
 from django.core.exceptions import PermissionDenied
 from django.views.generic.base import TemplateView, View
@@ -39,6 +41,7 @@ class RoomPinView(RoomPostView):
         post = Post.objects.get(id=request.POST.get('id'))
         action = 'unpin' if post.pinned else 'pin'
         post.pinned = not post.pinned
+        post.pinned_at = datetime.now()
         post.save()
         message = {
             'type': 'pin',

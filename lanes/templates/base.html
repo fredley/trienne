@@ -95,6 +95,37 @@
     });
     var messages = $('#messages');
 
+    var post_history = [
+      {% for post in room.history %}
+        {
+          author: {
+              name: "{{ post.author.username }}",
+              id: {{ post.author.id }}
+          },
+          content: "{{ post.content }}",
+          id: {{ post.id }}
+        },
+      {% endfor %}
+    ];
+
+    window.pinned = [
+      {% for post in room.pinned %}
+        {
+          author: {
+              name: "{{ post.author.username }}",
+              id: {{ post.author.id }}
+          },
+          content: "{{ post.content }}",
+          id: {{ post.id }}
+        },
+      {% endfor %}
+    ];
+
+    post_history.forEach(appendFastMessage);
+    pinned.forEach(function(el){
+      insertMediumMessage(createMessage(el));
+    });
+
     $("#megaphone").keydown(function(ev) {
       if (ev.keyCode === 13) {
         ev.preventDefault();
@@ -112,7 +143,7 @@
       }
     });
 
-    function appendMessage(msg) {
+    function createMessage(msg) {
       var message = $('<div class="message"></div>')
         .append($('<div class="content"></div>').text(msg.content));
       var controls = $('<div class="controls"></div>')
@@ -131,29 +162,44 @@
       controls.append(pin);
       message.append(controls);
       message.addClass("msg-" + id);
+      message.attr("data-id", id);
+      return message;
+    }
+
+    function insertFastMessage (message, author) {
       // Is the last post by the same author? If so, concat
       var last = messages.find('.author').last();
-      if (last.attr('data-id') == msg.author.id){
+      if (last.attr('data-id') == author.id){
         last.append(message);
       } else {
         messages.append($('<div class="author"></div>')
-          .text(msg.author.name)
-          .attr('data-id', msg.author.id)
+          .text(author.name)
+          .attr('data-id', author.id)
           .append(message));
       }
       messages.scrollTop(messages.scrollTop() + 25);
+    }
+
+    function appendFastMessage (msg) {
+      insertFastMessage(createMessage(msg), msg.author);
+    }
+
+    function insertMediumMessage (message) {
+      $('#medium').prepend(message);
+      $('.msg-' + message.attr('data-id')).find('.pin').addClass('active');
     }
 
     function receiveMessage(msg) {
       console.log(msg);
       var msg = JSON.parse(msg);
       if (msg.type == "msg"){
-        appendMessage(msg);
+        appendFastMessage(msg);
       } else if (msg.type == "pin") {
         if (msg.action == "pin") {
           var message = $("#messages .msg-" + msg.content);
-          message.clone(true).appendTo($("#medium"));
-          $('.msg-' + msg.content).find('.pin').addClass('active');
+          if ($('#medium').find('.msg-' + msg.content).length === 0) { 
+            insertMediumMessage(message.clone(true));
+          }
         } else if (msg.action == "unpin") {
           var message = $("#medium .msg-" + msg.content);
           message.remove();

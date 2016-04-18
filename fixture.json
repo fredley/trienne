@@ -1,0 +1,49 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$24000$Wj60birWzpDw$PDIL5jaGOeBVMa+zi1usSk5aO+mZLJcbnwtZIXEUweg=",
+      "last_login": "2016-04-18T08:36:40.494Z",
+      "is_superuser": true,
+      "username": "tom",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2016-04-18T08:36:26.651Z",
+      "groups": [
+        
+      ],
+      "user_permissions": [
+        
+      ]
+    }
+  },
+  {
+    "model": "lanes.organisation",
+    "pk": 1,
+    "fields": {
+      "name": "Public",
+      "domain": "public",
+      "admins": [
+        1
+      ]
+    }
+  },
+  {
+    "model": "lanes.room",
+    "pk": 1,
+    "fields": {
+      "name": "Room 3",
+      "topic": "room 3",
+      "organisation": 1,
+      "creator": 1,
+      "created": "2016-04-18T08:38:32.198Z",
+      "owners": [
+        1
+      ]
+    }
+  }
+]
