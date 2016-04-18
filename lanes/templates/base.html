@@ -102,7 +102,7 @@
               name: "{{ post.author.username }}",
               id: {{ post.author.id }}
           },
-          content: '{{ post.markdown|safe }}',
+          content: '{{ post.content|safe }}',
           id: {{ post.id }}
         },
       {% endfor %}
@@ -115,7 +115,7 @@
               name: "{{ post.author.username }}",
               id: {{ post.author.id }}
           },
-          content: "{{ post.markdown|safe }}",
+          content: "{{ post.content|safe }}",
           id: {{ post.id }}
         },
       {% endfor %}
@@ -181,7 +181,9 @@
     }
 
     function appendFastMessage (msg) {
-      insertFastMessage(createMessage(msg), msg.author);
+      if($('#messages .msg-'+msg.id).length === 0){
+        insertFastMessage(createMessage(msg), msg.author);
+      }
     }
 
     function insertMediumMessage (message) {
