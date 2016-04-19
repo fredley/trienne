@@ -1,0 +1,178 @@
+$lightLines:#ddd;
+$messageBG:#e8e8e8;
+$themeColor1:#002C84;
+$themeColor2:#6762E8;
+$background:#fcfcfc;
+
+html, body{
+  height:100%;
+  font-size:11px;
+  background: $background;
+}
+header.navbar{
+  border-bottom:1px solid $lightLines;
+}
+#nav{
+  background: $themeColor2;
+  font-size:14px;
+  height:50px;
+  border-bottom:1px darken($lightLines,50%);
+  box-shadow: 0 5px 5px rgba(0,0,0,0.1);
+  a{
+    color:#fff;
+  }
+  .nav>li>a:hover, .nav>li>a:focus{
+    background: lighten($themeColor2,10%);
+  }
+  .navbar-right{
+    margin-right:0;
+  }
+  .dropdown-menu{
+    padding:15px;
+  }
+}
+pre {
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+}
+#main{
+  position: absolute;
+  top:0;
+  left:0;
+  padding: 50px 0;
+  overflow: hidden;
+  height:100%;
+  width:100%;
+
+  .row{
+    height:100%;
+  }
+}
+.pane{
+  border-right:1px solid $lightLines;
+  height:100%;
+}
+#slow{
+  padding:0 10px 0 25px;
+}
+#name{
+  margin-top:10px;
+  border:1px solid $messageBG;
+  padding:10px 15px;
+  font-size:20px;
+  margin-bottom:0;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  font-weight: bolder;
+}
+#description{
+  padding:3px 15px;
+  margin-top:0;
+  font-size:12px;
+  background: $messageBG;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+#entry{
+  height:50px;
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background: #555;
+  margin:0;
+  padding:5px;
+}
+#megaphone{
+  height:40px;
+}
+
+#messages{
+  overflow-y:auto;
+  position: absolute;
+  top:0;
+  bottom:0;
+  left:0;
+  right:15px;
+  border:0;
+  border-radius: 0;
+}
+.message-group{
+  background: $messageBG;
+  border-radius: 5px;
+  margin:5px;
+  padding:5px;
+  .author{
+    font-weight:bold;
+    margin-bottom:3px;
+    &:after{
+      content:":";
+    }
+  }
+}
+.message{
+  border:1px solid transparent;
+  padding:1px;
+  float:left;
+  clear:both;
+  width:100%;
+  position: relative;
+
+  code, pre{
+    font-size: inherit;
+    margin:0;
+  }
+
+  blockquote{
+    margin:0;
+    font-size:inherit;
+    border-left:1px dotted $themeColor1;
+    padding:2px 5px;
+  }
+
+  .controls{
+    cursor:pointer;
+    position: absolute;
+    top:2px;
+    right:2px;
+    i{
+      opacity: 0;
+      font-size:90%;
+      transition: opacity 0.1s;
+      font-color:#333;
+      cursor:pointer;
+      &.active{
+        color: $themeColor1;
+        text-shadow: 0 0 5px rgba(0, 131, 243, 0.52);
+        opacity: 1;
+      }
+    }
+  }
+}
+#medium{
+  font-size:11px;
+  padding:5px;
+  .message{
+    background: $messageBG;
+    border-radius: 5px;
+    margin-bottom:5px;
+    padding:5px;
+    .controls{
+      top:7px;
+      right:7px;
+    }
+  }
+}
+#fast{
+  .message{
+    &:hover{
+      border:1px dotted #ccc;
+      .controls i{
+        opacity: 1;
+      }
+    }
+  }
+}

@@ -12,7 +12,6 @@
 
 <body>
   <header class="navbar navbar-static-top">
-    <div class="container">
       <div class="navbar-header">
         <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
           <span class="sr-only">Toggle navigation</span>
@@ -21,17 +20,17 @@
           <span class="icon-bar"></span>
         </button>
       </div>
-      <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+      <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" id="nav">
         <ul class="nav navbar-nav">
           <li class="">
-            <a href="{% url 'room' 1 %}">Room 1</a>
+            <a href="{% url 'rooms' %}">All Rooms</a>
           </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li class="dropdown" style="margin-right: 12em;">
+          <li class="dropdown">
           {% if request.user.is_authenticated %}
             <a class="dropdown-toggle" href="#" data-toggle="dropdown">{{ request.user.username }} <span class="caret"></span></a>
-            <div class="dropdown-menu" style="padding:1em;">
+            <div class="dropdown-menu">
               <form class="form" action="{% url 'logout' %}" method="post">{% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}" />
                 <input class="btn btn-success btn-block" type="submit" value="Logout">
@@ -55,7 +54,6 @@
           </li>
         </ul>
       </nav>
-    </div>
   </header>
 
   <div class="container" id="main">

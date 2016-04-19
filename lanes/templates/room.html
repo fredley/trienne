@@ -2,16 +2,18 @@
 
 {% load safe_js %}
 
-{% block "title" %}{{ room.name }}{% endblock %}
+{% block title %}{{ room.name }}{% endblock %}
 
 
 {% block main_content %}
 <div class="row">
-  <div class="col-sm-4 pane" id="slow">
+  <div class="col-sm-3 pane" id="slow">
+  <h1 id="name">{{ room.name }}</h1>
+  <p id="description">{{ room.topic }}</p>
   </div>
-  <div class="col-sm-4 pane" id="medium">
+  <div class="col-sm-3 pane" id="medium">
   </div>
-  <div class="col-sm-4 pane" id="fast">
+  <div class="col-sm-6 pane" id="fast">
     <div id="messages"></div>
   </div>
 </div>
@@ -117,12 +119,12 @@
 
     function insertFastMessage (message, author) {
       // Is the last post by the same author? If so, concat
-      var last = messages.find('.author').last();
+      var last = messages.find('.message-group').last();
       if (last.attr('data-id') == author.id){
         last.append(message);
       } else {
-        messages.append($('<div class="author"></div>')
-          .text(author.name)
+        messages.append($('<div class="message-group clearfix"></div>')
+          .append($('<div class="author"></div>').text(author.name))
           .attr('data-id', author.id)
           .append(message));
       }
