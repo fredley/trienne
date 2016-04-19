@@ -24,12 +24,24 @@ logger = logging.getLogger('django')
 User = get_user_model()
 
 
+def valid_link(text, image=False):
+  if len(text.split(" ")) != 1 or '"' in text or "'" in text:
+    return False
+  url = urlparse(text)
+  if image and url.path.lower().split(".")[-1] not in ["jpg", "jpeg", "png", "gif"]:
+    return False
+  return url.scheme in ['http', 'https'] and len(re.findall(url_dot_test, url.netloc)) > 0
+
+
 def link_formatter(match_obj):
   link = match_obj.group(2).strip()
-  url = urlparse(link)
-  if url.scheme not in ['http', 'https'] or len(re.findall(url_dot_test, url.netloc)) == 0:
+  if valid_link(link):
     return r'[{}]({})'.format(match_obj.group(1), match_obj.group(2))
-  return r'<a href="{}">{}</a>'.format(link, match_obj.group(1))
+  return r'<a href="{}" rel="nofollow">{}</a>'.format(link, match_obj.group(1))
+
+
+def onebox(text):
+  return '<div class="ob">{}</div>'.format(text)
 
 md_rules = collections.OrderedDict()
 md_rules[re.compile(r'\[([^\[]+)\]\(([^\)]+)\)')] = link_formatter    # links
@@ -56,6 +68,10 @@ def process_text(text):
       break
   if is_code:
     return "<pre>{}</pre>".format(escape(code).replace("'", "&#39;"))
+  # Check for oneboxes
+  # Images - entire message is an image url
+  if valid_link(text, image=True):
+    return onebox('<a href="{0}" rel="nofollow" target="_blank"><img src="{0}" alt=""></a>'.format(text))
   text = escape(text).replace("'", "&#39;").replace("\n", "<br>")
   # Apply Markdown rules
   for regex, replacement in md_rules.items():
