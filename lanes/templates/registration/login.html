@@ -1,4 +1,8 @@
-{% extends "chat_base.html" %} {% block main_content %}
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block main_content %}
 <div class="row">
 	<div class="col-xs-12 col-sm-8 col-sm-offset-2" style="margin-top: 2em;">
 		<div class="panel panel-default">
@@ -7,14 +11,14 @@
 			</div>
 			<div class="panel-body">
 				<form class="form" action="{% url 'login' %}" method="post">{% csrf_token %}
-					<input type="hidden" name="next" value="{{ next }}" />
-					<p class="help-block">Login as <em>john</em> or <em>mary</em> using password <em>secret</em>.</p>
+					<input type="hidden" name="next" value="{% if next %}{{ next }}{% else %}{% url 'rooms' %}{% endif %}" />
 					<div class="form-group">
 							<input class="form-control" placeholder="Username" name="username" type="text">
 					</div>
 					<div class="form-group">
 						<input class="form-control" placeholder="Password" name="password" type="password" value="">
 					</div>
+					<p class="help-block"><a href="{% url 'register' %}">Register</a> | <a href="">Forgotten Password</a></p>
 					<input class="btn btn-lg btn-success btn-block" type="submit" value="Login">
 				</form>
 			</div>

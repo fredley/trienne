@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block main_content %}
+<div class="row">
+  {% for room in rooms %}
+    <div class="col-sm-3">
+      <div class="well">
+        <h2><a href="{% url 'room' room.id %}">{{ room.name }}</a></h2>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock main_content %}

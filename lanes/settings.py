@@ -81,6 +81,9 @@ WS4REDIS_EXPIRE = 3600
 WS4REDIS_HEARTBEAT = '--ah-ah-ah-ah-stayin-alive--'
 WS4REDIS_PREFIX = 'lanes'
 
+from .socket import get_allowed_channels
+WS4REDIS_ALLOWED_CHANNELS = get_allowed_channels
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
