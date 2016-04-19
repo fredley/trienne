@@ -32,12 +32,12 @@ def link_formatter(match_obj):
   return r'<a href="{}">{}</a>'.format(link, match_obj.group(1))
 
 md_rules = collections.OrderedDict()
-md_rules[re.compile(r'\[([^\[]+)\]\(([^\)]+)\)')] = link_formatter # links
-md_rules[re.compile(r'(\*\*|__)(.*?)\1')] = r'<strong>\2</strong>' # bold
-md_rules[re.compile(r'(\*|_)(.*?)\1')] = r'<em>\2</em>' # emphasis
-md_rules[re.compile(r'\-\-\-(.*?)\-\-\-')] = r'<del>\1</del>' # del
-md_rules[re.compile(r'^&gt; (.*)')] = r'<blockquote>\1</blockquote>' # quote
-md_rules[re.compile(r'`(.*?)`')] = r'<code>\1</code>' # inline code
+md_rules[re.compile(r'\[([^\[]+)\]\(([^\)]+)\)')] = link_formatter  # links
+md_rules[re.compile(r'(\*\*|__)(.*?)\1')] = r'<strong>\2</strong>'  # bold
+md_rules[re.compile(r'(\*|_)(.*?)\1')] = r'<em>\2</em>'  # emphasis
+md_rules[re.compile(r'\-\-\-(.*?)\-\-\-')] = r'<del>\1</del>'  # del
+md_rules[re.compile(r'^&gt; (.*)')] = r'<blockquote>\1</blockquote>'  # quote
+md_rules[re.compile(r'`(.*?)`')] = r'<code>\1</code>'  # inline code
 
 
 def process_text(text):
@@ -53,8 +53,8 @@ def process_text(text):
       is_code = False
       break
   if is_code:
-    return "<pre>{}</pre>".format(escape(code).replace("'","&#39;"))
-  text = escape(text).replace("'","&#39;").replace("\n","<br>")
+    return "<pre>{}</pre>".format(escape(code).replace("'", "&#39;"))
+  text = escape(text).replace("'", "&#39;").replace("\n", "<br>")
   # Apply Markdown rules
   for regex, replacement in md_rules.items():
     text = re.sub(regex, replacement, text)
@@ -83,6 +83,7 @@ class RoomView(TemplateView):
     context.update(room=Room.objects.get(id=kwargs['room_id']))
     return context
 
+
 class RoomPinView(RoomPostView):
 
   def generate_response(self, request):
@@ -99,6 +100,7 @@ class RoomPinView(RoomPostView):
     self.publisher.publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
 
+
 class RoomMessageView(RoomPostView):
 
   def generate_response(self, request):
@@ -106,8 +108,8 @@ class RoomMessageView(RoomPostView):
     post.save()
     raw = request.POST.get('message')
     content = PostContent(
-      author=request.user, 
-      post=post, 
+      author=request.user,
+      post=post,
       raw=raw,
       content=process_text(raw))
     content.save()
@@ -137,7 +139,7 @@ class RegisterView(TemplateView):
   template_name = "registration/register.html"
 
   def post(self, request, *args, **kwargs):
-    user = User.objects.create_user(request.POST['username'],'',
+    user = User.objects.create_user(request.POST['username'], '',
                                     request.POST['password'])
     user.save()
     authenticate(username=request.POST['username'], password=request.POST['password'])

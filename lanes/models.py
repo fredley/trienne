@@ -61,6 +61,5 @@ class PostContent(models.Model):
   raw = models.CharField(max_length=512)
   created = models.DateTimeField(auto_now_add=True)
 
-
   def __unicode__(self):
     return self.content
