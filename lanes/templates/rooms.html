@@ -1,15 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Rooms{% endblock %}
 
 {% block main_content %}
-<div class="row">
-  {% for room in rooms %}
-    <div class="col-sm-3">
-      <div class="well">
-        <h2><a href="{% url 'room' room.id %}">{{ room.name }}</a></h2>
+<div class="container-fluid">
+  <div class="row" id="rooms">
+    {% for room in rooms %}
+      <div class="col-sm-3">
+        <div class="well room">
+          <h2><a href="{% url 'room' room.id %}">{{ room.name }}</a></h2>
+          <p>{{ room.topic }}</p>
+        </div>
       </div>
-    </div>
-  {% endfor %}
+    {% endfor %}
+      <div class="col-sm-3">
+        <div class="well add">
+          <a href="{% url 'add_room' %}"><i class="glyphicon glyphicon-plus"></i></a>
+        </div>
+      </div>
+  </div>
 </div>
 {% endblock main_content %}

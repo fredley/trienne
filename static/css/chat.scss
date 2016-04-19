@@ -9,6 +9,12 @@ html, body{
   font-size:11px;
   background: $background;
 }
+a{
+  color:$themeColor2;
+  &:hover, &:focus, &:active{
+    color:lighten($themeColor2,10%);
+  }
+}
 header.navbar{
   border-bottom:1px solid $lightLines;
 }
@@ -46,6 +52,12 @@ pre {
   overflow: hidden;
   height:100%;
   width:100%;
+
+  &>.container-fluid,
+  &>.container
+  {
+    padding-top:20px;
+  }
 
   .row{
     height:100%;
@@ -165,7 +177,7 @@ pre {
 }
 #medium{
   font-size:11px;
-  padding:5px;
+  padding:10px 5px;
   .message{
     background: $messageBG;
     border-radius: 5px;
@@ -186,6 +198,43 @@ pre {
       border:1px dotted #ccc;
       .controls i{
         opacity: 1;
+      }
+    }
+  }
+}
+
+/*   ROOMS   */
+
+#rooms{
+  .well{
+    height:150px;
+    overflow:hidden;
+
+    h2{
+      margin:0;
+      font-size:16px;
+    }
+    p{
+      margin-top:10px;
+    }
+
+    &.add{
+      background:$themeColor2;
+      position:relative;
+      &:hover{
+        background:lighten($themeColor2, 10%);
+      }
+      a{
+        font-size:50px;
+        color:#fff;
+        text-align: center;
+        display: block;
+        position: absolute;
+        top:0;
+        left:0;
+        right:0;
+        bottom:0;
+        line-height: 150px;
       }
     }
   }

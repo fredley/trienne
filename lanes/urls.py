@@ -10,6 +10,7 @@ admin.autodiscover()
 
 urlpatterns = [
     url(r'^rooms/$', RoomsView.as_view(), name='rooms'),
+    url(r'^room/add/$', RoomAddView.as_view(), name='add_room'),
     url(r'^room/(?P<room_id>\d+)/$', RoomView.as_view(), name='room'),
     url(r'^room/(?P<room_id>\d+)/post/$', RoomMessageView.as_view(), name='room_post'),
     url(r'^room/(?P<room_id>\d+)/pin/$', RoomPinView.as_view(), name='room_pin'),

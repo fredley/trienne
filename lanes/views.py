@@ -13,6 +13,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.views.generic.base import TemplateView, View
+from django.views.generic.edit import CreateView
 from django.views.decorators.csrf import csrf_exempt
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
@@ -146,6 +147,20 @@ class RoomMessageView(RoomPostView):
     }
     self.publisher.publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
+
+
+class RoomAddView(CreateView):
+  model = Room
+  fields = ['name', 'topic', 'organisation']
+  template_name = "add_room.html"
+
+  def form_valid(self, form):
+    room = form.save(commit=False)
+    room.creator = self.request.user
+    room.save()
+    room.owners = [self.request.user]
+    self.object = room
+    return HttpResponseRedirect(reverse("room", kwargs={"room_id": room.id}))
 
 
 class RoomsView(TemplateView):
