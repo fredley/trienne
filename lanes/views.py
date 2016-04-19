@@ -32,17 +32,19 @@ def link_formatter(match_obj):
   return r'<a href="{}">{}</a>'.format(link, match_obj.group(1))
 
 md_rules = collections.OrderedDict()
-md_rules[re.compile(r'\[([^\[]+)\]\(([^\)]+)\)')] = link_formatter  # links
-md_rules[re.compile(r'(\*\*|__)(.*?)\1')] = r'<strong>\2</strong>'  # bold
-md_rules[re.compile(r'(\*|_)(.*?)\1')] = r'<em>\2</em>'  # emphasis
-md_rules[re.compile(r'\-\-\-(.*?)\-\-\-')] = r'<del>\1</del>'  # del
+md_rules[re.compile(r'\[([^\[]+)\]\(([^\)]+)\)')] = link_formatter    # links
+md_rules[re.compile(r'(\*\*|__)(.*?)\1')] = r'<strong>\2</strong>'    # bold
+md_rules[re.compile(r'(\*|_)(.*?)\1')] = r'<em>\2</em>'               # emphasis
+md_rules[re.compile(r'\-\-\-(.*?)\-\-\-')] = r'<del>\1</del>'         # del
 md_rules[re.compile(r'^&gt; (.*)')] = r'<blockquote>\1</blockquote>'  # quote
-md_rules[re.compile(r'`(.*?)`')] = r'<code>\1</code>'  # inline code
+md_rules[re.compile(r'`(.*?)`')] = r'<code>\1</code>'                 # inline code
 
 
 def process_text(text):
+  # Check that message is not blank
+  if text.strip() == "":
+    raise
   # Check for entire block indented by 4 spaces
-  logger.debug("Hello")
   is_code = True
   code = ""
   for line in text.split("\n"):
@@ -107,11 +109,15 @@ class RoomMessageView(RoomPostView):
     post = Post(room=self.room, author=request.user)
     post.save()
     raw = request.POST.get('message')
+    try:
+        processed = process_text(raw)
+    except:
+        return HttpResponse('Not OK')
     content = PostContent(
       author=request.user,
       post=post,
       raw=raw,
-      content=process_text(raw))
+      content=processed)
     content.save()
     message = {
       'type': 'msg',

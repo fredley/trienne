@@ -25,7 +25,7 @@
   <div id="entry">
     <div "form-inline">
       <div class="form-group">
-        <textarea class="form-control" id="megaphone" 
+        <textarea class="form-control" id="megaphone"
         {% if not user.is_authenticated %}
           disabled="disabled"
         {% endif %}></textarea>
@@ -81,7 +81,7 @@
       if (ev.keyCode === 13 && !ev.shiftKey) {
         ev.preventDefault();
         var message = $('#megaphone').val();
-        if (message !== ""){
+        if (message.trim() !== ""){
           $.ajax({
             method: "post",
             url: "{% url 'room_post' room.id %}",
@@ -150,7 +150,7 @@
       } else if (msg.type == "pin") {
         if (msg.action == "pin") {
           var message = $("#messages .msg-" + msg.content);
-          if ($('#medium').find('.msg-' + msg.content).length === 0) { 
+          if ($('#medium').find('.msg-' + msg.content).length === 0) {
             insertMediumMessage(message.clone(true));
           }
         } else if (msg.action == "unpin") {
