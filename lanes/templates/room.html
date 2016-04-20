@@ -104,9 +104,9 @@
     	if(reply_regex.test(content.split(' ')[0])) {
     		reply_to = content.split(' ')[0].split(":")[1];
     		var to = $('.msg-' + reply_to).attr('data-author');
-    		console.log(to);
     		//TODO if not found, get
-    		content = "@" + to + " " + content.split(' ').splice(1).join(' ');
+    		content = '<i class="glyphicon glyphicon-share-alt glyphicon-flip-x"></i> @' + 
+    							to + ' ' + content.split(' ').splice(1).join(' ');
     	}
       var message = $('<div class="message"></div>')
         .append($('<div class="content"></div>').html(content));
@@ -141,6 +141,21 @@
       message.addClass("msg-" + id);
       message.attr("data-id", id);
       message.attr("data-author", msg.author.name);
+      if(reply_to > 0){
+	      message.attr("data-targets",reply_to);
+	      var target = $('.msg-' + reply_to);
+   			target.attr("data-targets", target.attr("data-targets") + "," + id);
+      }
+      message.hover(function(){
+      	$(this).attr("data-targets").split(",").forEach(function(target){
+      		console.log("target: " + target);
+      		$('.msg-' + target).addClass('highlight');
+      	});
+      }, function(){
+      	$(this).attr("data-targets").split(",").forEach(function(target){
+	      	$('.msg-' + target).removeClass('highlight');
+	      });
+      });
       return message;
     }
 
