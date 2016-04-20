@@ -28,14 +28,31 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li class="dropdown">
-          {% if request.user.is_authenticated %}
-            <a class="dropdown-toggle" href="#" data-toggle="dropdown">{{ request.user.username }} <span class="caret"></span></a>
-            <div class="dropdown-menu">
-              <form class="form" action="{% url 'logout' %}" method="post">{% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.get_full_path }}" />
-                <input class="btn btn-success btn-block" type="submit" value="Logout">
-              </form>
-            </div>
+          {% if user.is_authenticated %}
+            <a class="dropdown-toggle" href="#" data-toggle="dropdown">{{ user.username }} {% if user.current_organisation %}: {{ user.current_organisation.name }}{% endif %} <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              {% if user.organisations.all.count > 1 %}
+                <li>
+                  <form class="form" action="{% url 'change_org' %}" method="post">{% csrf_token %}
+                    <div class="form-group">
+                      <select class="form-control" name="org">
+                        {% for org in user.organisations.all %}
+                          <option value="{{ org.id }}" {% if org == user.current_organisation %}selected="selected"{% endif %}>{{ org.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <button class="btn btn-default btn-block" type="submit">Change Room</button>
+                  </form>
+                </li>
+                <li role="separator" class="divider"></li>
+              {% endif %}
+              <li>
+                <form class="form" action="{% url 'logout' %}" method="post">{% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+                  <button class="btn btn-danger btn-block" type="submit" >Logout</button>
+                </form>
+              </li>
+            </ul>
           {% else %}
             <a class="dropdown-toggle" href="#" data-toggle="dropdown">Login <span class="caret"></span></a>
             <div class="dropdown-menu" style="padding:1em;">

@@ -1,15 +1,33 @@
 {% extends "base.html" %}
 
+{% load bootstrap %}
+
 {% block title %}Login{% endblock %}
 
 {% block main_content %}
 <div class="row">
-  {% for room in rooms %}
-    <div class="col-sm-3">
-      <div class="well">
-        <h2><a href="{% url 'room' room.id %}">{{ room.name }}</a></h2>
-      </div>
-    </div>
-  {% endfor %}
+  {% if user.current_organisation == None %}
+  <div class="col-sm-4 col-sm-offset-4">
+    <form action="{% url 'change_org' %}" method="post">
+      {% csrf_token %}
+      <legend>Choose an Organisation:</legend>
+      <select class="form-control" name="org">
+        {% for org in user.organisations.all %}
+          <option value="{{ org.id }}">{{ org.name }}</option>
+        {% endfor %}
+      </select>
+      <hr>
+      <button type="submit" class="btn btn-lg btn-success">Go</button>
+    </form>
+  </div>
+  {% else %}
+      {% for room in rooms %}
+        <div class="col-sm-3">
+          <div class="well">
+            <h2><a href="{% url 'room' room.id %}">{{ room.name }}</a></h2>
+          </div>
+        </div>
+      {% endfor %}
+  {% endif %}
 </div>
 {% endblock main_content %}

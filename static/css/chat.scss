@@ -22,14 +22,19 @@ header.navbar{
   a{
     color:#fff;
   }
-  .nav>li>a:hover, .nav>li>a:focus{
+  .nav>li>a:hover, .nav>li>a:focus,
+  .nav .open>a, .nav .open>a:hover, .nav .open>a:focus{
     background: lighten($themeColor2,10%);
   }
   .navbar-right{
     margin-right:0;
   }
   .dropdown-menu{
+    min-width:300px;
     padding:15px;
+    form{
+      margin-bottom:10px;
+    }
   }
 }
 pre {
