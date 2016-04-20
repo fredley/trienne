@@ -71,7 +71,7 @@ def process_text(text):
   # Check for oneboxes
   # Images - entire message is an image url
   if valid_link(text, image=True):
-    return onebox('<a href="{0}" rel="nofollow" target="_blank"><img src="{0}" alt=""></a>'.format(text))
+    return onebox('<a href="{0}" rel="nofollow" target="_blank"><img src="{0}" alt="" onload="scrolldown()"></a>'.format(text))
   text = escape(text).replace("'", "&#39;").replace("\n", "<br>")
   # Apply Markdown rules
   for regex, replacement in md_rules.items():

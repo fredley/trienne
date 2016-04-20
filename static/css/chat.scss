@@ -145,7 +145,7 @@ pre {
     background: rgba(0,0,0,0.1);
   }
   &.pinned{
-    border-right:1px solid $themeColor2 !important;
+    border-right:1px solid $themeColor2;
 
     .pin{
       color: $themeColor1;
@@ -192,21 +192,29 @@ pre {
 #medium{
   font-size:11px;
   padding:5px;
+  .message-group{
+    padding: 2px 5px 0;
+  }
   .message{
     background: $messageBG;
     border-radius: 5px;
     margin-bottom:5px;
     padding:5px;
     .controls{
-      top:8px;
-      right:7px;
+      top:-10px;
+      right:5px;
       i{
         display: none;
         &.pin{
           display: block;
-          opacity: 1;
+          &:hover{
+            opacity:1;
+          }
         }
       }
+    }
+    &.pinned{
+      border:none;
     }
     .ob img{
       max-height: 150px;
