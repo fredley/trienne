@@ -101,7 +101,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
   def get_context_data(self, **kwargs):
     context = super(RoomView, self).get_context_data(**kwargs)
     room = Room.objects.get(id=kwargs['room_id'], organisation=self.request.user.current_organisation)
-    if room.organisation not in request.user.organisations.all():
+    if room.organisation not in self.request.user.organisations.all():
       raise PermissionDenied
     context.update(room=room)
     return context
@@ -186,7 +186,7 @@ class ChangeOrg(LoginRequiredMixin, View):
     else:
       raise PermissionDenied
     return HttpResponseRedirect(reverse('rooms'))
-  
+
 
 class RegisterView(TemplateView):
   template_name = "registration/register.html"
