@@ -13,6 +13,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.views.generic.base import TemplateView, View
+from django.views.generic.edit import UpdateView
 from django.views.decorators.csrf import csrf_exempt
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
@@ -147,6 +148,15 @@ class RoomMessageView(RoomPostView):
     self.publisher.publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
 
+
+class RoomEditView(UpdateView):
+  template_name = "room_edit.html"
+  fields = ['name', 'topic']
+  model = Room
+  pk_url_kwarg = 'room_id'
+
+  def get_success_url(self):
+    return reverse("room", kwargs={"room_id": self.object.id})
 
 class RoomsView(TemplateView):
   template_name = "rooms.html"
