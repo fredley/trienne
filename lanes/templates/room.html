@@ -39,6 +39,8 @@
 <script type="text/javascript">
   jQuery(document).ready(function($) {
 
+  	var reply_regex = /^:[0-9]+$/;
+
     var sock = WS4Redis({
       uri: '{{ WEBSOCKET_URI }}room_{{ room.id }}?subscribe-broadcast',
       receive_message: receiveMessage,
@@ -95,10 +97,21 @@
     });
 
     function createMessage(msg) {
+    	var content = msg.content;
+    	var reply_to = 0;
+    	// Is this a reply?
+    	if(reply_regex.test(content.split(' ')[0])) {
+    		reply_to = content.split(' ')[0].split(":")[1];
+    		var to = $('.msg-' + reply_to).attr('data-author');
+    		console.log(to);
+    		//TODO if not found, get
+    		content = "@" + to + " " + content.split(' ').splice(1).join(' ');
+    	}
       var message = $('<div class="message"></div>')
-        .append($('<div class="content"></div>').html(msg.content));
+        .append($('<div class="content"></div>').html(content));
       var controls = $('<div class="controls"></div>')
       var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
+      var reply = $('<i class="glyphicon glyphicon-share-alt glyphicon-flip-y reply"></i>');
       var id = msg.id;
       pin.on('click', function(){
         $.ajax({
@@ -110,10 +123,23 @@
           }
         });
       });
+      reply.on('click', function(){
+      	var first = $('#megaphone').val().split(' ')[0];
+      	var val;
+      	if (reply_regex.test(first)) {
+      		val = $('#megaphone').val().split(' ').splice(1).join(' ');
+      	} else {
+      		val = $('#megaphone').val();
+      	}
+      	$('#megaphone').val(":" + id + " " + val);
+      	$('#megaphone').focus();
+      });
       controls.append(pin);
+      controls.append(reply);
       message.append(controls);
       message.addClass("msg-" + id);
       message.attr("data-id", id);
+      message.attr("data-author", msg.author.name);
       return message;
     }
 
@@ -139,7 +165,7 @@
 
     function insertMediumMessage (message) {
       $('#medium').prepend(message);
-      $('.msg-' + message.attr('data-id')).find('.pin').addClass('active');
+      $('.msg-' + message.attr('data-id')).addClass('pinned');
     }
 
     function receiveMessage(msg) {
@@ -156,7 +182,7 @@
         } else if (msg.action == "unpin") {
           var message = $("#medium .msg-" + msg.content);
           message.remove();
-          $('.msg-' + msg.content).find('.pin').removeClass('active');
+          $('.msg-' + msg.content).removeClass('pinned');
         }
       }
     }

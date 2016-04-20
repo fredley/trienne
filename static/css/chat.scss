@@ -6,7 +6,7 @@ $background:#fcfcfc;
 
 html, body{
   height:100%;
-  font-size:11px;
+  font-size:12px;
   background: $background;
 }
 header.navbar{
@@ -37,6 +37,12 @@ pre {
     white-space: -pre-wrap;
     white-space: -o-pre-wrap;
     word-wrap: break-word;
+}
+.glyphicon-flip-y {
+  transform: scaleY(-1);
+  -moz-transform: scaleY(-1);
+  -webkit-transform: scaleY(-1);
+  -ms-transform: scaleY(-1);
 }
 #main{
   position: absolute;
@@ -115,11 +121,20 @@ pre {
 }
 .message{
   border:1px solid transparent;
-  padding:1px;
+  padding:1px 1px 1px 3px;
   float:left;
   clear:both;
   width:100%;
   position: relative;
+
+  &.pinned{
+    border-right:1px solid $themeColor2 !important;
+
+    .pin{
+      color: $themeColor1;
+      text-shadow: 0 0 5px rgba(0, 131, 243, 0.52);
+    }
+  }
 
   code, pre{
     font-size: inherit;
@@ -141,14 +156,10 @@ pre {
     i{
       opacity: 0;
       font-size:90%;
-      transition: opacity 0.1s;
+      transition: opacity 0.05s;
       font-color:#333;
       cursor:pointer;
-      &.active{
-        color: $themeColor1;
-        text-shadow: 0 0 5px rgba(0, 131, 243, 0.52);
-        opacity: 1;
-      }
+      margin-left:5px;
     }
   }
 }
@@ -172,8 +183,15 @@ pre {
     margin-bottom:5px;
     padding:5px;
     .controls{
-      top:7px;
+      top:8px;
       right:7px;
+      i{
+        display: none;
+        &.pin{
+          display: block;
+          opacity: 1;
+        }
+      }
     }
     .ob img{
       max-height: 150px;
