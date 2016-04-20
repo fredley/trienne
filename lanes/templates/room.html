@@ -40,6 +40,7 @@
   jQuery(document).ready(function($) {
 
   	var reply_regex = /^:[0-9]+$/;
+  	var my_id = {{ user.id }};
 
     var sock = WS4Redis({
       uri: '{{ WEBSOCKET_URI }}room_{{ room.id }}?subscribe-broadcast',
@@ -149,10 +150,14 @@
       if (last.attr('data-id') == author.id){
         last.append(message);
       } else {
-        messages.append($('<div class="message-group clearfix"></div>')
+      	var group = $('<div class="message-group clearfix"></div>')
           .append($('<div class="author"></div>').text(author.name))
           .attr('data-id', author.id)
-          .append(message));
+          .append(message);
+         if(author.id == my_id) {
+         	group.addClass("mine");
+         }
+        messages.append(group);
       }
       messages.scrollTop(messages.scrollTop() + 9999);
     }
