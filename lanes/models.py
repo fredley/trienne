@@ -50,6 +50,25 @@ class Room(models.Model):
     return self.name
 
 
+class RoomPrefs(models.Model):
+
+  QUIET = 0
+  NORMAL = 1
+  LOUD = 2
+
+  NOTIFICATION_CHOICES = (
+    (QUIET, "Quiet - Nothing"),
+    (NORMAL,"Normal - Mentions"),
+    (LOUD,  "Loud - Every message"))
+
+  user = models.ForeignKey(settings.AUTH_USER_MODEL)
+  room = models.ForeignKey(Room)
+  volume = models.IntegerField(choices=NOTIFICATION_CHOICES, default=NORMAL)
+
+  class Meta:
+    unique_together = ('user', 'room',)
+
+
 class Post(models.Model):
   room = models.ForeignKey(Room)
   author = models.ForeignKey(settings.AUTH_USER_MODEL)

@@ -9,7 +9,17 @@
   <div class="col-sm-3 pane" id="slow">
   <h1 id="name">{{ room.name }}</h1>
   <p id="description">{{ room.topic }}</p>
-  <small class="pull-right"><a href="{% url 'room_edit' room.id %}"><i class="glyphicon glyphicon-pencil"></i> Edit this room</a></small>
+  <p class="pull-right">
+  	<span class="volume-controls">
+	  	<i class="volume glyphicon glyphicon-volume-off  {% if prefs.volume == prefs.QUIET %}active{% endif %}"
+	  		 data-volume="{{ prefs.QUIET }}"></i>
+	  	<i class="volume glyphicon glyphicon-volume-down {% if prefs.volume == prefs.NORMAL %}active{% endif %}"
+	  		 data-volume="{{ prefs.NORMAL }}"></i>
+	  	<i class="volume glyphicon glyphicon-volume-up   {% if prefs.volume == prefs.LOUD %}active{% endif %}"
+	  		 data-volume="{{ prefs.LOUD }}"></i>
+  	</span>
+  	<a href="{% url 'room_edit' room.id %}"><i class="glyphicon glyphicon-pencil"></i> Edit this room</a>
+	</p>
   </div>
   <div class="col-sm-3 pane" id="medium">
   </div>
@@ -42,8 +52,14 @@
 
   jQuery(document).ready(function($) {
 
-  	var reply_regex = /^:[0-9]+$/;
-  	var my_id = {{ user.id }};
+  	var VOLUME_QUIET = 0;
+  	var VOLUME_NORMAL = 1;
+  	var VOLUME_LOUD = 2;
+
+    var reply_regex = /^:[0-9]+$/;
+    var my_id = {{ user.id }};
+    var my_name = '{{ user.username }}';
+    var volume = {{ prefs.volume }};
 
     var sock = WS4Redis({
       uri: '{{ WEBSOCKET_URI }}room_{{ room.id }}?subscribe-broadcast',
@@ -77,10 +93,14 @@
       {% endfor %}
     ];
 
+    var temp_vol = volume;
+    volume = VOLUME_QUIET;
     post_history.forEach(appendFastMessage);
     pinned.forEach(function(el){
-      insertMediumMessage(createMessage(el), el.author);
+      insertMediumMessage(createMessage(el,true), el.author);
     });
+    volume = temp_vol;
+
 
     $("#shout").keydown(function(ev) {
       if (ev.keyCode === 13 && !ev.shiftKey) {
@@ -99,17 +119,53 @@
       }
     });
 
-    function createMessage(msg) {
-    	var content = msg.content;
-    	var reply_to = 0;
-    	// Is this a reply?
-    	if(reply_regex.test(content.split(' ')[0])) {
-    		reply_to = content.split(' ')[0].split(":")[1];
-    		var to = $('.msg-' + reply_to).attr('data-author');
-    		//TODO if not found, get
-    		content = '<i class="glyphicon glyphicon-share-alt glyphicon-flip-x"></i> @' + 
-    							to + ' ' + content.split(' ').splice(1).join(' ');
-    	}
+    $(".volume").on('click', function(){
+    	var self = $(this);
+    	if(self.hasClass('active')){ return; }
+    	$.ajax({
+    		url:"{% url 'room_prefs' room.id %}",
+    		data:{volume:self.attr('data-volume')},
+    		method:'post',
+    		success:function(){
+    			$('.volume').removeClass('active');
+    			self.addClass('active');
+    			volume = parseInt(self.attr('data-volume'));
+    		}
+    	});
+    });
+
+    function notify(text) {
+      if ("Notification" in window) {
+      	if (Notification.permission === "granted") {
+      		var notification = new Notification(text);
+      	}else if (Notification.permission !== 'denied') {
+      		Notification.requestPermission(function(){
+      			notify(text);
+      		});
+      	}
+      }
+    }
+
+    function createMessage(msg, mute=false) {
+      var content = msg.content;
+      var reply_to = 0;
+      var to = "";
+      var text = "";
+      // Is this a reply?
+      if(reply_regex.test(content.split(' ')[0])) {
+        reply_to = content.split(' ')[0].split(":")[1];
+        to = $('.msg-' + reply_to).attr('data-author');
+        text = content.split(' ').splice(1).join(' ');
+        //TODO if not found, get
+        content = '<i class="glyphicon glyphicon-share-alt glyphicon-flip-x"></i> @' +
+                to + ' ' + text;
+      } else {
+      	text = msg.content;
+      }
+      console.log(volume, VOLUME_LOUD);
+      if (!mute && msg.author.id != my_id && (volume == VOLUME_LOUD || (to == my_name && volume > VOLUME_QUIET))){
+      	notify(msg.author.name + ": " + text);
+      }
       var message = $('<div class="message"></div>')
         .append($('<div class="content"></div>').html(content));
       var controls = $('<div class="controls"></div>')
@@ -127,15 +183,15 @@
         });
       });
       reply.on('click', function(){
-      	var first = $('#shout').val().split(' ')[0];
-      	var val;
-      	if (reply_regex.test(first)) {
-      		val = $('#shout').val().split(' ').splice(1).join(' ');
-      	} else {
-      		val = $('#shout').val();
-      	}
-      	$('#shout').val(":" + id + " " + val);
-      	$('#shout').focus();
+        var first = $('#shout').val().split(' ')[0];
+        var val;
+        if (reply_regex.test(first)) {
+          val = $('#shout').val().split(' ').splice(1).join(' ');
+        } else {
+          val = $('#shout').val();
+        }
+        $('#shout').val(":" + id + " " + val);
+        $('#shout').focus();
       });
       controls.append(pin);
       controls.append(reply);
@@ -145,19 +201,18 @@
       message.attr("data-author", msg.author.name);
       message.attr("data-targets","");
       if(reply_to > 0){
-	      message.attr("data-targets",reply_to);
-	      var target = $('.msg-' + reply_to);
-   			target.attr("data-targets", target.attr("data-targets") + "," + id);
+        message.attr("data-targets",reply_to);
+        var target = $('.msg-' + reply_to);
+         target.attr("data-targets", target.attr("data-targets") + "," + id);
       }
       message.hover(function(){
-      	$(this).attr("data-targets").split(",").forEach(function(target){
-      		console.log("target: " + target);
-      		$('.msg-' + target).addClass('highlight');
-      	});
+        $(this).attr("data-targets").split(",").forEach(function(target){
+          $('.msg-' + target).addClass('highlight');
+        });
       }, function(){
-      	$(this).attr("data-targets").split(",").forEach(function(target){
-	      	$('.msg-' + target).removeClass('highlight');
-	      });
+        $(this).attr("data-targets").split(",").forEach(function(target){
+          $('.msg-' + target).removeClass('highlight');
+        });
       });
       return message;
     }
@@ -168,12 +223,12 @@
       if (last.attr('data-id') == author.id){
         last.append(message);
       } else {
-      	var group = $('<div class="message-group clearfix"></div>')
+        var group = $('<div class="message-group clearfix"></div>')
           .append($('<div class="author"></div>').text(author.name))
           .attr('data-id', author.id)
           .append(message);
          if(author.id == my_id) {
-         	group.addClass("mine");
+           group.addClass("mine");
          }
         $('#messages').append(group);
       }
@@ -204,8 +259,8 @@
           var message = $("#messages .msg-" + msg.content);
           if ($('#medium').find('.msg-' + msg.content).length === 0) {
             insertMediumMessage(message.clone(true),{
-            	name: message.parent().find(".author").text(),
-            	id: message.parent().attr("data-id")
+              name: message.parent().find(".author").text(),
+              id: message.parent().attr("data-id")
             });
           }
         } else if (msg.action == "unpin") {

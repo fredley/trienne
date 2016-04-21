@@ -103,8 +103,19 @@ class RoomView(LoginRequiredMixin, TemplateView):
     room = Room.objects.get(id=kwargs['room_id'], organisation=self.request.user.current_organisation)
     if room.organisation not in self.request.user.organisations.all():
       raise PermissionDenied
-    context.update(room=room)
+    context.update(room=room,
+                   prefs=RoomPrefs.objects.get_or_create(room=room, user=self.request.user)[0])
     return context
+
+
+class RoomPrefsView(RoomPostView):
+
+  def generate_response(self, request):
+    volume = int(request.POST.get('volume'))
+    prefs = RoomPrefs.objects.get(room=self.room, user=request.user)
+    prefs.volume = volume
+    prefs.save()
+    return HttpResponse('OK')
 
 
 class RoomPinView(RoomPostView):
