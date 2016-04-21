@@ -14,6 +14,8 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = 'lanes.User'
+
 ROOT_URLCONF = 'lanes.urls'
 
 SECRET_KEY = 'key'

@@ -1,12 +1,13 @@
 $lightLines:#ddd;
 $messageBG:#e8e8e8;
+$myMessageBG:#e8e8ff;
 $themeColor1:#002C84;
 $themeColor2:#6762E8;
 $background:#fcfcfc;
 
 html, body{
   height:100%;
-  font-size:11px;
+  font-size:12px;
   background: $background;
 }
 a{
@@ -27,14 +28,19 @@ header.navbar{
   a{
     color:#fff;
   }
-  .nav>li>a:hover, .nav>li>a:focus{
+  .nav>li>a:hover, .nav>li>a:focus,
+  .nav .open>a, .nav .open>a:hover, .nav .open>a:focus{
     background: lighten($themeColor2,10%);
   }
   .navbar-right{
     margin-right:0;
   }
   .dropdown-menu{
+    min-width:300px;
     padding:15px;
+    form{
+      margin-bottom:10px;
+    }
   }
 }
 pre {
@@ -43,6 +49,18 @@ pre {
     white-space: -pre-wrap;
     white-space: -o-pre-wrap;
     word-wrap: break-word;
+}
+.glyphicon-flip-y {
+  transform: scaleY(-1);
+  -moz-transform: scaleY(-1);
+  -webkit-transform: scaleY(-1);
+  -ms-transform: scaleY(-1);
+}
+.glyphicon-flip-x {
+  transform: scaleX(-1);
+  -moz-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  -ms-transform: scaleX(-1);
 }
 #main{
   position: absolute;
@@ -117,6 +135,9 @@ pre {
   border-radius: 5px;
   margin:5px;
   padding:5px;
+  &.mine{
+    background: $myMessageBG;
+  }
   .author{
     font-weight:bold;
     margin-bottom:3px;
@@ -127,17 +148,31 @@ pre {
 }
 .message{
   border:1px solid transparent;
-  padding:1px;
+  padding:1px 1px 1px 3px;
   float:left;
   clear:both;
   width:100%;
   position: relative;
+  .mine &{
+    .controls{
+      display: none;
+    }
+  }
+  &.highlight{
+    background: rgba(0,0,0,0.1);
+  }
+  &.pinned{
+    border-right:1px solid $themeColor2;
 
+    .pin{
+      color: $themeColor1;
+      text-shadow: 0 0 5px rgba(0, 131, 243, 0.52);
+    }
+  }
   code, pre{
     font-size: inherit;
     margin:0;
   }
-
   blockquote{
     margin:0;
     font-size:inherit;
@@ -153,14 +188,10 @@ pre {
     i{
       opacity: 0;
       font-size:90%;
-      transition: opacity 0.1s;
+      transition: opacity 0.05s;
       font-color:#333;
       cursor:pointer;
-      &.active{
-        color: $themeColor1;
-        text-shadow: 0 0 5px rgba(0, 131, 243, 0.52);
-        opacity: 1;
-      }
+      margin-left:5px;
     }
   }
 }
@@ -178,14 +209,29 @@ pre {
 #medium{
   font-size:11px;
   padding:10px 5px;
+  .message-group{
+    padding: 2px 5px 0;
+  }
   .message{
     background: $messageBG;
     border-radius: 5px;
     margin-bottom:5px;
     padding:5px;
     .controls{
-      top:7px;
-      right:7px;
+      top:-10px;
+      right:5px;
+      i{
+        display: none;
+        &.pin{
+          display: block;
+          &:hover{
+            opacity:1;
+          }
+        }
+      }
+    }
+    &.pinned{
+      border:none;
     }
     .ob img{
       max-height: 150px;

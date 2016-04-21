@@ -10,10 +10,11 @@ from urlparse import urlparse
 
 from django.contrib.auth import get_user_model, authenticate
 from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.views.generic.base import TemplateView, View
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.views.decorators.csrf import csrf_exempt
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
@@ -72,7 +73,7 @@ def process_text(text):
   # Check for oneboxes
   # Images - entire message is an image url
   if valid_link(text, image=True):
-    return onebox('<a href="{0}" rel="nofollow" target="_blank"><img src="{0}" alt=""></a>'.format(text))
+    return onebox('<a href="{0}" rel="nofollow" target="_blank"><img src="{0}" alt="" onload="scrolldown()"></a>'.format(text))
   text = escape(text).replace("'", "&#39;").replace("\n", "<br>")
   # Apply Markdown rules
   for regex, replacement in md_rules.items():
@@ -80,26 +81,29 @@ def process_text(text):
   return text.strip()
 
 
-class RoomPostView(View):
+class RoomPostView(LoginRequiredMixin, View):
 
   @csrf_exempt
   def dispatch(self, *args, **kwargs):
     return super(RoomPostView, self).dispatch(*args, **kwargs)
 
   def post(self, request, *args, **kwargs):
-    if not request.user.is_authenticated():
-      raise PermissionDenied
     self.room = Room.objects.get(id=kwargs['room_id'])
+    if self.room.organisation not in request.user.organisations.all():
+      raise PermissionDenied
     self.publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
     return self.generate_response(request)
 
 
-class RoomView(TemplateView):
+class RoomView(LoginRequiredMixin, TemplateView):
   template_name = 'room.html'
 
   def get_context_data(self, **kwargs):
     context = super(RoomView, self).get_context_data(**kwargs)
-    context.update(room=Room.objects.get(id=kwargs['room_id']))
+    room = Room.objects.get(id=kwargs['room_id'], organisation=self.request.user.current_organisation)
+    if room.organisation not in self.request.user.organisations.all():
+      raise PermissionDenied
+    context.update(room=room)
     return context
 
 
@@ -163,13 +167,41 @@ class RoomAddView(CreateView):
     return HttpResponseRedirect(reverse("room", kwargs={"room_id": room.id}))
 
 
-class RoomsView(TemplateView):
+class RoomEditView(LoginRequiredMixin, UpdateView):
+  template_name = "room_edit.html"
+  fields = ['name', 'topic']
+  model = Room
+  pk_url_kwarg = 'room_id'
+
+  def get_object(self):
+    room = super(RoomEditView, self).get_object()
+    if room.organisation not in request.user.organisations.all():
+      raise PermissionDenied
+
+  def get_success_url(self):
+    return reverse("room", kwargs={"room_id": self.object.id})
+
+
+class RoomsView(LoginRequiredMixin, TemplateView):
   template_name = "rooms.html"
 
   def get_context_data(self, **kwargs):
     context = super(RoomsView, self).get_context_data(**kwargs)
-    context.update(rooms=Room.objects.all())
+    context.update(rooms=Room.objects.filter(organisation=self.request.user.current_organisation))
     return context
+
+
+class ChangeOrg(LoginRequiredMixin, View):
+
+  def post(self, request, *args, **kwargs):
+    user = request.user
+    org = Organisation.objects.get(id=request.POST.get('org'))
+    if org in user.organisations.all():
+      user.current_organisation = org
+      user.save()
+    else:
+      raise PermissionDenied
+    return HttpResponseRedirect(reverse('rooms'))
 
 
 class RegisterView(TemplateView):
