@@ -1,3 +1,5 @@
+@charset "utf-8";
+
 $lightLines:#ddd;
 $messageBG:#e8e8e8;
 $myMessageBG:#e8e8ff;
@@ -127,8 +129,12 @@ pre {
   margin:0;
   padding:5px;
 }
-#megaphone{
+#shout{
   height:40px;
+  &.editing{
+    background: #ddd;
+    font-style: italic;
+  }
 }
 
 #messages{
@@ -164,13 +170,18 @@ pre {
   clear:both;
   width:100%;
   position: relative;
-  .mine &{
-    .controls{
-      display: none;
-    }
-  }
-  &.highlight{
+  &.highlight,
+  &.editing{
     background: rgba(0,0,0,0.1);
+  }
+  &.editing{
+    font-style: italic;
+  }
+  &.edited:before{
+    content:"∗";
+    display: block;
+    float:left;
+    margin-right: 2px;
   }
   &.pinned{
     border-right:1px solid $themeColor2;

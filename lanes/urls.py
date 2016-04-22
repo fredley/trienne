@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^room/(?P<room_id>\d+)/pin/$', RoomPinView.as_view(), name='room_pin'),
     url(r'^room/(?P<room_id>\d+)/edit/$', RoomEditView.as_view(), name='room_edit'),
     url(r'^room/(?P<room_id>\d+)/prefs/$', RoomPrefsView.as_view(), name='room_prefs'),
+    url(r'^post/edit/$', PostEditView.as_view(), name='post_edit'),
     url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^accounts/register/', RegisterView.as_view(), name='register'),
     url(r'^admin/', include(admin.site.urls)),

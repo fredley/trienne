@@ -158,6 +158,7 @@ class RoomMessageView(RoomPostView):
         'id': request.user.id
       },
       'content': post.content,
+      'raw': raw,
       'id': post.id
     }
     self.publisher.publish_message(RedisMessage(json.dumps(message)))
@@ -192,6 +193,37 @@ class RoomEditView(LoginRequiredMixin, UpdateView):
   def get_success_url(self):
     return reverse("room", kwargs={"room_id": self.object.id})
 
+
+class PostEditView(LoginRequiredMixin, View):
+
+  @csrf_exempt
+  def dispatch(self, *args, **kwargs):
+    return super(PostEditView, self).dispatch(*args, **kwargs)
+
+  def post(self, request, *args, **kwargs):
+    post = Post.objects.get(id=request.POST.get('id'))
+    if post.author != request.user:
+      # TODO allow admins to edit posts
+      raise PermissionDenied
+    raw = request.POST.get('message')
+    try:
+        processed = process_text(raw)
+    except:
+        return HttpResponse('Not OK')
+    content = PostContent(
+      author=request.user,
+      post=post,
+      raw=raw,
+      content=processed)
+    content.save()
+    message = {
+      'type': 'edit',
+      'content': processed,
+      'raw': raw,
+      'id': post.id
+    }
+    RedisPublisher(facility='room_' + str(post.room.id), broadcast=True) \
+      .publish_message(RedisMessage(json.dumps(message)))
 
 class RoomsView(LoginRequiredMixin, TemplateView):
   template_name = "rooms.html"

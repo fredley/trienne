@@ -77,12 +77,22 @@ class Post(models.Model):
   pinned_at = models.DateTimeField(null=True, default=None)
   deleted = models.BooleanField(default=False)
 
+  def get_raw(self):
+    if self.deleted:
+      return "(deleted)"
+    return PostContent.objects.filter(post=self).order_by('-created')[0].raw
+
   def get_content(self):
     if self.deleted:
       return "(deleted)"
     return PostContent.objects.filter(post=self).order_by('-created')[0].content
 
+  def is_edited(self):
+    return PostContent.objects.filter(post=self).count() > 1
+
   content = property(get_content)
+  raw = property(get_raw)
+  edited = property(is_edited)
 
   def __unicode__(self):
     return self.author.username + ' - ' + self.content
