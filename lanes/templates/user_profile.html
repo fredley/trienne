@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ puser.username }}{% endblock %}
+
+{% block main_content %}
+<div class="container-fluid">
+  <h1>{{ puser.username }}
+    {% if puser.is_superuser %}
+    &#1421;
+    {% endif %}
+  </h1>
+  {% if user.id == puser.id %}
+    Your email address is set to {{ user.email }}.
+  {% endif %}
+</div>
+{% endblock main_content %}

@@ -13,6 +13,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
+from django.views.generic import DetailView
 from django.views.generic.base import TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.decorators.csrf import csrf_exempt
@@ -249,6 +250,13 @@ class ChangeOrg(LoginRequiredMixin, View):
     else:
       raise PermissionDenied
     return HttpResponseRedirect(reverse('rooms'))
+
+
+class UserProfileView(DetailView):
+  model = User
+  pk_url_kwarg = 'user_id'
+  template_name = 'user_profile.html'
+  context_object_name = 'puser'
 
 
 class RegisterView(TemplateView):
