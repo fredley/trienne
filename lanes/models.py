@@ -14,7 +14,7 @@ class Organisation(models.Model):
 
 class User(AbstractUser):
   organisations = models.ManyToManyField(Organisation, through='OrgMembership')
-  current_organisation = models.ForeignKey(Organisation, related_name='current_org', null=True)
+  current_organisation = models.ForeignKey(Organisation, related_name='current_org', null=True, blank=True)
 
 
 class OrgMembership(models.Model):

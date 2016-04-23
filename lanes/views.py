@@ -231,6 +231,9 @@ class RoomsView(LoginRequiredMixin, TemplateView):
 
   def get_context_data(self, **kwargs):
     context = super(RoomsView, self).get_context_data(**kwargs)
+    if not self.request.user.current_organisation and self.request.user.organisations.all().count() == 1:
+      self.request.user.current_organisation = self.request.user.organisations.all()[0]
+      self.request.user.save()
     context.update(rooms=Room.objects.filter(organisation=self.request.user.current_organisation))
     return context
 
