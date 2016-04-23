@@ -127,9 +127,9 @@ class RoomPinView(RoomPostView):
     post.pinned_at = datetime.now()
     post.save()
     message = {
-      'type': 'pin',
-      'action': action,
-      'content': post.id
+        'type': 'pin',
+        'action': action,
+        'content': post.id
     }
     self.publisher.publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
@@ -146,20 +146,20 @@ class RoomMessageView(RoomPostView):
     except:
         return HttpResponse('Not OK')
     content = PostContent(
-      author=request.user,
-      post=post,
-      raw=raw,
-      content=processed)
+        author=request.user,
+        post=post,
+        raw=raw,
+        content=processed)
     content.save()
     message = {
-      'type': 'msg',
-      'author': {
-        'name': request.user.username,
-        'id': request.user.id
-      },
-      'content': post.content,
-      'raw': raw,
-      'id': post.id
+        'type': 'msg',
+        'author': {
+            'name': request.user.username,
+            'id': request.user.id
+        },
+        'content': post.content,
+        'raw': raw,
+        'id': post.id
     }
     self.publisher.publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
@@ -211,19 +211,20 @@ class PostEditView(LoginRequiredMixin, View):
     except:
         return HttpResponse('Not OK')
     content = PostContent(
-      author=request.user,
-      post=post,
-      raw=raw,
-      content=processed)
+        author=request.user,
+        post=post,
+        raw=raw,
+        content=processed)
     content.save()
     message = {
-      'type': 'edit',
-      'content': processed,
-      'raw': raw,
-      'id': post.id
+        'type': 'edit',
+        'content': processed,
+        'raw': raw,
+        'id': post.id
     }
     RedisPublisher(facility='room_' + str(post.room.id), broadcast=True) \
-      .publish_message(RedisMessage(json.dumps(message)))
+        .publish_message(RedisMessage(json.dumps(message)))
+
 
 class RoomsView(LoginRequiredMixin, TemplateView):
   template_name = "rooms.html"

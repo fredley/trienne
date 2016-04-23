@@ -11,20 +11,23 @@ class Organisation(models.Model):
   def __unicode__(self):
     return self.name
 
+
 class User(AbstractUser):
   organisations = models.ManyToManyField(Organisation, through='OrgMembership')
   current_organisation = models.ForeignKey(Organisation, related_name='current_org', null=True)
+
 
 class OrgMembership(models.Model):
   ADMIN = 0
   USER = 1
   ROLES = (
-    (ADMIN, 'Admin'),
-    (USER, 'User')
+      (ADMIN, 'Admin'),
+      (USER, 'User')
   )
   user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
   organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
   role = models.IntegerField(choices=ROLES, default=USER)
+
 
 class Room(models.Model):
   name = models.CharField(max_length=100)
@@ -57,9 +60,9 @@ class RoomPrefs(models.Model):
   LOUD = 2
 
   NOTIFICATION_CHOICES = (
-    (QUIET, "Quiet - Nothing"),
-    (NORMAL,"Normal - Mentions"),
-    (LOUD,  "Loud - Every message"))
+      (QUIET, "Quiet - Nothing"),
+      (NORMAL, "Normal - Mentions"),
+      (LOUD, "Loud - Every message"))
 
   user = models.ForeignKey(settings.AUTH_USER_MODEL)
   room = models.ForeignKey(Room)
