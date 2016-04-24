@@ -85,7 +85,7 @@ def process_text(text):
 class AdminOnlyMixin(object):
 
   def dispatch(self, *args, **kwargs):
-    if not self.request.user.is_admin:
+    if not self.request.user.is_admin():
       raise PermissionDenied
     return super(AdminOnlyMixin, self).dispatch(*args, **kwargs)
 
@@ -208,16 +208,11 @@ class RoomAddView(CreateView):
     return HttpResponseRedirect(reverse("room", kwargs={"room_id": room.id}))
 
 
-class RoomEditView(LoginRequiredMixin, UpdateView):
+class RoomEditView(AdminOnlyMixin, UpdateView):
   template_name = "room_edit.html"
   fields = ['name', 'topic']
   model = Room
   pk_url_kwarg = 'room_id'
-
-  def get_object(self):
-    room = super(RoomEditView, self).get_object()
-    if room.organisation not in request.user.organisations.all():
-      raise PermissionDenied
 
   def get_success_url(self):
     return reverse("room", kwargs={"room_id": self.object.id})
