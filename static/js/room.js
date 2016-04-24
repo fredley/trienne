@@ -252,6 +252,19 @@ jQuery(document).ready(function($) {
       insertFastMessage(createMessage(msg), msg.author);
       $('.user-' + msg.author.id).find('.online-marker').addClass('online');
     }
+    var count = $('#messages .message').length;
+    if(count > 100) {
+      var to_remove = count - 100;
+      for(var i = 0; i < to_remove; i++){
+        var to_remove = $('#messages .message').first();
+        var parent = to_remove.parent();
+        var remove_parent = parent.find(".message").length === 1;
+        to_remove.remove();
+        if (remove_parent){
+          parent.remove();
+        }
+      }
+    }
   }
 
   function insertMediumMessage (message, author) {

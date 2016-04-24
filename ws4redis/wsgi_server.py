@@ -108,7 +108,7 @@ class WebsocketWSGIServer(object):
             redis_fd = subscriber.get_file_descriptor()
             if redis_fd:
                 listening_fds.append(redis_fd)
-            subscriber.send_persited_messages(websocket)
+            subscriber.set_present(request.user, True)
             recvmsg = None
             while websocket and not websocket.closed:
                 ready = self.select(listening_fds, [], [], 4.0)[0]
