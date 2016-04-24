@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^users/(?P<user_id>\d+)/$', UserProfileView.as_view(), name='user_profile'),
     url(r'^users/', include('django.contrib.auth.urls')),
     url(r'^users/register/', RegisterView.as_view(), name='register'),
+    url(r'^users/manage/', UserManagementView.as_view(), name='manage_users'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', RedirectView.as_view(url=reverse_lazy('login'))),
 ] + staticfiles_urlpatterns()

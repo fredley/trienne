@@ -82,6 +82,14 @@ def process_text(text):
   return text.strip()
 
 
+class AdminOnlyMixin(object):
+
+  def dispatch(self, *args, **kwargs):
+    if not self.request.user.is_admin:
+      raise PermissionDenied
+    return super(AdminOnlyMixin, self).dispatch(*args, **kwargs)
+
+
 class RoomPostView(LoginRequiredMixin, View):
 
   @csrf_exempt
@@ -123,6 +131,8 @@ class RoomPinView(RoomPostView):
 
   def generate_response(self, request):
     post = Post.objects.get(id=request.POST.get('id'))
+    if post.author == request.user and not request.user.is_admin():
+      raise PermissionDenied
     action = 'unpin' if post.pinned else 'pin'
     post.pinned = not post.pinned
     post.pinned_at = datetime.now()
@@ -203,8 +213,7 @@ class PostEditView(LoginRequiredMixin, View):
 
   def post(self, request, *args, **kwargs):
     post = Post.objects.get(id=request.POST.get('id'))
-    if post.author != request.user:
-      # TODO allow admins to edit posts
+    if post.author != request.user and not request.user.is_admin():
       raise PermissionDenied
     raw = request.POST.get('message')
     try:
@@ -250,6 +259,16 @@ class ChangeOrg(LoginRequiredMixin, View):
     else:
       raise PermissionDenied
     return HttpResponseRedirect(reverse('rooms'))
+
+
+class UserManagementView(AdminOnlyMixin, TemplateView):
+
+  template_name = "user_management.html"
+
+  def get_context_data(self, **kwargs):
+    context = super(UserManagementView, self).get_context_data(**kwargs)
+    context.update(org=self.request.user.current_organisation)
+    return context
 
 
 class UserProfileView(DetailView):

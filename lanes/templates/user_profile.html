@@ -9,8 +9,8 @@
     &#1421;
     {% endif %}
   </h1>
-  {% if user.id == puser.id %}
-    Your email address is set to {{ user.email }}.
+  {% if user.is_admin or user.id == puser.id %}
+    Email: {{ user.email }}.
   {% endif %}
 </div>
 {% endblock main_content %}

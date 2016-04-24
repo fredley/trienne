@@ -62,6 +62,7 @@
     var volume = {{ prefs.volume }};
     var editing = false;
     var edit_id = 0;
+    var is_admin = {{ user.is_admin|yesno:"true,false" }};
 
     var shout = $('#shout');
 
@@ -218,14 +219,10 @@
       }
     }
 
-    function createMessage(msg, mute=false) {
-      var content = msg.content;
-      var reply_to = 0;
+    function parseReply(content) {
       var to = "";
       var text = "";
-      var mine = msg.author.id == my_id;
-      var id = msg.id;
-      // Is this a reply?
+      var reply_to = 0;
       if(reply_regex.test(content.split(' ')[0])) {
         reply_to = content.split(' ')[0].split(":")[1];
         to = $('.msg-' + reply_to).attr('data-author');
@@ -234,23 +231,34 @@
         content = '<i class="glyphicon glyphicon-share-alt glyphicon-flip-x"></i> @' +
                 to + ' ' + text;
       } else {
-        text = msg.content;
+        text = content;
       }
+      return {text: text, to: to, reply_to: reply_to, content: content};
+    }
+
+    function createMessage(msg, mute=false) {
+      var mine = msg.author.id == my_id;
+      var id = msg.id;
+      var parsed = parseReply(msg.content);
+      if (reply_to)
+      var text = parsed.text;
+      var to = parsed.to;
+      var reply_to = parsed.reply_to;
       if (!mute && !mine && (volume == VOLUME_LOUD || (to == my_name && volume > VOLUME_QUIET))){
         notify(msg.author.name + ": " + text);
       }
       var message = $('<div class="message"></div>')
-        .append($('<div class="content"></div>').html(content));
+        .append($('<div class="content"></div>').html(parsed.content));
       var controls = $('<div class="controls"></div>');
-      if (mine) {
+      if (mine || is_admin) {
       	var edit = $('<i class="glyphicon glyphicon-pencil edit"></i>');
       	edit.on('click',function(){
       		startEdit($(this).parent().parent());
       	});
       	controls.append(edit);
-      } else {
+      }
+      if (!mine || is_admin) {
 	      var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
-	      var reply = $('<i class="glyphicon glyphicon-share-alt glyphicon-flip-y reply"></i>');
 	      pin.on('click', function(){
 	        $.ajax({
 	          method: "post",
@@ -261,6 +269,10 @@
 	          }
 	        });
 	      });
+	      controls.append(pin);
+	    }
+	    if (!mine){
+	      var reply = $('<i class="glyphicon glyphicon-share-alt glyphicon-flip-y reply"></i>');
 	      reply.on('click', function(){
 	        var first = shout.val().split(' ')[0];
 	        var val;
@@ -272,7 +284,6 @@
 	        shout.val(":" + id + " " + val);
 	        shout.focus();
 	      });
-	      controls.append(pin);
 	      controls.append(reply);
       }
       message.append(controls);
@@ -339,10 +350,11 @@
       if (msg.type == "msg"){
         appendFastMessage(msg);
       } else if (msg.type == "edit") {
+      	var parsed = parseReply(msg.content);
       	$('.msg-' + msg.id)
       	.addClass('edited')
       	.attr('data-raw', msg.raw)
-      	.find('.content').html(msg.content);
+      	.find('.content').html(parsed.content);
     	}	else if (msg.type == "pin") {
         if (msg.action == "pin") {
           var message = $("#messages .msg-" + msg.content);

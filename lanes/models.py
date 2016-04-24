@@ -8,6 +8,11 @@ class Organisation(models.Model):
   domain = models.CharField(max_length=200)
   admins = models.ManyToManyField(settings.AUTH_USER_MODEL)
 
+  def get_users(self):
+    return User.objects.filter(organisations__id__exact=self.id)
+
+  users = property(get_users)
+
   def __unicode__(self):
     return self.name
 
@@ -15,6 +20,9 @@ class Organisation(models.Model):
 class User(AbstractUser):
   organisations = models.ManyToManyField(Organisation, through='OrgMembership')
   current_organisation = models.ForeignKey(Organisation, related_name='current_org', null=True, blank=True)
+
+  def is_admin(self):
+    return self in self.current_organisation.admins.all()
 
 
 class OrgMembership(models.Model):
