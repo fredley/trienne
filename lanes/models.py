@@ -1,3 +1,6 @@
+import string
+import random
+
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -17,12 +20,27 @@ class Organisation(models.Model):
     return self.name
 
 
+def generate_token():
+  return ''.join(random.SystemRandom().choice(
+      string.ascii_uppercase + string.digits + string.ascii_lowercase
+  ) for _ in range(20))
+
+
+class Invitation(models.Model):
+  organisation = models.ForeignKey(Organisation)
+  email = models.EmailField()
+  token = models.CharField(max_length=20, default=generate_token, unique=True)
+
+
 class User(AbstractUser):
   organisations = models.ManyToManyField(Organisation, through='OrgMembership')
   current_organisation = models.ForeignKey(Organisation, related_name='current_org', null=True, blank=True)
 
   def is_admin(self):
-    return self in self.current_organisation.admins.all()
+    try:
+      return self in self.current_organisation.admins.all()
+    except:
+      return False
 
 
 class OrgMembership(models.Model):

@@ -47,6 +47,6 @@
       ]
     }
   },
-  {"model": "lanes.orgmembership", "pk": 1, "fields": {"user": 1, "organisation": 1, "role": 0}}
+  {"model": "lanes.orgmembership", "pk": 1, "fields": {"user": 1, "organisation": 1, "role": 0}},
   {"model": "lanes.orgmembership", "pk": 2, "fields": {"user": 2, "organisation": 1, "role": 1}}
 ]

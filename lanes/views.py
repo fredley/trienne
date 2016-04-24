@@ -8,10 +8,12 @@ from cgi import escape
 from datetime import datetime
 from urlparse import urlparse
 
-from django.contrib.auth import get_user_model, authenticate
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.conf import settings
+from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.views.generic import DetailView
 from django.views.generic.base import TemplateView, View
@@ -82,12 +84,32 @@ def process_text(text):
   return text.strip()
 
 
-class AdminOnlyMixin(object):
+class AjaxResponseMixin(object):
+  def form_invalid(self, form):
+    response = super(AjaxResponseMixin, self).form_invalid(form)
+    if self.request.is_ajax():
+      return JsonResponse(form.errors, status=400)
+    else:
+      return response
+
+  def form_valid(self, form):
+    response = super(AjaxResponseMixin, self).form_valid(form)
+    if self.request.is_ajax():
+      data = {
+          'id': self.object.id,
+      }
+      return JsonResponse(data)
+    else:
+      return response
+
+
+class AdminOnlyMixin(LoginRequiredMixin):
 
   def dispatch(self, *args, **kwargs):
-    if not self.request.user.is_admin():
+    response = super(AdminOnlyMixin, self).dispatch(*args, **kwargs)
+    if self.request.user.is_anonymous() or not self.request.user.is_admin():
       raise PermissionDenied
-    return super(AdminOnlyMixin, self).dispatch(*args, **kwargs)
+    return response
 
 
 class RoomPostView(LoginRequiredMixin, View):
@@ -274,14 +296,29 @@ class ChangeOrg(LoginRequiredMixin, View):
     return HttpResponseRedirect(reverse('rooms'))
 
 
-class UserManagementView(AdminOnlyMixin, TemplateView):
+class UserManagementView(AdminOnlyMixin, AjaxResponseMixin, CreateView):
 
   template_name = "user_management.html"
+  model = Invitation
+  fields = ['organisation', 'email']
+
+  def get_success_url(self):
+    return ''
 
   def get_context_data(self, **kwargs):
     context = super(UserManagementView, self).get_context_data(**kwargs)
     context.update(org=self.request.user.current_organisation)
     return context
+
+  def form_valid(self, form):
+    response = super(UserManagementView, self).form_valid(form)  # Saves form
+    org = form.instance.organisation
+    link = 'http://' + settings.ALLOWED_HOSTS[0] + reverse('invitation', kwargs={'token': form.instance.token})
+    send_mail('Join {} on lanes'.format(org.name),
+        'You have been invited to join {} on lanes, please click this link to sign up:\n\n{}'.format(org.name, link),
+        'noreply@lanes.net',
+    [form.instance.email], fail_silently=False)
+    return response
 
 
 class UserProfileView(DetailView):
@@ -294,9 +331,27 @@ class UserProfileView(DetailView):
 class RegisterView(TemplateView):
   template_name = "registration/register.html"
 
+  def get_context_data(self, **kwargs):
+    context = super(RegisterView, self).get_context_data(**kwargs)
+    logger.debug(kwargs)
+    if 'token' in kwargs:
+      logger.debug('got kwargs')
+      logout(self.request)
+      context.update(invite=Invitation.objects.get(token=kwargs.get('token')))
+    return context
+
   def post(self, request, *args, **kwargs):
-    user = User.objects.create_user(request.POST['username'], '',
+    user = User.objects.create_user(request.POST['username'], request.POST['email'],
                                     request.POST['password'])
     user.save()
-    authenticate(username=request.POST['username'], password=request.POST['password'])
+    org = Organisation.objects.get(id=request.POST.get('organisation'))
+    invites = Invitation.objects.filter(email=request.POST.get('email'), organisation=org)
+    if invites.count() == 0:
+      raise PermissionDenied
+    membership = OrgMembership(user=user, organisation=org)
+    membership.save()
+    [i.delete() for i in invites]
+    u = authenticate(username=request.POST['username'], password=request.POST['password'])
+    if u is not None and u.is_active:
+      login(request, u)
     return HttpResponseRedirect(reverse('rooms'))

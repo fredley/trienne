@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^post/edit/$', PostEditView.as_view(), name='post_edit'),
     url(r'^users/(?P<user_id>\d+)/$', UserProfileView.as_view(), name='user_profile'),
     url(r'^users/', include('django.contrib.auth.urls')),
+    url(r'^users/register/(?P<token>\w+)/', RegisterView.as_view(), name='invitation'),
     url(r'^users/register/', RegisterView.as_view(), name='register'),
     url(r'^users/manage/', UserManagementView.as_view(), name='manage_users'),
     url(r'^admin/', include(admin.site.urls)),
