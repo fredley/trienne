@@ -112,8 +112,19 @@ class RoomView(LoginRequiredMixin, TemplateView):
     room = Room.objects.get(id=kwargs['room_id'], organisation=self.request.user.current_organisation)
     if room.organisation not in self.request.user.organisations.all():
       raise PermissionDenied
+    publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
+    users = room.organisation.users
+    online = []
+    for u in users:
+      online.append({
+          "username": u.username,
+          "id": u.id,
+          "online": publisher.get_present(u)
+      })
+    logger.info("Users result: " + str(online))
     context.update(room=room,
-                   prefs=RoomPrefs.objects.get_or_create(room=room, user=self.request.user)[0])
+                   prefs=RoomPrefs.objects.get_or_create(room=room, user=self.request.user)[0],
+                   users=online)
     return context
 
 

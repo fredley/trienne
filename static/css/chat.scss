@@ -119,6 +119,21 @@ pre {
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
 }
+.user-list{
+  .online-marker{
+    font-size: 35px;
+    line-height: 12px;
+    margin-top: 2px;
+    display: inline-block;
+    float: left;
+    margin-right: 5px;
+    color:#777;
+
+    &.online{
+      color:#48A04A;
+    }
+  }
+}
 #entry{
   height:50px;
   position:fixed;

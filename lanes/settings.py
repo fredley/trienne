@@ -5,6 +5,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 DEBUG = True
 
+DJANGO_LOG_LEVEL=False
+
 ALLOWED_HOSTS = []
 
 DATABASES = {
@@ -101,12 +103,24 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'django.db.backends': {
+            'handlers': ['null'],  # Quiet by default!
+            'propagate': False,
+            'level': 'DEBUG',
         },
     },
 }
