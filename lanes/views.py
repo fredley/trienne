@@ -119,7 +119,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
       online.append({
           "username": u.username,
           "id": u.id,
-          "online": publisher.get_present(u) or u == self.request.user
+          "online": (publisher.get_present(u) or u == self.request.user)
       })
     message = {
         'type': 'join',

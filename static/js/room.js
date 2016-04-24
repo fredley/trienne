@@ -12,6 +12,8 @@ jQuery(document).ready(function($) {
   var editing = false;
   var edit_id = 0;
 
+  var loading = true;
+
   var sock = WS4Redis({
     uri: sock_uri,
     receive_message: receiveMessage,
@@ -26,6 +28,7 @@ jQuery(document).ready(function($) {
   });
   volume = temp_vol;
 
+  loading = false;
 
   $("#shout").keydown(function(ev) {
     if (ev.keyCode === 13 && !ev.shiftKey) {
@@ -153,7 +156,7 @@ jQuery(document).ready(function($) {
     return {text: text, to: to, reply_to: reply_to, content: content};
   }
 
-  function createMessage(msg, mute) {
+  function createMessage(msg) {
     var mine = msg.author.id == my_id;
     var id = msg.id;
     var parsed = parseReply(msg.content);
@@ -161,7 +164,7 @@ jQuery(document).ready(function($) {
     var text = parsed.text;
     var to = parsed.to;
     var reply_to = parsed.reply_to;
-    if (!mute && !mine && (volume == VOLUME_LOUD || (to == my_name && volume > VOLUME_QUIET))){
+    if (!loading && !mine && (volume == VOLUME_LOUD || (to == my_name && volume > VOLUME_QUIET))){
       notify(msg.author.name + ": " + text);
     }
     var message = $('<div class="message"></div>')
@@ -226,6 +229,9 @@ jQuery(document).ready(function($) {
         $('.msg-' + target).removeClass('highlight');
       });
     });
+    if(!loading){
+      $('.user-' + msg.author.id).find('.online-marker').addClass('online');
+    }
     return message;
   }
 
@@ -250,7 +256,6 @@ jQuery(document).ready(function($) {
   function appendFastMessage (msg) {
     if($('#messages .msg-'+msg.id).length === 0){
       insertFastMessage(createMessage(msg), msg.author);
-      $('.user-' + msg.author.id).find('.online-marker').addClass('online');
     }
     var count = $('#messages .message').length;
     if(count > 100) {
