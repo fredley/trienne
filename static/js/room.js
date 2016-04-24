@@ -153,7 +153,7 @@ jQuery(document).ready(function($) {
     return {text: text, to: to, reply_to: reply_to, content: content};
   }
 
-  function createMessage(msg, mute=false) {
+  function createMessage(msg, mute) {
     var mine = msg.author.id == my_id;
     var id = msg.id;
     var parsed = parseReply(msg.content);
@@ -250,6 +250,7 @@ jQuery(document).ready(function($) {
   function appendFastMessage (msg) {
     if($('#messages .msg-'+msg.id).length === 0){
       insertFastMessage(createMessage(msg), msg.author);
+      $('.user-' + msg.author.id).find('.online-marker').addClass('online');
     }
   }
 
@@ -264,28 +265,44 @@ jQuery(document).ready(function($) {
   function receiveMessage(msg) {
     console.log(msg);
     var msg = JSON.parse(msg);
-    if (msg.type == "msg"){
-      appendFastMessage(msg);
-    } else if (msg.type == "edit") {
-      var parsed = parseReply(msg.content);
-      $('.msg-' + msg.id)
-      .addClass('edited')
-      .attr('data-raw', msg.raw)
-      .find('.content').html(parsed.content);
-    }  else if (msg.type == "pin") {
-      if (msg.action == "pin") {
-        var message = $("#messages .msg-" + msg.content);
-        if ($('#medium').find('.msg-' + msg.content).length === 0) {
-          insertMediumMessage(message.clone(true),{
-            name: message.parent().find(".author").text(),
-            id: message.parent().attr("data-id")
-          });
+    switch(msg.type){
+      case "msg":
+        appendFastMessage(msg);
+        break;
+      case "edit":
+        var parsed = parseReply(msg.content);
+        $('.msg-' + msg.id)
+        .addClass('edited')
+        .attr('data-raw', msg.raw)
+        .find('.content').html(parsed.content);
+        break;
+      case "pin":
+        if (msg.action == "pin") {
+          var message = $("#messages .msg-" + msg.content);
+          if ($('#medium').find('.msg-' + msg.content).length === 0) {
+            insertMediumMessage(message.clone(true),{
+              name: message.parent().find(".author").text(),
+              id: message.parent().attr("data-id")
+            });
+          }
+        } else if (msg.action == "unpin") {
+          var message = $("#medium .msg-" + msg.content);
+          message.remove();
+          $('.msg-' + msg.content).removeClass('pinned');
         }
-      } else if (msg.action == "unpin") {
-        var message = $("#medium .msg-" + msg.content);
-        message.remove();
-        $('.msg-' + msg.content).removeClass('pinned');
-      }
+        break;
+      case "join":
+        if($('.user-' + msg.id).length > 0){
+          $('.user-' + msg.id).find('.online-marker').addClass('online');
+        } else {
+          var user = $('<div class="user user-' + msg.id + '"></div>').text(msg.username);
+          user.prepend('<span class="online-marker online">&bull;</span>');
+          $('#users').append(user);
+        }
+        break;
+      case "leave":
+        $('.user-' + msg.id).find('.online-marker').removeClass('online');
+        break;
     }
   }
 });

@@ -4,6 +4,7 @@ import six
 from six.moves import http_client
 from redis import StrictRedis
 import django
+import json
 
 if django.VERSION[:2] >= (1, 7):
     django.setup()
@@ -121,9 +122,15 @@ class WebsocketWSGIServer(object):
                         if recvmsg:
                             subscriber.publish_message(recvmsg)
                         elif request.user:
-                            subscriber.set_present(request)
+                            subscriber.set_present(request.user, True)
                     elif fd == redis_fd:
                         sendmsg = RedisMessage(subscriber.parse_response())
+                        if sendmsg and len(sendmsg) > 14 and sendmsg[:14] == "users_present:":
+                            websocket.send(json.dumps({
+                                "type": "leave",
+                                "id": sendmsg[14:]
+                            }))
+                            sendmsg = None
                         if sendmsg and (echo_message or sendmsg != recvmsg):
                             websocket.send(sendmsg)
                     else:
@@ -150,6 +157,7 @@ class WebsocketWSGIServer(object):
         else:
             response = http.HttpResponse()
         finally:
+            subscriber.set_present(request.user, False)
             subscriber.release()
             if websocket:
                 websocket.close(code=1001, message='Websocket Closed')

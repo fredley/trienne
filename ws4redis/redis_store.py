@@ -121,13 +121,17 @@ class RedisStore(object):
             if expire > 0:
                 self._connection.setex(channel, expire, message)
 
-    def set_present(self, request):
+    def set_present(self, user, present):
         """
-        Set a user as present for this channel
+        Set a user as present
         """
-        key = "users_present:" + str(request.user.id)
-        value = 1
-        self._connection.setex(key, 60, value)
+        key = "users_present:" + str(user.id)
+        if present:
+            self._connection.setex(key, 60, 1)
+        else:
+            # Give a short timeout, so that if the user is
+            # loading another room there isn't a flicker in status
+            self._connection.setex(key, 5, 1)
 
     def get_present(self, user):
         """

@@ -119,8 +119,15 @@ class RoomView(LoginRequiredMixin, TemplateView):
       online.append({
           "username": u.username,
           "id": u.id,
-          "online": publisher.get_present(u)
+          "online": publisher.get_present(u) or u == self.request.user
       })
+    message = {
+        'type': 'join',
+        'id': self.request.user.id,
+        # Add this in case user is brand new and not in list
+        'username': self.request.user.username
+    }
+    publisher.publish_message(RedisMessage(json.dumps(message)))
     logger.info("Users result: " + str(online))
     context.update(room=room,
                    prefs=RoomPrefs.objects.get_or_create(room=room, user=self.request.user)[0],

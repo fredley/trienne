@@ -51,6 +51,7 @@ class RedisSubscriber(RedisStore):
         self._subscription = self._connection.pubsub()
         for key in self._get_message_channels(request=request, facility=facility, **audience):
             self._subscription.subscribe(key)
+        self._subscription.subscribe('__keyevent@0__:expired')
 
     def send_persited_messages(self, websocket):
         """
