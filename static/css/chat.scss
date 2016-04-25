@@ -11,6 +11,7 @@ html, body{
   height:100%;
   font-size:12px;
   background: $background;
+  font-family: 'Open Sans', sans-serif;
 }
 a{
   color:$themeColor2;
@@ -30,6 +31,7 @@ header.navbar{
   a{
     color:#fff;
   }
+  .nav>li.active>a,
   .nav>li>a:hover, .nav>li>a:focus,
   .nav .open>a, .nav .open>a:hover, .nav .open>a:focus{
     background: lighten($themeColor2,10%);
@@ -135,7 +137,7 @@ pre {
   }
 }
 #entry{
-  height:50px;
+  height:35px;
   position:fixed;
   bottom:0;
   left:0;
@@ -143,9 +145,39 @@ pre {
   background: #555;
   margin:0;
   padding:5px;
+  display: table;
+
+  .row-container{
+    display: table-row;
+    .img-container{
+      display: table-cell;
+      vertical-align: top;
+      width:32px;
+    }
+    .shout-container{
+      display: table-cell;
+      vertical-align: top;
+      padding-left:5px;
+    }
+  }
+
+  img{
+    display: block;
+    float: left;
+    width: 32px;
+    height: 32px;
+    border-radius:3px;
+  }
+  .right{
+    width:auto;
+    height:40px;
+    background:red;
+  }
 }
 #shout{
-  height:40px;
+  height:32px;
+  margin:0;
+  width: 100%;
   &.editing{
     background: #ddd;
     font-style: italic;
@@ -326,4 +358,13 @@ pre {
       }
     }
   }
+}
+
+/*   USER MANAGEMENT   */
+
+#message{
+  height: 0;
+  padding: 0;
+  margin: -5px 0;
+  display: none;
 }

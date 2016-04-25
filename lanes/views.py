@@ -320,7 +320,7 @@ class UserManagementView(AdminOnlyMixin, AjaxResponseMixin, CreateView):
     send_mail('Join {} on lanes'.format(org.name),
         'You have been invited to join {} on lanes, please click this link to sign up:\n\n{}'.format(org.name, link),
         'noreply@lanes.net',
-    [form.instance.email], fail_silently=False)
+    [form.instance.email], fail_silently=True)
     return response
 
 

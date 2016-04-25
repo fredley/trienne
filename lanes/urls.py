@@ -24,5 +24,5 @@ urlpatterns = [
     url(r'^users/register/', RegisterView.as_view(), name='register'),
     url(r'^users/manage/', UserManagementView.as_view(), name='manage_users'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', RedirectView.as_view(url=reverse_lazy('login'))),
+    url(r'^$', RedirectView.as_view(url=reverse_lazy('rooms'))),
 ] + staticfiles_urlpatterns()

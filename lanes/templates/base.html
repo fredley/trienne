@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{% endblock %} | Lanes</title>
   <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700,300,400italic|Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
   <link href="/static/css/chat.css" rel="stylesheet">
 </head>
 
@@ -22,11 +23,11 @@
       </div>
       <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" id="nav">
         <ul class="nav navbar-nav">
-          <li class="">
+          <li class="{% block rooms_active %}{% endblock %}">
             <a href="{% url 'rooms' %}">All Rooms</a>
           </li>
           {% if user.is_admin %}
-            <li class="">
+            <li class="{% block users_active %}{% endblock %}">
               <a href="{% url 'manage_users' %}">Manage Users</a>
             </li>
           {% endif %}

@@ -20,7 +20,9 @@
 	        <i class="volume glyphicon glyphicon-volume-up   {% if prefs.volume == prefs.LOUD %}active{% endif %}"
 	           data-volume="{{ prefs.LOUD }}"></i>
 	      </span>
-	      <a href="{% url 'room_edit' room.id %}"><i class="glyphicon glyphicon-pencil"></i> Edit this room</a>
+	      {% if user.is_admin %}
+		      <a href="{% url 'room_edit' room.id %}"><i class="glyphicon glyphicon-pencil"></i> Edit this room</a>
+	      {% endif %}
 	    </p>
 		</div>
     <div class="user-list" id="users">
@@ -42,13 +44,16 @@
 
 {% block footer %}
   <div id="entry">
-    <div "form-inline">
-      <div class="form-group">
-        <textarea class="form-control" id="shout"
-        {% if not user.is_authenticated %}
-          disabled="disabled"
-        {% endif %}></textarea>
-      </div>
+  	<div class="row-container">
+	  	<div class="img-container">
+		  	<img src="{% gravatar_url user.email 64 %}" alt="" class="profile-picture">
+	  	</div>
+	  	<div class="shout-container">
+		    <textarea class="form-control" id="shout"
+		    {% if not user.is_authenticated %}
+		      disabled="disabled"
+		    {% endif %}></textarea>
+	    </div>
     </div>
   </div>
 {% endblock %}

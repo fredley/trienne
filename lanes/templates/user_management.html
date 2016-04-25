@@ -2,19 +2,28 @@
 
 {% block title %}User Management{% endblock %}
 
+{% block users_active %}active{% endblock %}
+
 {% block main_content %}
 <div class="container">
   <legend>User manangement for {{ org }}</legend>
 
   <div class="list-group">
-    <div class="list-group-item">
-      <div class="form-inline">
+    <div class="list-group-item clearfix">
+      <div class="form-horizontal" id="add_user_form">
         <div class="form-group">
-          <label for="id_email">Invite someone to {{ org.name }}:</label>
-          <input class="form-control" type="email" name="email" placeholder="Email Address..." id="id_email">
+          <label for="id_email" class="control-label col-sm-3 col-md-2">Invite someone to {{ org.name }}:</label>
+          <div class="col-sm-6 col-md-8">
+            <input class="form-control" type="email" name="email" placeholder="Email" id="id_email">
+          </div>
+          <div class="col-sm-3 col-md-2">
+            <button type="button" class="btn btn-block btn-primary" id="send-invite">Send Invite</button>
+          </div>
         </div>
         <div class="form-group">
-          <button type="button" class="btn btn-primary" id="send-invite">Send Invite</button>
+          <div class="col-sm-6 col-md-8 col-sm-offset-3 col-md-offset-2">
+            <p id="message" class="helptext text-success">An invitation has been sent</p>
+          </div>
         </div>
       </div>
     </div>
@@ -33,18 +42,53 @@
 {% block script_panel %}
 <script type="text/javascript">
   $(document).ready(function(){
-    $('#send-invite').on('click',function(){
+
+    function send(){
       $.ajax({
         method: "post",
         url: "{% url 'manage_users' %}",
+        dataType: "json",
         data: {
           email: $('#id_email').val(),
           organisation: {{ org.id }}
         },
-        success:function(){
-          $('#id_email').val();
+        success: function(){
+          $('#id_email').val('');
+          $('#message')
+            .text('An invitation has been sent!')
+            .addClass('text-success')
+            .removeClass('text-danger')
+            .fadeIn('fast');
+          setTimeout(function(){
+            $('#message').fadeOut('slow');
+          },2000);
+        },
+        error: function(response){
+          var data = JSON.parse(response.responseText);
+          var message = "Something went wrong :-("
+          if (data.email){
+            message = data.email;
+          }
+          $('#message')
+            .text(message)
+            .removeClass('text-success')
+            .addClass('text-danger')
+            .fadeIn('fast');
+          setTimeout(function(){
+            $('#message').fadeOut('slow');
+          },2000);
         }
       });
+    }
+
+    $("#id_email").keydown(function(ev) {
+      if (ev.keyCode === 13 && !ev.shiftKey) {
+        send();
+      }
+    });
+
+    $('#send-invite').on('click',function(){
+      send();
     });
   });
 </script>
