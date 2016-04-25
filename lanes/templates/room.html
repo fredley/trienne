@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load safe_js %}
+{% load gravatar %}
 
 {% block title %}{{ room.name }}{% endblock %}
 
@@ -77,7 +78,8 @@ var post_history = [
     {
       author: {
           name: '{{ post.author.username }}',
-          id: {{ post.author.id }}
+          id: {{ post.author.id }},
+          img: "{% gravatar_url post.author.email 32 %}"
       },
       content: '{{ post.content|multiline|safe }}',
       raw: '{{ post.raw|multiline }}',

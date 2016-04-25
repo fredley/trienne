@@ -19,6 +19,9 @@ from django.views.generic import DetailView
 from django.views.generic.base import TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.decorators.csrf import csrf_exempt
+
+from django_gravatar.helpers import get_gravatar_url
+
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
 
@@ -150,7 +153,6 @@ class RoomView(LoginRequiredMixin, TemplateView):
         'username': self.request.user.username
     }
     publisher.publish_message(RedisMessage(json.dumps(message)))
-    logger.info("Users result: " + str(online))
     context.update(room=room,
                    prefs=RoomPrefs.objects.get_or_create(room=room, user=self.request.user)[0],
                    users=online)
@@ -206,7 +208,8 @@ class RoomMessageView(RoomPostView):
         'type': 'msg',
         'author': {
             'name': request.user.username,
-            'id': request.user.id
+            'id': request.user.id,
+            'img': get_gravatar_url(request.user.email, size=32)
         },
         'content': post.content,
         'raw': raw,

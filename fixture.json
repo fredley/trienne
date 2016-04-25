@@ -9,7 +9,7 @@
       "username": "tom",
       "first_name": "",
       "last_name": "",
-      "email": "",
+      "email": "fredley@gmail.com",
       "is_staff": true,
       "is_active": true,
       "date_joined": "2016-04-18T08:36:26.651Z",
@@ -21,7 +21,10 @@
       ]
     }
   },
-  {"model": "lanes.user", "pk": 2, "fields": {"password": "pbkdf2_sha256$24000$BXhs9pgiSf92$jLKLzebmH/a7CPCk5Fq1xAk7tx6z7olN1QYE9t9rXqc=", "last_login": "2016-04-23T10:22:14Z", "is_superuser": false, "username": "bob", "first_name": "", "last_name": "", "email": "", "is_staff": false, "is_active": true, "date_joined": "2016-04-21T12:18:53Z", "current_organisation": 1, "groups": [], "user_permissions": []}},
+  {"model": "lanes.user", "pk": 2, 
+  "fields": {"password": "pbkdf2_sha256$24000$BXhs9pgiSf92$jLKLzebmH/a7CPCk5Fq1xAk7tx6z7olN1QYE9t9rXqc=", 
+  "last_login": "2016-04-23T10:22:14Z", "is_superuser": false, "username": "bob", "first_name": "", "last_name": "", 
+  "email": "tom@tommedley.com", "is_staff": false, "is_active": true, "date_joined": "2016-04-21T12:18:53Z", "current_organisation": 1, "groups": [], "user_permissions": []}},
   {
     "model": "lanes.organisation",
     "pk": 1,

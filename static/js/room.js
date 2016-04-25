@@ -242,7 +242,8 @@ jQuery(document).ready(function($) {
       last.append(message);
     } else {
       var group = $('<div class="message-group clearfix"></div>')
-        .append($('<div class="author"></div>').text(author.name))
+        .append($('<div class="author"></div>').text(author.name)
+          .prepend('<img src="' + author.img + '" alt="" class="profile-picture">'))
         .attr('data-id', author.id)
         .append(message);
        if(author.id == my_id) {

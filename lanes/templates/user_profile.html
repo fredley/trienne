@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load gravatar %}
+
 {% block title %}{{ puser.username }}{% endblock %}
 
 {% block main_content %}
@@ -9,6 +11,7 @@
     &#1421;
     {% endif %}
   </h1>
+  <img src="{% gravatar_url user.email 300 %}" alt="profile picture" class="img-responsive profile-picture">
   {% if user.is_admin or user.id == puser.id %}
     Email: {{ user.email }}.
   {% endif %}

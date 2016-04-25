@@ -172,9 +172,15 @@ pre {
   }
   .author{
     font-weight:bold;
-    margin-bottom:3px;
+    margin:2px 0 3px 4px;
     &:after{
       content:":";
+    }
+    .profile-picture{
+      width: 16px;
+      height: 16px;
+      margin-right: 5px;
+      border-radius: 2px;
     }
   }
 }
@@ -216,7 +222,6 @@ pre {
     border-left:1px dotted $themeColor1;
     padding:2px 5px;
   }
-
   .controls{
     cursor:pointer;
     position: absolute;
