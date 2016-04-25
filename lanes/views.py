@@ -173,8 +173,6 @@ class RoomPinView(RoomPostView):
 
   def generate_response(self, request):
     post = Post.objects.get(id=request.POST.get('id'))
-    if post.author == request.user and not request.user.is_admin():
-      raise PermissionDenied
     action = 'unpin' if post.pinned else 'pin'
     post.pinned = not post.pinned
     post.pinned_at = datetime.now()

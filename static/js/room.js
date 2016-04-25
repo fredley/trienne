@@ -177,20 +177,18 @@ jQuery(document).ready(function($) {
       });
       controls.append(edit);
     }
-    if (!mine || is_admin) {
-      var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
-      pin.on('click', function(){
-        $.ajax({
-          method: "post",
-          url: urls.pin,
-          data: {
-            id: id,
-            pin: true
-          }
-        });
+    var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
+    pin.on('click', function(){
+      $.ajax({
+        method: "post",
+        url: urls.pin,
+        data: {
+          id: id,
+          pin: true
+        }
       });
-      controls.append(pin);
-    }
+    });
+    controls.append(pin);
     if (!mine){
       var reply = $('<i class="glyphicon glyphicon-share-alt glyphicon-flip-y reply"></i>');
       reply.on('click', function(){

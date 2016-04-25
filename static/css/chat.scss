@@ -296,11 +296,10 @@ pre {
       right:5px;
       i{
         display: none;
-        &.pin{
+        &.pin, &.reply{
+          float:right;
           display: block;
-          &:hover{
-            opacity:1;
-          }
+          opacity:1;
         }
       }
     }
