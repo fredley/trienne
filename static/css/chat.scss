@@ -285,18 +285,41 @@ pre {
   padding:10px 5px;
   .message-group{
     padding: 2px 5px 0;
+    position: relative;
+  }
+  .votes{
+    position: absolute;
+    left:10px;
+    top:20px;
+    div{
+      position: absolute;
+      top:0;
+    }
+    .score{
+      top:5px;
+      left:0;
+    }
+    .upvote{
+      left:10px;      
+    }
+    .dnvote{
+      top:10px;
+      left:10px;
+    }
+    .vote{
+      cursor: pointer;
+    }
   }
   .message{
-    background: $messageBG;
     border-radius: 5px;
     margin-bottom:5px;
-    padding:5px;
+    padding:1px 5px 5px 35px;
     .controls{
-      top:-10px;
+      top:-15px;
       right:5px;
       i{
         display: none;
-        &.pin, &.reply{
+        &.reply{
           float:right;
           display: block;
           opacity:1;

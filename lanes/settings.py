@@ -21,6 +21,8 @@ ALLOWED_HOSTS = ["localhost"]
 AUTH_USER_MODEL = 'lanes.User'
 
 ROOT_URLCONF = 'lanes.urls'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'rooms'
 
 SECRET_KEY = 'key'
 

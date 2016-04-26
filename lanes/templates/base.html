@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{% endblock %} | Lanes</title>
-  <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700,300,400italic|Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
   <link href="/static/css/chat.css" rel="stylesheet">
 </head>
@@ -26,7 +26,7 @@
           <li class="{% block rooms_active %}{% endblock %}">
             <a href="{% url 'rooms' %}">All Rooms</a>
           </li>
-          {% if user.is_admin %}
+          {% if user.is_authenticated and user.is_admin %}
             <li class="{% block users_active %}{% endblock %}">
               <a href="{% url 'manage_users' %}">Manage Users</a>
             </li>
@@ -88,7 +88,7 @@
     {% endblock %}
   </footer>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript"></script>
-  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js" type="text/javascript"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" type="text/javascript"></script>
   <script type="text/javascript">
   function getCookie(name) {
     var cookieValue = null;

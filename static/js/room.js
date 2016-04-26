@@ -271,11 +271,45 @@ jQuery(document).ready(function($) {
     }
   }
 
+  function submitVote (value, id, el) {
+    $.ajax({
+        method: 'post',
+        url: urls.vote,
+        data: {
+          id: id,
+          value: value
+        },
+        success: function(){
+          markVoted(el, value);
+        }
+      });
+  }
+
+  function markVoted(el, value) {
+    if (value === 1) {
+      el.find('.upvote .glyphicon').addClass('active');
+    } else {
+      el.find('.dnvote .glyphicon').addClass('active');
+    }
+    el.addClass('voted');
+  }
+
   function insertMediumMessage (message, author) {
+    var upvote = $('<div class="vote upvote"><i class="glyphicon glyphicon-triangle-top"></i></div>');
+    var score = $('<div class="score">0</div>');
+    var dnvote = $('<div class="vote dnvote"><i class="glyphicon glyphicon-triangle-bottom"></i></div>');
+    upvote.on('click',function(){
+      submitVote(1, message.attr('data-id'), $(this).parent());
+    });
+    dnvote.on('click',function(){
+      submitVote(-1, message.attr('data-id'), $(this).parent());
+    });
+    var votes = $('<div class="votes"></div>').append(score).append(upvote).append(dnvote);
     $('#medium').prepend($('<div class="message-group clearfix"></div>')
         .append($('<div class="author"></div>').text(author.name))
         .attr('data-id', author.id)
-        .append(message));
+        .append(message)
+        .append(votes));
     $('.msg-' + message.attr('data-id')).addClass('pinned');
   }
 
@@ -286,13 +320,9 @@ jQuery(document).ready(function($) {
       case "msg":
         appendFastMessage(msg);
         break;
-      case "edit":
-        var parsed = parseReply(msg.content);
-        $('.msg-' + msg.id)
-        .addClass('edited')
-        .attr('data-raw', msg.raw)
-        .find('.content').html(parsed.content);
-        break;
+      case "vote":
+        var message = $("#medium .msg-" + msg.id).parent();
+        message.find('.score').text(msg.content);
       case "pin":
         if (msg.action == "pin") {
           var message = $("#messages .msg-" + msg.content);
@@ -307,6 +337,13 @@ jQuery(document).ready(function($) {
           message.remove();
           $('.msg-' + msg.content).removeClass('pinned');
         }
+        break;
+      case "edit":
+        var parsed = parseReply(msg.content);
+        $('.msg-' + msg.id)
+        .addClass('edited')
+        .attr('data-raw', msg.raw)
+        .find('.content').html(parsed.content);
         break;
       case "join":
         if($('.user-' + msg.id).length > 0){

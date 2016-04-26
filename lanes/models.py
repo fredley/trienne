@@ -1,9 +1,13 @@
 import string
 import random
+import logging
 
 from django.db import models
+from django.db.models import Sum
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+
+logger = logging.getLogger('django')
 
 
 class Organisation(models.Model):
@@ -106,6 +110,14 @@ class Post(models.Model):
   pinned_at = models.DateTimeField(null=True, default=None)
   deleted = models.BooleanField(default=False)
 
+  def get_score(self):
+    res = 0
+    try:
+      res = Vote.objects.filter(post=self).annotate(total=Sum('score'))[0].total
+    except:
+      logger.error("Could not get score for Post " + str(self.id))
+    return res
+
   def get_raw(self):
     if self.deleted:
       return "(deleted)"
@@ -122,9 +134,17 @@ class Post(models.Model):
   content = property(get_content)
   raw = property(get_raw)
   edited = property(is_edited)
+  score = property(get_score)
 
   def __unicode__(self):
     return self.author.username + ' - ' + self.content
+
+
+class Vote(models.Model):
+  post = models.ForeignKey(Post)
+  user = models.ForeignKey(User)
+  score = models.IntegerField()
+  created = models.DateTimeField(auto_now_add=True)
 
 
 class PostContent(models.Model):

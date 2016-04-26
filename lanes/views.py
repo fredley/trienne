@@ -5,7 +5,6 @@ import collections
 import logging
 
 from cgi import escape
-from datetime import datetime
 from urlparse import urlparse
 
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -15,6 +14,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
+from django.utils import timezone
 from django.views.generic import DetailView
 from django.views.generic.base import TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView
@@ -68,7 +68,6 @@ def process_text(text):
   is_code = True
   code = ""
   for line in text.split("\n"):
-    logger.debug("line")
     if line[0:4] == "  ":
       code += line[4:] + "\n"
     else:
@@ -134,7 +133,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
 
   def get_context_data(self, **kwargs):
     context = super(RoomView, self).get_context_data(**kwargs)
-    room = Room.objects.get(id=kwargs['room_id'], organisation=self.request.user.current_organisation)
+    room = Room.objects.get(id=kwargs['room_id'])
     if room.organisation not in self.request.user.organisations.all():
       raise PermissionDenied
     publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
@@ -175,7 +174,7 @@ class RoomPinView(RoomPostView):
     post = Post.objects.get(id=request.POST.get('id'))
     action = 'unpin' if post.pinned else 'pin'
     post.pinned = not post.pinned
-    post.pinned_at = datetime.now()
+    post.pinned_at = timezone.now()
     post.save()
     message = {
         'type': 'pin',
@@ -270,6 +269,36 @@ class PostEditView(LoginRequiredMixin, View):
     }
     RedisPublisher(facility='room_' + str(post.room.id), broadcast=True) \
         .publish_message(RedisMessage(json.dumps(message)))
+    return HttpResponse('OK')
+
+
+class PostVoteView(LoginRequiredMixin, View):
+
+  @csrf_exempt
+  def dispatch(self, *args, **kwargs):
+    return super(PostVoteView, self).dispatch(*args, **kwargs)
+
+  def post(self, request, *args, **kwargs):
+    post = Post.objects.get(id=request.POST.get('id'))
+    if post.author == request.user:
+      raise PermissionDenied
+    value = int(request.POST.get('value'))
+    if value not in [-1, 1]:
+      raise PermissionDenied
+    if Vote.objects.filter(post=post,user=request.user).count() > 0:
+      raise PermissionDenied
+    vote = Vote(post=post,
+        user=request.user,
+        score=value)
+    vote.save()
+    message = {
+        'type': 'vote',
+        'content': post.score,
+        'id': post.id
+    }
+    RedisPublisher(facility='room_' + str(post.room.id), broadcast=True) \
+        .publish_message(RedisMessage(json.dumps(message)))
+    return HttpResponse('OK')
 
 
 class RoomsView(LoginRequiredMixin, TemplateView):
@@ -334,9 +363,7 @@ class RegisterView(TemplateView):
 
   def get_context_data(self, **kwargs):
     context = super(RegisterView, self).get_context_data(**kwargs)
-    logger.debug(kwargs)
     if 'token' in kwargs:
-      logger.debug('got kwargs')
       logout(self.request)
       context.update(invite=Invitation.objects.get(token=kwargs.get('token')))
     return context
