@@ -296,14 +296,19 @@ jQuery(document).ready(function($) {
 
   function insertMediumMessage (message, author, extras) {
     var upvote = $('<div class="vote upvote"><i class="glyphicon glyphicon-triangle-top"></i></div>');
-    var score = $('<div class="score">0</div>');
     var dnvote = $('<div class="vote dnvote"><i class="glyphicon glyphicon-triangle-bottom"></i></div>');
-    upvote.on('click',function(){
-      submitVote(1, message.attr('data-id'), $(this).parent());
-    });
-    dnvote.on('click',function(){
-      submitVote(-1, message.attr('data-id'), $(this).parent());
-    });
+    var score = $('<div class="score">0</div>');
+    if (author.id === my_id) {
+      upvote.addClass('disabled');
+      dnvote.addClass('disabled');
+    } else {
+      upvote.on('click',function(){
+        submitVote(1, message.attr('data-id'), $(this).parent());
+      });
+      dnvote.on('click',function(){
+        submitVote(-1, message.attr('data-id'), $(this).parent());
+      });
+    }
     var votes = $('<div class="votes"></div>').append(score).append(upvote).append(dnvote);
     if (extras) {
       score.text(extras.score);

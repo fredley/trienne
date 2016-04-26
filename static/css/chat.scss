@@ -308,6 +308,10 @@ pre {
     }
     .vote{
       cursor: pointer;
+      &.disabled{
+        cursor: default;
+        opacity: 0.5;
+      }
     }
     &.voted{
       .vote{
