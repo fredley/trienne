@@ -96,15 +96,17 @@ var post_history = [
 ];
 
 var pinned = [
-  {% for post in room.pinned %}
+  {% for pin in pinned %}
     {
       author: {
-          name: '{{ post.author.username }}',
-          id: {{ post.author.id }}
+          name: '{{ pin.post.author.username }}',
+          id: {{ pin.post.author.id }}
       },
-      content: '{{ post.content|multiline|safe }}',
-      raw: '{{ post.raw|multiline }}',
-      id: {{ post.id }}
+      content: '{{ pin.post.content|multiline|safe }}',
+      raw: '{{ pin.post.raw|multiline }}',
+      score: {{ pin.post.score }},
+      vote: {{ pin.vote }},
+      id: {{ pin.post.id }}
     },
   {% endfor %}
 ];

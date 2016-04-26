@@ -24,7 +24,7 @@ jQuery(document).ready(function($) {
   volume = VOLUME_QUIET;
   post_history.forEach(appendFastMessage);
   pinned.forEach(function(el){
-    insertMediumMessage(createMessage(el,true), el.author);
+    insertMediumMessage(createMessage(el,true), el.author, el);
   });
   volume = temp_vol;
 
@@ -294,7 +294,7 @@ jQuery(document).ready(function($) {
     el.addClass('voted');
   }
 
-  function insertMediumMessage (message, author) {
+  function insertMediumMessage (message, author, extras) {
     var upvote = $('<div class="vote upvote"><i class="glyphicon glyphicon-triangle-top"></i></div>');
     var score = $('<div class="score">0</div>');
     var dnvote = $('<div class="vote dnvote"><i class="glyphicon glyphicon-triangle-bottom"></i></div>');
@@ -305,6 +305,16 @@ jQuery(document).ready(function($) {
       submitVote(-1, message.attr('data-id'), $(this).parent());
     });
     var votes = $('<div class="votes"></div>').append(score).append(upvote).append(dnvote);
+    if (extras) {
+      score.text(extras.score);
+      if (extras.vote === 1) {
+        upvote.find(".glyphicon").addClass("active");
+        votes.addClass("voted");
+      } else if (extras.vote === -1) {
+        dnvote.find(".glyphicon").addClass("active");
+        votes.addClass("voted");
+      }
+    }
     $('#medium').prepend($('<div class="message-group clearfix"></div>')
         .append($('<div class="author"></div>').text(author.name))
         .attr('data-id', author.id)

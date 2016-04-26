@@ -309,6 +309,17 @@ pre {
     .vote{
       cursor: pointer;
     }
+    &.voted{
+      .vote{
+        cursor: default;
+        i{
+          display: none;
+          &.active{
+            display: inline-block;
+          }
+        }
+      }
+    }
   }
   .message{
     border-radius: 5px;

@@ -137,6 +137,17 @@ class RoomView(LoginRequiredMixin, TemplateView):
     if room.organisation not in self.request.user.organisations.all():
       raise PermissionDenied
     publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
+    pinned = []
+    for post in room.pinned:
+      vote = 0
+      try:
+        vote = Vote.objects.get(post=post, user=self.request.user).score
+      except:
+        pass
+      pinned.append({
+          "post": post,
+          "vote": vote
+          })
     users = room.organisation.users
     online = []
     for u in users:
@@ -153,6 +164,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
     }
     publisher.publish_message(RedisMessage(json.dumps(message)))
     context.update(room=room,
+                   pinned=pinned,
                    prefs=RoomPrefs.objects.get_or_create(room=room, user=self.request.user)[0],
                    users=online)
     return context

@@ -113,7 +113,7 @@ class Post(models.Model):
   def get_score(self):
     res = 0
     try:
-      res = Vote.objects.filter(post=self).annotate(total=Sum('score'))[0].total
+      res = Vote.objects.filter(post=self).aggregate(total=Sum('score')).get('total')
     except:
       logger.error("Could not get score for Post " + str(self.id))
     return res
