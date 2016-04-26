@@ -114,6 +114,8 @@ class Post(models.Model):
     res = 0
     try:
       res = Vote.objects.filter(post=self).aggregate(total=Sum('score')).get('total')
+      if res is None:
+        res = 0
     except:
       logger.error("Could not get score for Post " + str(self.id))
     return res

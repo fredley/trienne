@@ -11,6 +11,7 @@ jQuery(document).ready(function($) {
   var reply_regex = /^:[0-9]+$/;
   var editing = false;
   var edit_id = 0;
+  var pincodes = [];
 
   var loading = true;
 
@@ -179,12 +180,18 @@ jQuery(document).ready(function($) {
     }
     var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
     pin.on('click', function(){
+      if($(this).hasClass('active')){
+        return;
+      }
+      var code = Math.random().toString(36);
+      pincodes.push(code);
       $.ajax({
         method: "post",
         url: urls.pin,
         data: {
           id: id,
-          pin: true
+          pin: true,
+          pincode: code
         }
       });
     });
@@ -329,7 +336,6 @@ jQuery(document).ready(function($) {
   }
 
   function receiveMessage(msg) {
-    console.log(msg);
     var msg = JSON.parse(msg);
     switch(msg.type){
       case "msg":
@@ -339,18 +345,19 @@ jQuery(document).ready(function($) {
         var message = $("#medium .msg-" + msg.id).parent();
         message.find('.score').text(msg.content);
       case "pin":
-        if (msg.action == "pin") {
-          var message = $("#messages .msg-" + msg.content);
-          if ($('#medium').find('.msg-' + msg.content).length === 0) {
-            insertMediumMessage(message.clone(true),{
-              name: message.parent().find(".author").text(),
-              id: message.parent().attr("data-id")
-            });
-          }
-        } else if (msg.action == "unpin") {
-          var message = $("#medium .msg-" + msg.content);
-          message.remove();
-          $('.msg-' + msg.content).removeClass('pinned');
+        var message = $("#messages .msg-" + msg.content);
+        if ($('#medium').find('.msg-' + msg.content).length === 0) {
+          insertMediumMessage(message.clone(true),{
+            name: message.parent().find(".author").text(),
+            id: message.parent().attr("data-id")
+          });
+        }
+        var idx = pincodes.indexOf(msg.pincode);
+        if (idx >= 0) {
+          el = $('#medium').find('.msg-' + msg.content).parent().find('.votes');
+          markVoted(el, 1);
+          el.find('.score').text('1');
+          pincodes.splice(idx,1);
         }
         break;
       case "edit":

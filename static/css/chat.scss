@@ -101,6 +101,9 @@ pre {
   .volume{
     margin-right:5px;
     cursor:pointer;
+    &.active{
+      cursor: default;
+    }
   }
 }
 #name{
@@ -240,8 +243,7 @@ pre {
     border-right:1px solid $themeColor2;
 
     .pin{
-      color: $themeColor1;
-      text-shadow: 0 0 5px rgba(0, 131, 243, 0.52);
+      display: none;
     }
   }
   code, pre{

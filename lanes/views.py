@@ -68,9 +68,11 @@ def process_text(text):
   is_code = True
   code = ""
   for line in text.split("\n"):
-    if line[0:4] == "  ":
+    if line[0:4] == "    ":
+      logger.debug("Is code: " + line)
       code += line[4:] + "\n"
     else:
+      logger.debug("Is not code: " + line)
       is_code = False
       break
   if is_code:
@@ -184,15 +186,19 @@ class RoomPinView(RoomPostView):
 
   def generate_response(self, request):
     post = Post.objects.get(id=request.POST.get('id'))
-    action = 'unpin' if post.pinned else 'pin'
-    post.pinned = not post.pinned
+    if post.pinned:
+      raise PermissionDenied
+    post.pinned = True
     post.pinned_at = timezone.now()
     post.save()
+    if post.author != self.request.user:
+      Vote(user=self.request.user, post=post, score=1).save()
     message = {
         'type': 'pin',
-        'action': action,
         'content': post.id
     }
+    if 'pincode' in request.POST:
+      message['pincode'] = request.POST.get('pincode')
     self.publisher.publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
 
