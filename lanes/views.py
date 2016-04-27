@@ -69,10 +69,8 @@ def process_text(text):
   code = ""
   for line in text.split("\n"):
     if line[0:4] == "    ":
-      logger.debug("Is code: " + line)
       code += line[4:] + "\n"
     else:
-      logger.debug("Is not code: " + line)
       is_code = False
       break
   if is_code:
