@@ -30,6 +30,7 @@
     "pk": 1,
     "fields": {
       "name": "Public",
+      "slug": "public",
       "domain": "public",
       "admins": [
         1

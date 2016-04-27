@@ -7,13 +7,39 @@ from django.db.models import Sum
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
+from autoslug import AutoSlugField
+
 logger = logging.getLogger('django')
 
 
 class Organisation(models.Model):
+
+  PRIVACY_OPEN = 0       # Anyone can join, no approval
+  PRIVACY_APPLY = 1      # Anyone can apply to join
+  PRIVACY_INVITE = 2     # Must have an invitation to join
+
+  PRIVACY_CHOICES = (
+      (PRIVACY_OPEN, "Open"),
+      (PRIVACY_APPLY, "Application Only"),
+      (PRIVACY_INVITE, "Invitation Only")
+  )
+
+  VISIBILITY_PUBLIC = 0  # Visible in search
+  VISIBILITY_LINK = 1    # Not visible in search, accessible by link
+  VISIBILITY_PRIVATE = 2 # Only accessible by invite
+
+  VISIBILITY_CHOICES = (
+      (VISIBILITY_PUBLIC, "Public"),
+      (VISIBILITY_LINK, "Link Only"),
+      (VISIBILITY_PRIVATE, "Private"),
+  )
+
   name = models.CharField(max_length=200)
   domain = models.CharField(max_length=200)
   admins = models.ManyToManyField(settings.AUTH_USER_MODEL)
+  privacy = models.IntegerField(choices=PRIVACY_CHOICES, default=PRIVACY_APPLY)
+  visibility = models.IntegerField(choices=VISIBILITY_CHOICES, default=VISIBILITY_LINK)
+  slug = AutoSlugField(populate_from='name', unique=True)
 
   def get_users(self):
     return User.objects.filter(organisations__id__exact=self.id)

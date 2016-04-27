@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% load bootstrap %}
+
+{% block title %}{{ org.name }}{% endblock %}
+
+{% block main_content %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-6 col-sm-offset-3">
+      <legend>Manage {{ org.name }}</legend>
+      {{ form|bootstrap }}
+    </div>
+  </div>
+</div>
+{% endblock main_content %}

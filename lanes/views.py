@@ -417,6 +417,14 @@ class UserManagementView(AdminOnlyMixin, AjaxResponseMixin, CreateView):
     return response
 
 
+class OrgManagementView(AdminOnlyMixin, UpdateView):
+  template_name = 'manage_org.html'
+  model = Organisation
+  pk_url_kwarg = 'org_id'
+  context_object_name = 'org'
+  fields = ['visibility', 'privacy', 'admins']
+
+
 class UserProfileView(DetailView):
   model = User
   pk_url_kwarg = 'user_id'
