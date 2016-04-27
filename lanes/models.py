@@ -41,6 +41,7 @@ class Invitation(models.Model):
 
 class User(AbstractUser):
   organisations = models.ManyToManyField(Organisation, through='OrgMembership')
+  subscribed = models.ManyToManyField(Organisation, related_name='subscribed')
   current_organisation = models.ForeignKey(Organisation, related_name='current_org', null=True, blank=True)
 
   def is_admin(self):

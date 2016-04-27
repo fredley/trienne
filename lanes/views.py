@@ -11,7 +11,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.utils import timezone
@@ -147,7 +147,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
       pinned.append({
           "post": post,
           "vote": vote
-          })
+      })
     users = room.organisation.users
     online = []
     for u in users:
@@ -303,7 +303,7 @@ class PostVoteView(LoginRequiredMixin, View):
     value = int(request.POST.get('value'))
     if value not in [-1, 1]:
       raise PermissionDenied
-    if Vote.objects.filter(post=post,user=request.user).count() > 0:
+    if Vote.objects.filter(post=post, user=request.user).count() > 0:
       raise PermissionDenied
     vote = Vote(post=post,
         user=request.user,
@@ -341,6 +341,42 @@ class RoomsView(LoginRequiredMixin, TemplateView):
       self.request.user.save()
     context.update(rooms=Room.objects.filter(organisation=self.request.user.current_organisation))
     return context
+
+
+class OrgJsonView(View):
+  """ endpoint to supply data for the orgs page
+      /ajax/orgs/all/      - all orgs
+      /ajax/orgs/mine/     - my orgs
+      /ajax/orgs/watching/ - orgs I'm watching
+  """
+
+  data = 'all'
+
+  def get(self, request, *args, **kwargs):
+    qs = Organisation.objects
+    data = self.data
+    page = 1
+    if 'page' in kwargs:
+      page = int(kwargs.get('page'))
+    start = (page - 1) * 20
+    end = start + 20
+    if data == 'all':
+      qs = qs.all()[start:end]
+    elif data == 'mine':
+      if not request.user.is_authenticated():
+        raise PermissionDenied
+      qs = request.user.organisations[start:end]
+    elif data == 'watched':
+      if not request.user.is_authenticated():
+        raise PermissionDenied
+      qs = request.user.subscribed[start:end]
+    else:
+      raise SuspiciousOperation
+    return JsonResponse({'orgs': [{
+        'slug': o.slug,
+        'name': o.name,
+        'privacy': o.privacy
+    } for o in qs]})
 
 
 class ChangeOrg(LoginRequiredMixin, View):

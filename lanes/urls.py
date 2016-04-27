@@ -9,6 +9,9 @@ admin.autodiscover()
 
 
 urlpatterns = [
+    url(r'^ajax/orgs/all/$', OrgJsonView.as_view(data='all'), name='ajax_orgs_all'),
+    url(r'^ajax/orgs/mine/$', OrgJsonView.as_view(data='mine'), name='ajax_orgs_mine'),
+    url(r'^ajax/orgs/watching/$', OrgJsonView.as_view(data='watching'), name='ajax_orgs_watching'),
     url(r'^orgs/select/$', ChangeOrg.as_view(), name='change_org'),
     url(r'^rooms/$', RoomsView.as_view(), name='rooms'),
     url(r'^room/add/$', RoomAddView.as_view(), name='add_room'),
