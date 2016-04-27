@@ -200,9 +200,6 @@ jQuery(document).ready(function($) {
     }
     var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
     pin.on('click', function(){
-      if($(this).hasClass('active')){
-        return;
-      }
       var code = Math.random().toString(36);
       pincodes.push(code);
       $.ajax({
@@ -376,10 +373,13 @@ jQuery(document).ready(function($) {
         if (idx >= 0) {
           el = $('#medium').find('.msg-' + msg.content).parent().find('.votes');
           markVoted(el, 1);
-          el.find('.score').text('1');
+          el.find('.score').text(msg.score);
           pincodes.splice(idx,1);
         }
         $('#medium').scrollTop(0);
+        break;
+      case "unpin":
+        $("#medium .msg-" + msg.id).parent().remove();
         break;
       case "edit":
         var parsed = parseReply(msg.content);

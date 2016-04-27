@@ -184,7 +184,8 @@ class RoomPinView(RoomPostView):
 
   def generate_response(self, request):
     post = Post.objects.get(id=request.POST.get('id'))
-    if post.pinned:
+    # Prevent people who've already voted from re-pinning
+    if post.pinned or Vote.objects.filter(user=self.request.user, post=post).count() > 0:
       raise PermissionDenied
     post.pinned = True
     post.pinned_at = timezone.now()
@@ -193,6 +194,7 @@ class RoomPinView(RoomPostView):
       Vote(user=self.request.user, post=post, score=1).save()
     message = {
         'type': 'pin',
+        'score': post.score,
         'content': post.id
     }
     if 'pincode' in request.POST:
@@ -307,13 +309,25 @@ class PostVoteView(LoginRequiredMixin, View):
         user=request.user,
         score=value)
     vote.save()
-    message = {
-        'type': 'vote',
-        'content': post.score,
-        'id': post.id
-    }
-    RedisPublisher(facility='room_' + str(post.room.id), broadcast=True) \
-        .publish_message(RedisMessage(json.dumps(message)))
+    score = post.score
+    if score < -4:
+      #unpin
+      post.pinned = False
+      post.save()
+      message = {
+          'type': 'unpin',
+          'id': post.id
+      }
+      RedisPublisher(facility='room_' + str(post.room.id), broadcast=True) \
+          .publish_message(RedisMessage(json.dumps(message)))
+    else:
+      message = {
+          'type': 'vote',
+          'content': score,
+          'id': post.id
+      }
+      RedisPublisher(facility='room_' + str(post.room.id), broadcast=True) \
+          .publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
 
 
