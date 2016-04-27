@@ -30,6 +30,9 @@
             <li class="{% block users_active %}{% endblock %}">
               <a href="{% url 'manage_users' %}">Manage Users</a>
             </li>
+            <li class="{% block orgs_active %}{% endblock %}">
+              <a href="{% url 'manage_org' user.current_organisation.slug %}">Manage {{ user.current_organisation.name }}</a>
+            </li>
           {% endif %}
         </ul>
         <ul class="nav navbar-nav navbar-right">

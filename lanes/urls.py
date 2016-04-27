@@ -9,7 +9,8 @@ admin.autodiscover()
 
 
 urlpatterns = [
-    url(r'^orgs/select/$', ChangeOrg.as_view(), name='change_org'),
+    url(r'^org/(?P<slug>\w+)/manage/$', OrgManagementView.as_view(), name='manage_org'),
+    url(r'^org/select/$', ChangeOrg.as_view(), name='change_org'),
     url(r'^rooms/$', RoomsView.as_view(), name='rooms'),
     url(r'^room/add/$', RoomAddView.as_view(), name='add_room'),
     url(r'^room/(?P<room_id>\d+)/$', RoomView.as_view(), name='room'),

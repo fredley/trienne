@@ -7,6 +7,8 @@ from django.db.models import Sum
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
+from autoslug import AutoSlugField
+
 logger = logging.getLogger('django')
 
 
@@ -37,6 +39,7 @@ class Organisation(models.Model):
   admins = models.ManyToManyField(settings.AUTH_USER_MODEL)
   privacy = models.IntegerField(choices=PRIVACY_CHOICES, default=PRIVACY_APPLY)
   visibility = models.IntegerField(choices=VISIBILITY_CHOICES, default=VISIBILITY_LINK)
+  slug = AutoSlugField(populate_from='name', unique=True)
 
   def get_users(self):
     return User.objects.filter(organisations__id__exact=self.id)
