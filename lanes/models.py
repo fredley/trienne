@@ -35,6 +35,9 @@ class Invitation(models.Model):
   email = models.EmailField()
   token = models.CharField(max_length=20, default=generate_token, unique=True)
 
+  def __unicode__(self):
+    return self.organisation.name + " - " + self.email
+
 
 class User(AbstractUser):
   organisations = models.ManyToManyField(Organisation, through='OrgMembership')
@@ -45,6 +48,9 @@ class User(AbstractUser):
       return self in self.current_organisation.admins.all()
     except:
       return False
+
+  def __unicode__(self):
+    return self.username
 
 
 class OrgMembership(models.Model):
@@ -57,6 +63,9 @@ class OrgMembership(models.Model):
   user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
   organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
   role = models.IntegerField(choices=ROLES, default=USER)
+
+  def __unicode__(self):
+    return str(self.organisation) + " - " + str(self.user)
 
 
 class Room(models.Model):
@@ -101,6 +110,9 @@ class RoomPrefs(models.Model):
   class Meta:
     unique_together = ('user', 'room',)
 
+  def __unicode__(self):
+    return str(self.room) + " - " + str(self.user)
+
 
 class Post(models.Model):
   room = models.ForeignKey(Room)
@@ -133,6 +145,9 @@ class Post(models.Model):
   def is_edited(self):
     return PostContent.objects.filter(post=self).count() > 1
 
+  def __unicode__(self):
+    return str(self.author) + " in " + str(self.room) + " at " + str(self.created)
+
   content = property(get_content)
   raw = property(get_raw)
   edited = property(is_edited)
@@ -147,6 +162,9 @@ class Vote(models.Model):
   user = models.ForeignKey(User)
   score = models.IntegerField()
   created = models.DateTimeField(auto_now_add=True)
+
+  def __unicode__(self):
+    return str(self.user) + " on " + str(self.post)
 
 
 class PostContent(models.Model):
