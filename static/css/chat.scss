@@ -7,6 +7,8 @@ $themeColor1:#002C84;
 $themeColor2:#6762E8;
 $background:#fcfcfc;
 
+$warningBG:#fcf8e3;
+
 html, body{
   height:100%;
   font-size:12px;
@@ -74,7 +76,7 @@ pre {
   position: absolute;
   top:0;
   left:0;
-  padding: 50px 0;
+  padding: 50px 0 42px;
   overflow: hidden;
   height:100%;
   width:100%;
@@ -201,7 +203,7 @@ pre {
   background: $messageBG;
   border-radius: 5px;
   margin:5px;
-  padding:5px;
+  padding:5px 0;
   &.mine{
     background: $myMessageBG;
   }
@@ -221,7 +223,7 @@ pre {
 }
 .message{
   border:1px solid transparent;
-  padding:1px 1px 1px 3px;
+  padding:1px 5px 1px 15px;
   float:left;
   clear:both;
   width:100%;
@@ -234,14 +236,15 @@ pre {
     font-style: italic;
   }
   &.edited:before{
-    content:"∗";
-    display: block;
-    float:left;
-    margin-right: 2px;
+    font-family: 'Glyphicons Halflings';
+    content:"\270f";
+    position: absolute;
+    top: 4px;
+    left: 3px;
+    font-size: 8px;
   }
   &.pinned{
-    border-right:1px solid $themeColor2;
-
+    border-right:3px solid $themeColor2;
     .pin{
       display: none;
     }
@@ -264,7 +267,6 @@ pre {
     i{
       opacity: 0;
       font-size:90%;
-      transition: opacity 0.05s;
       font-color:#333;
       cursor:pointer;
       margin-left:5px;
@@ -284,7 +286,9 @@ pre {
 }
 #medium{
   font-size:11px;
-  padding:10px 5px;
+  padding:10px 0;
+  height: 100%;
+  overflow-y:auto;
   .message-group{
     padding: 2px 5px 0;
     position: relative;

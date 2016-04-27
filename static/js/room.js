@@ -2,6 +2,14 @@ scrolldown = function(){
   $('#messages').scrollTop($('#messages').scrollTop() + 9999);
 }
 
+$.fn.putCursorAtEnd = function() {
+  return this.each(function() {
+    var val = $(this).val();
+    $(this).focus().val("").val(val).trigger("change");
+    this.scrollTop = 999999;
+  });
+};
+
 jQuery(document).ready(function($) {
 
   var VOLUME_QUIET = 0;
@@ -92,7 +100,8 @@ jQuery(document).ready(function($) {
     edit_id = el.attr('data-id');
     editing = true;
     shout.addClass('editing');
-    shout.focus().val("").val(el.attr('data-raw'));
+    var val = shout.val();
+    shout.putCursorAtEnd();
   }
 
   function getNextEdit(increment) {
@@ -128,10 +137,22 @@ jQuery(document).ready(function($) {
     });
   });
 
-  function notify(text) {
+  function notify(text, image) {
     if ("Notification" in window) {
       if (Notification.permission === "granted") {
-        var notification = new Notification(text);
+        text = text.replace(/&#([0-9]{1,3});/gi, function(match, numStr) {
+          // parse html entities http://stackoverflow.com/a/7394814/319618
+          var num = parseInt(numStr, 10);
+          return String.fromCharCode(num);
+        });
+        console.log(image);
+        image = image.replace('s=32','s=128');
+        console.log(image);
+        var opts = {
+          body: text, 
+          icon: image
+        }
+        var notification = new Notification("Lanes", opts);
       }else if (Notification.permission !== 'denied') {
         Notification.requestPermission(function(){
           notify(text);
@@ -161,12 +182,11 @@ jQuery(document).ready(function($) {
     var mine = msg.author.id == my_id;
     var id = msg.id;
     var parsed = parseReply(msg.content);
-    if (reply_to)
     var text = parsed.text;
     var to = parsed.to;
     var reply_to = parsed.reply_to;
     if (!loading && !mine && (volume == VOLUME_LOUD || (to == my_name && volume > VOLUME_QUIET))){
-      notify(msg.author.name + ": " + text);
+      notify(msg.author.name + ": " + text, msg.author.img);
     }
     var message = $('<div class="message"></div>')
       .append($('<div class="content"></div>').html(parsed.content));
@@ -207,7 +227,7 @@ jQuery(document).ready(function($) {
           val = shout.val();
         }
         shout.val(":" + id + " " + val);
-        shout.focus();
+        shout.putCursorAtEnd();
       });
       controls.append(reply);
     }
@@ -359,6 +379,7 @@ jQuery(document).ready(function($) {
           el.find('.score').text('1');
           pincodes.splice(idx,1);
         }
+        $('#medium').scrollTop(0);
         break;
       case "edit":
         var parsed = parseReply(msg.content);
