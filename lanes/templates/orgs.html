@@ -13,13 +13,13 @@
     <li role="presentation"><a data-url="watched" href="#followed">Followed</a></li>
     <li role="presentation"><a data-url="all" href="#all">All</a></li>
     <li role="presentation"><a href="#search"><i class="glyphicon glyphicon-search"></i> Search</a></li>
+    <a href="{% url 'create_org' %}" class="btn btn-success btn-xs"><i class="glyphicon glyphicon-plus"></i> Create new community</a>
   </ul>
   <div id="search" style="display:none;">
     <input class="form-control" id="search-input" placeholder="Search for Communities">
   </div>
   <div class="spinner"></div>
   <div class="list-group" id="org-list"></div>
-  <a href="{% url 'create_org' %}" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Create new community</a>
 </div>
 {% endblock main_content %}
 
@@ -58,7 +58,6 @@ $(document).ready(function(){
   });
 
   function handleData(data){
-    console.log(data);
     $('#org-list').html('');
     if (data.orgs.length === 0) {
       $('#org-list').append('<div class="list-group-item">No communities found :(</div>');
