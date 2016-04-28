@@ -358,7 +358,7 @@ class OrgJsonView(View):
     start = (page - 1) * 20
     end = start + 20
     if data == 'all':
-      qs = qs.all()[start:end]
+      qs = qs.filter(visibility=Organisation.VISIBILITY_PUBLIC)[start:end]
     elif data == 'mine':
       if not request.user.is_authenticated():
         raise PermissionDenied
@@ -368,7 +368,7 @@ class OrgJsonView(View):
         raise PermissionDenied
       qs = request.user.subscribed.all()[start:end]
     elif data == 'search':
-      qs = qs.filter(name__icontains=request.GET.get('s'))
+      qs = qs.filter(visibility=Organisation.VISIBILITY_PUBLIC, name__icontains=request.GET.get('s'))
     else:
       raise SuspiciousOperation
     return JsonResponse({'orgs': [{
