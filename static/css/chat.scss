@@ -435,3 +435,31 @@ pre {
     background: transparent;
   }
 }
+
+/*   AUTOCOMPLETE   */
+
+.results_on_deck{
+  div{
+    padding:5px;
+
+    /* clearfix */
+    &:before,
+    &:after {
+      content: " ";
+      display: table;
+    }
+    &:after {
+      clear: both;
+    }
+
+    border-bottom:1px solid $lightLines;
+    .ui-icon{
+      float: right;
+      width:20px;
+      cursor:pointer;
+    }
+    .user{
+      float:left;
+    }
+  }
+}

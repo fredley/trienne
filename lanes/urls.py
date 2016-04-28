@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import url, include
+from django.conf.urls.static import static
 from django.core.urlresolvers import reverse_lazy
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import RedirectView
 from django.contrib import admin
+
+from ajax_select import urls as ajax_select_urls
+
 from .views import *
 admin.autodiscover()
 
@@ -13,7 +16,9 @@ urlpatterns = [
     url(r'^ajax/orgs/mine/$', OrgJsonView.as_view(data='mine'), name='ajax_orgs_mine'),
     url(r'^ajax/orgs/watched/$', OrgJsonView.as_view(data='watched'), name='ajax_orgs_watching'),
     url(r'^ajax/orgs/search/$', OrgJsonView.as_view(data='search'), name='ajax_orgs_search'),
+    url(r'^ajax/select/', include(ajax_select_urls)),
     url(r'^orgs/$', OrgsView.as_view(), name='orgs'),
+    url(r'^orgs/new/$', OrgCreateView.as_view(), name='create_org'),
     url(r'^org/(?P<slug>[\w-]+)/$', RoomsView.as_view(), name='org'),
     url(r'^org/(?P<slug>[\w-]+)/manage/$', OrgManagementView.as_view(), name='manage_org'),
     url(r'^room/add/$', RoomAddView.as_view(), name='add_room'),
@@ -31,4 +36,4 @@ urlpatterns = [
     url(r'^users/manage/', UserManagementView.as_view(), name='manage_users'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', RedirectView.as_view(url=reverse_lazy('rooms'))),
-] + staticfiles_urlpatterns()
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -17,15 +17,15 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.views.generic import DetailView
 from django.views.generic.base import TemplateView, View
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import FormView, CreateView, UpdateView
 from django.views.decorators.csrf import csrf_exempt
 
 from django_gravatar.helpers import get_gravatar_url
-
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
 
 from .models import *
+from .forms import *
 
 url_dot_test = re.compile(ur'.+\..+')
 logger = logging.getLogger('django')
@@ -409,6 +409,23 @@ class OrgManagementView(LoginRequiredMixin, UpdateView):
           Organisation.objects.get(slug=kwargs.get(self.slug_url_kwarg))):
       raise PermissionDenied
     return super(OrgManagementView, self).dispatch(*args, **kwargs)
+
+
+class OrgCreateView(LoginRequiredMixin, CreateView):
+  model = Organisation
+  template_name = 'create_org.html'
+  form_class = OrgForm
+
+  def get_initial(self):
+    return {'admins': "{}".format(self.request.user.id) }
+
+  def form_valid(self, form):
+    if self.request.user.id not in form.cleaned_data['admins']:
+      form.cleaned_data['admins'].append(self.request.user.id)
+    return super(OrgCreateView, self).form_valid(form)
+
+  def get_success_url(self):
+    return reverse('org',kwargs={'slug': self.object.slug })
 
 
 class UserProfileView(DetailView):

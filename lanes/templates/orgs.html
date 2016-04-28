@@ -19,8 +19,10 @@
   </div>
   <div class="spinner"></div>
   <div class="list-group" id="org-list"></div>
+  <a href="{% url 'create_org' %}" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Create new community</a>
 </div>
 {% endblock main_content %}
+
 {% block script_panel %}
 <script type="text/javascript">
 $(document).ready(function(){

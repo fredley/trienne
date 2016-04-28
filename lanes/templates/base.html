@@ -30,15 +30,12 @@
             <li class="{% block users_active %}{% endblock %}">
               <a href="{% url 'manage_users' %}">Manage Users</a>
             </li>
-            <li class="{% block orgs_active %}{% endblock %}">
-              <a href="{% url 'manage_org' user.current_organisation.slug %}">Manage {{ user.current_organisation.name }}</a>
-            </li>
           {% endif %}
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li class="dropdown">
           {% if user.is_authenticated %}
-            <a class="dropdown-toggle" href="#" data-toggle="dropdown">{{ user.username }} {% if user.current_organisation %}: {{ user.current_organisation.name }}{% endif %} <span class="caret"></span></a>
+            <a class="dropdown-toggle" href="#" data-toggle="dropdown">{{ user.username }}<span class="caret"></span></a>
             <ul class="dropdown-menu">
               {% if user.organisations.all.count > 1 %}
                 <li role="separator" class="divider"></li>

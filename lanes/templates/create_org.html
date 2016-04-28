@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% load bootstrap %}
+
+{% block title %}Create a Community{% endblock %}
+
+{% block main_content %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-6 col-sm-offset-3">
+      <form action="{% url 'create_org' %}" method="post">
+        {% csrf_token %}
+        <legend>Create a new community</legend>
+        {{ form|bootstrap }}
+        <button type="submit" class="btn btn-success">Create community</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock main_content %}
+
+{% block script_panel %}
+<script type="text/javascript" src="/static/ajax_select/js/bootstrap.js"></script>
+<script type="text/javascript" src="/static/ajax_select/js/ajax_select.js"></script>
+{% endblock %}

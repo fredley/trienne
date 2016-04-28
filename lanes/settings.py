@@ -6,6 +6,7 @@ from .socket import get_allowed_channels
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 DEBUG = True
+TEMPLATE_DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -76,6 +77,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'ajax_select',
     'django_gravatar',
     'bootstrapform',
     'ws4redis',
