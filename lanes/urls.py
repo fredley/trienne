@@ -35,5 +35,5 @@ urlpatterns = [
     url(r'^users/register/', RegisterView.as_view(), name='register'),
     url(r'^users/manage/', UserManagementView.as_view(), name='manage_users'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', RedirectView.as_view(url=reverse_lazy('rooms'))),
+    url(r'^$', RedirectView.as_view(url=reverse_lazy('orgs'))),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
