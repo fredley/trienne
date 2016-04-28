@@ -423,6 +423,10 @@ pre {
 
 /*   ORG MANAGEMENT   */
 
+#search-input{
+  margin-top:10px;
+}
+
 #org-list{
   .list-group-item:nth-of-type(1){
     border-top-right-radius: 0;

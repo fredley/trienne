@@ -367,6 +367,8 @@ class OrgJsonView(View):
       if not request.user.is_authenticated():
         raise PermissionDenied
       qs = request.user.subscribed.all()[start:end]
+    elif data == 'search':
+      qs = qs.filter(name__icontains=request.GET.get('s'))
     else:
       raise SuspiciousOperation
     return JsonResponse({'orgs': [{
@@ -399,14 +401,14 @@ class UserManagementView(LoginRequiredMixin, AjaxResponseMixin, CreateView):
 class OrgManagementView(LoginRequiredMixin, UpdateView):
   template_name = 'manage_org.html'
   model = Organisation
-  pk_url_kwarg = 'org_id'
   context_object_name = 'org'
   fields = ['visibility', 'privacy', 'admins']
 
   def dispatch(self, *args, **kwargs):
-    if not self.request.user.is_admin(self.object):
+    if not self.request.user.is_admin(
+          Organisation.objects.get(slug=kwargs.get(self.slug_url_kwarg))):
       raise PermissionDenied
-    return super(RoomEditView, self).dispatch(*args, **kwargs)
+    return super(OrgManagementView, self).dispatch(*args, **kwargs)
 
 
 class UserProfileView(DetailView):

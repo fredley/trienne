@@ -12,7 +12,11 @@
     <li role="presentation"><a data-url="mine" href="#mine">Mine</a></li>
     <li role="presentation"><a data-url="watched" href="#followed">Followed</a></li>
     <li role="presentation"><a data-url="all" href="#all">All</a></li>
+    <li role="presentation"><a href="#search"><i class="glyphicon glyphicon-search"></i> Search</a></li>
   </ul>
+  <div id="search" style="display:none;">
+    <input class="form-control" id="search-input" placeholder="Search for Communities">
+  </div>
   <div class="spinner"></div>
   <div class="list-group" id="org-list"></div>
 </div>
@@ -22,6 +26,7 @@
 $(document).ready(function(){
 
   var hash = window.location.hash.substring(1);
+  var spin = 0;
   if(hash !== "" && ["mine","all","watched"].indexOf(hash) >= 0){
     setTab(hash);
   }else{
@@ -29,6 +34,9 @@ $(document).ready(function(){
   }
 
   function setTab(url){
+    if(url == "search"){
+      url = "mine";
+    }
     $('#org-selection a[data-url="' + url + '"]').tab('show');
     updateContent(url);
   }
@@ -39,27 +47,61 @@ $(document).ready(function(){
       return;
     }
     $(this).tab('show');
-    updateContent($(this).attr('data-url'))
+    if($(this).attr('data-url')) {
+      endSearch();
+      updateContent($(this).attr('data-url'))
+    } else {
+      startSearch();
+    }
   });
 
-  function updateContent(filter){
+  function handleData(data){
+    console.log(data);
     $('#org-list').html('');
-    var spin = setTimeout(function(){$('.spinner').show();},1000);
+    if (data.orgs.length === 0) {
+      $('#org-list').append('<div class="list-group-item">No communities found :(</div>');
+    }
+    data.orgs.forEach(function(o){
+      $('#org-list').append(
+        '<a href="/org/' + o.slug + '" class="list-group-item">' + o.name + '</a>'
+      );
+    });
+    clearTimeout(spin);
+    $('.spinner').hide();
+  }
+
+  function updateContent(filter){
+    window.location.hash = '#' + filter;
+    $('#org-list').html('');
+    clearTimeout(spin);
+    spin = setTimeout(function(){$('.spinner').show();},1000);
     $.ajax({
       method: "get",
       url: "/ajax/orgs/" + filter + "/",
-      success: function(data){
-        console.log(data);
-        data.orgs.forEach(function(o){
-          $('#org-list').append(
-            '<a href="/org/' + o.slug + '" class="list-group-item">' + o.name + '</a>'
-          );
-        });
-        clearTimeout(spin);
-        $('.spinner').hide();
-      }
+      success: handleData
     })
   }
+
+  function startSearch(){
+    $("#search").show();
+    $('#org-list').html('');
+    $("#search-input").focus();
+  }
+
+  function endSearch(){
+    $('#search').hide();
+  }
+
+  $("#search-input").on('keyup',function(){
+    var text = $(this).val();
+    if(text !== ""){
+      $.ajax({
+        method:"get",
+        url:"/ajax/orgs/search/?s=" + encodeURIComponent(text),
+        success: handleData
+      });
+    }
+  });
 });
 </script>
 {% endblock %}

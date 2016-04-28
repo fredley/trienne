@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^ajax/orgs/all/$', OrgJsonView.as_view(data='all'), name='ajax_orgs_all'),
     url(r'^ajax/orgs/mine/$', OrgJsonView.as_view(data='mine'), name='ajax_orgs_mine'),
     url(r'^ajax/orgs/watched/$', OrgJsonView.as_view(data='watched'), name='ajax_orgs_watching'),
+    url(r'^ajax/orgs/search/$', OrgJsonView.as_view(data='search'), name='ajax_orgs_search'),
     url(r'^orgs/$', OrgsView.as_view(), name='orgs'),
     url(r'^org/(?P<slug>[\w-]+)/$', RoomsView.as_view(), name='org'),
     url(r'^org/(?P<slug>[\w-]+)/manage/$', OrgManagementView.as_view(), name='manage_org'),
