@@ -420,7 +420,7 @@ class OrgCreateView(LoginRequiredMixin, CreateView):
     return {'admins': "{}".format(self.request.user.id) }
 
   def form_valid(self, form):
-    if self.request.user.id not in form.cleaned_data['admins']:
+    if str(self.request.user.id) not in form.cleaned_data['admins']:
       form.cleaned_data['admins'].append(self.request.user.id)
     return super(OrgCreateView, self).form_valid(form)
 
