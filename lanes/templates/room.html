@@ -66,7 +66,8 @@
 var my_id = {{ user.id }};
 var my_name = '{{ user.username }}';
 var volume = {{ prefs.volume }};
-var is_admin = {{ user.is_admin|yesno:"true,false" }};
+var can_participate = {{ can_participate|yesno:"true,false" }};
+var is_admin = {{ is_admin|yesno:"true,false" }};
 
 var shout = $('#shout');
 var sock_uri = '{{ WEBSOCKET_URI }}room_{{ room.id }}?subscribe-broadcast';

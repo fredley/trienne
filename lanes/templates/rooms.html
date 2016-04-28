@@ -17,11 +17,13 @@
         </div>
       </div>
     {% endfor %}
-    <div class="col-sm-3">
-      <div class="well add">
-        <a href="{% url 'add_room' %}"><i class="glyphicon glyphicon-plus"></i></a>
+    {% if is_admin %}
+      <div class="col-sm-3">
+        <div class="well add">
+          <a href="{% url 'add_room' org.slug %}"><i class="glyphicon glyphicon-plus"></i></a>
+        </div>
       </div>
-    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock main_content %}

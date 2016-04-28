@@ -72,6 +72,10 @@ class User(AbstractUser):
   def is_admin(self, org):
     return self in org.admins.all()
 
+  def can_view(self, room):
+    return room.organisation in self.organisations.all() or \
+        room.organisation.visibility != Organisation.VISIBILITY_PRIVATE
+
   def __unicode__(self):
     return self.username
 

@@ -125,7 +125,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
   def get_context_data(self, **kwargs):
     context = super(RoomView, self).get_context_data(**kwargs)
     room = Room.objects.get(id=kwargs['room_id'])
-    if room.organisation not in self.request.user.organisations.all():
+    if not self.request.user.can_view(room):
       raise PermissionDenied
     publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
     pinned = []
@@ -155,6 +155,8 @@ class RoomView(LoginRequiredMixin, TemplateView):
     }
     publisher.publish_message(RedisMessage(json.dumps(message)))
     context.update(room=room,
+                   is_admin=self.request.user.is_admin(room.organisation),
+                   can_participate=room in self.request.user.organisations.all(),
                    pinned=pinned,
                    prefs=RoomPrefs.objects.get_or_create(room=room, user=self.request.user)[0],
                    users=online)
@@ -225,13 +227,22 @@ class RoomMessageView(RoomPostView):
     return HttpResponse('OK')
 
 
-class RoomAddView(CreateView):
+class RoomAddView(LoginRequiredMixin, CreateView):
   model = Room
-  fields = ['name', 'topic', 'organisation']
+  fields = ['name', 'topic',]
   template_name = "add_room.html"
 
+  def get_context_data(self, *args, **kwargs):
+    if not self.request.user.is_admin(Organisation.objects.get(slug=self.kwargs.get('slug'))):
+      raise PermissionDenied
+    return super(RoomAddView, self).get_context_data(*args, **kwargs)
+
   def form_valid(self, form):
+    org = Organisation.objects.get(slug=self.kwargs.get('slug'))
+    if not self.request.user.is_admin(org):
+      raise SuspiciousOperation
     room = form.save(commit=False)
+    room.organisation = org
     room.creator = self.request.user
     room.save()
     room.owners = [self.request.user]
@@ -245,10 +256,10 @@ class RoomEditView(LoginRequiredMixin, UpdateView):
   model = Room
   pk_url_kwarg = 'room_id'
 
-  def dispatch(self, *args, **kwargs):
-    if not self.request.user.is_admin(self.object):
+  def get_context_data(self, *args, **kwargs):
+    if not self.request.user.is_admin(self.object.organisation):
       raise PermissionDenied
-    return super(RoomEditView, self).dispatch(*args, **kwargs)
+    return super(RoomEditView, self).get_context_data(*args, **kwargs)
 
   def get_success_url(self):
     return reverse("room", kwargs={"room_id": self.object.id})
@@ -294,6 +305,8 @@ class PostVoteView(LoginRequiredMixin, View):
 
   def post(self, request, *args, **kwargs):
     post = Post.objects.get(id=request.POST.get('id'))
+    if not request.user.can_participate(post.room):
+      raise PermissionDenied
     if post.author == request.user:
       raise PermissionDenied
     value = int(request.POST.get('value'))
@@ -332,7 +345,9 @@ class RoomsView(LoginRequiredMixin, TemplateView):
 
   def get_context_data(self, **kwargs):
     context = super(RoomsView, self).get_context_data(**kwargs)
-    context.update(rooms=Room.objects.filter(organisation=Organisation.objects.get(slug=kwargs.get('slug'))))
+    org = Organisation.objects.get(slug=kwargs.get('slug'))
+    is_admin = self.request.user.is_admin(org)
+    context.update(rooms=Room.objects.filter(organisation=org), org=org, is_admin=is_admin)
     return context
 
 
@@ -422,7 +437,11 @@ class OrgCreateView(LoginRequiredMixin, CreateView):
   def form_valid(self, form):
     if str(self.request.user.id) not in form.cleaned_data['admins']:
       form.cleaned_data['admins'].append(self.request.user.id)
-    return super(OrgCreateView, self).form_valid(form)
+    result = super(OrgCreateView, self).form_valid(form)
+    logger.debug(form.instance.id)
+    for admin in form.instance.admins.all():
+      OrgMembership(user=admin, organisation=form.instance, role=OrgMembership.ADMIN).save()
+    return result
 
   def get_success_url(self):
     return reverse('org',kwargs={'slug': self.object.slug })

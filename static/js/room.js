@@ -36,63 +36,67 @@ jQuery(document).ready(function($) {
     insertMediumMessage(createMessage(el,true), el.author, el);
   });
   volume = temp_vol;
-
+  if(!can_participate){
+    $("#shout").attr("disabled","disabled").addClass("disabled");
+  }
   loading = false;
 
-  $("#shout").keydown(function(ev) {
-    if (ev.keyCode === 13 && !ev.shiftKey) {
-      ev.preventDefault();
-      var message = shout.val();
-      if (message.trim() !== ""){
-        if(editing) {
-          $.ajax({
-            method: "post",
-            url: urls.edit,
-            data: {
-              id: edit_id,
-              message: message
-            }
-          });
-          stopEdit();
-        } else {
-          $.ajax({
-            method: "post",
-            url: urls.post,
-            data: {
-              message: message
-            }
-          });
-        }
-        shout.val("");
-      }
-    }else if(ev.keyCode === 38) { //up arrow
-      // select previous message for editing
-      ev.preventDefault();
-      var el;
-      if(!editing) {
-        el = $('.mine .message').last();
-      } else {
-          el = getNextEdit(-1);
-          if(!el){
-            return;
-          }
-      }
-      startEdit(el);
-    }else if(ev.keyCode === 40) { // down arrow
-      // select next message for editing, if possible
-      if(editing){
+  if (can_participate) {
+    $("#shout").keydown(function(ev) {
+      if (ev.keyCode === 13 && !ev.shiftKey) {
         ev.preventDefault();
-        el = getNextEdit(1);
-        if(!el){
-          stopEdit();
-          return;
+        var message = shout.val();
+        if (message.trim() !== ""){
+          if(editing) {
+            $.ajax({
+              method: "post",
+              url: urls.edit,
+              data: {
+                id: edit_id,
+                message: message
+              }
+            });
+            stopEdit();
+          } else {
+            $.ajax({
+              method: "post",
+              url: urls.post,
+              data: {
+                message: message
+              }
+            });
+          }
+          shout.val("");
+        }
+      }else if(ev.keyCode === 38) { //up arrow
+        // select previous message for editing
+        ev.preventDefault();
+        var el;
+        if(!editing) {
+          el = $('.mine .message').last();
+        } else {
+            el = getNextEdit(-1);
+            if(!el){
+              return;
+            }
         }
         startEdit(el);
+      }else if(ev.keyCode === 40) { // down arrow
+        // select next message for editing, if possible
+        if(editing){
+          ev.preventDefault();
+          el = getNextEdit(1);
+          if(!el){
+            stopEdit();
+            return;
+          }
+          startEdit(el);
+        }
+      }else if(ev.keyCode === 27 && editing) { // escape
+        stopEdit();
       }
-    }else if(ev.keyCode === 27 && editing) { // escape
-      stopEdit();
-    }
-  });
+    });
+  }
 
   function startEdit(el){
     stopEdit();
