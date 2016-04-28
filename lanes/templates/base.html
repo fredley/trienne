@@ -24,9 +24,9 @@
       <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" id="nav">
         <ul class="nav navbar-nav">
           <li class="{% block rooms_active %}{% endblock %}">
-            <a href="{% url 'rooms' %}">All Rooms</a>
+            <a href="{% url 'orgs' %}">Communities</a>
           </li>
-          {% if user.is_authenticated and user.is_admin %}
+          {% if show_admin %}
             <li class="{% block users_active %}{% endblock %}">
               <a href="{% url 'manage_users' %}">Manage Users</a>
             </li>
@@ -41,18 +41,6 @@
             <a class="dropdown-toggle" href="#" data-toggle="dropdown">{{ user.username }} {% if user.current_organisation %}: {{ user.current_organisation.name }}{% endif %} <span class="caret"></span></a>
             <ul class="dropdown-menu">
               {% if user.organisations.all.count > 1 %}
-                <li>
-                  <form class="form" action="{% url 'change_org' %}" method="post">{% csrf_token %}
-                    <div class="form-group">
-                      <select class="form-control" name="org">
-                        {% for org in user.organisations.all %}
-                          <option value="{{ org.id }}" {% if org == user.current_organisation %}selected="selected"{% endif %}>{{ org.name }}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                    <button class="btn btn-default btn-block" type="submit">Change Room</button>
-                  </form>
-                </li>
                 <li role="separator" class="divider"></li>
               {% endif %}
               <li>

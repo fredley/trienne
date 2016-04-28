@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% load bootstrap %}
+
+{% block title %}Communities{% endblock %}
+
+{% block orgs_active %}active{% endblock %}
+
+{% block main_content %}
+<div class="container">
+  <ul class="nav nav-tabs" id="org-selection">
+    <li role="presentation"><a data-url="mine" href="#mine">Mine</a></li>
+    <li role="presentation"><a data-url="watched" href="#followed">Followed</a></li>
+    <li role="presentation"><a data-url="all" href="#all">All</a></li>
+  </ul>
+  <div class="spinner"></div>
+  <div class="list-group" id="org-list"></div>
+</div>
+{% endblock main_content %}
+{% block script_panel %}
+<script type="text/javascript">
+$(document).ready(function(){
+
+  var hash = window.location.hash.substring(1);
+  if(hash !== "" && ["mine","all","watched"].indexOf(hash) >= 0){
+    setTab(hash);
+  }else{
+    setTab('mine');
+  }
+
+  function setTab(url){
+    $('#org-selection a[data-url="' + url + '"]').tab('show');
+    updateContent(url);
+  }
+
+  $('#org-selection a').click(function (e) {
+    e.preventDefault();
+    if($(this).parent().hasClass('active')){
+      return;
+    }
+    $(this).tab('show');
+    updateContent($(this).attr('data-url'))
+  });
+
+  function updateContent(filter){
+    $('#org-list').html('');
+    var spin = setTimeout(function(){$('.spinner').show();},1000);
+    $.ajax({
+      method: "get",
+      url: "/ajax/orgs/" + filter + "/",
+      success: function(data){
+        console.log(data);
+        data.orgs.forEach(function(o){
+          $('#org-list').append(
+            '<a href="/org/' + o.slug + '" class="list-group-item">' + o.name + '</a>'
+          );
+        });
+        clearTimeout(spin);
+        $('.spinner').hide();
+      }
+    })
+  }
+});
+</script>
+{% endblock %}

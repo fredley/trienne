@@ -72,6 +72,15 @@ pre {
   -webkit-transform: scaleX(-1);
   -ms-transform: scaleX(-1);
 }
+.spinner {
+  display: none;
+  background: url('../img/loading.svg');
+  background-size:50px 50px;
+  width:50px;
+  height: 50px;
+  display: block;
+  margin:0 auto;
+}
 #main{
   position: absolute;
   top:0;
@@ -306,7 +315,7 @@ pre {
       left:0;
     }
     .upvote{
-      left:10px;      
+      left:10px;
     }
     .dnvote{
       top:10px;
@@ -410,4 +419,14 @@ pre {
   padding: 0;
   margin: -5px 0;
   display: none;
+}
+
+/*   ORG MANAGEMENT   */
+
+#org-list{
+  .list-group-item:nth-of-type(1){
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+    border-top: 0;
+  }
 }

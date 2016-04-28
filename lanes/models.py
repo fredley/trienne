@@ -24,9 +24,9 @@ class Organisation(models.Model):
       (PRIVACY_INVITE, "Invitation Only")
   )
 
-  VISIBILITY_PUBLIC = 0  # Visible in search
-  VISIBILITY_LINK = 1    # Not visible in search, accessible by link
-  VISIBILITY_PRIVATE = 2 # Only accessible by invite
+  VISIBILITY_PUBLIC = 0   # Visible in search
+  VISIBILITY_LINK = 1     # Not visible in search, accessible by link
+  VISIBILITY_PRIVATE = 2  # Only accessible by invite
 
   VISIBILITY_CHOICES = (
       (VISIBILITY_PUBLIC, "Public"),
@@ -68,13 +68,9 @@ class Invitation(models.Model):
 class User(AbstractUser):
   organisations = models.ManyToManyField(Organisation, through='OrgMembership')
   subscribed = models.ManyToManyField(Organisation, related_name='subscribed')
-  current_organisation = models.ForeignKey(Organisation, related_name='current_org', null=True, blank=True)
 
-  def is_admin(self):
-    try:
-      return self in self.current_organisation.admins.all()
-    except:
-      return False
+  def is_admin(self, org):
+    return self in org.admins.all()
 
   def __unicode__(self):
     return self.username
@@ -179,9 +175,6 @@ class Post(models.Model):
   raw = property(get_raw)
   edited = property(is_edited)
   score = property(get_score)
-
-  def __unicode__(self):
-    return self.author.username + ' - ' + self.content
 
 
 class Vote(models.Model):

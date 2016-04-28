@@ -9,35 +9,19 @@
 {% block main_content %}
 <div class="container-fluid">
   <div class="row" id="rooms">
-    {% if user.current_organisation == None %}
-    <div class="col-sm-4 col-sm-offset-4">
-      <form action="{% url 'change_org' %}" method="post">
-        {% csrf_token %}
-        <legend>Choose an Organisation:</legend>
-        <select class="form-control" name="org">
-          {% for org in user.organisations.all %}
-            <option value="{{ org.id }}">{{ org.name }}</option>
-          {% endfor %}
-        </select>
-        <hr>
-        <button type="submit" class="btn btn-lg btn-success">Go</button>
-      </form>
-    </div>
-    {% else %}
-      {% for room in rooms %}
-        <div class="col-sm-3">
-          <div class="well room">
-            <h2><a href="{% url 'room' room.id %}">{{ room.name }}</a></h2>
-          <p>{{ room.topic }}</p>
-          </div>
-        </div>
-      {% endfor %}
+    {% for room in rooms %}
       <div class="col-sm-3">
-        <div class="well add">
-          <a href="{% url 'add_room' %}"><i class="glyphicon glyphicon-plus"></i></a>
+        <div class="well room">
+          <h2><a href="{% url 'room' room.id %}">{{ room.name }}</a></h2>
+        <p>{{ room.topic }}</p>
         </div>
       </div>
-    {% endif %}
+    {% endfor %}
+    <div class="col-sm-3">
+      <div class="well add">
+        <a href="{% url 'add_room' %}"><i class="glyphicon glyphicon-plus"></i></a>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock main_content %}
