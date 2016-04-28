@@ -424,7 +424,7 @@ pre {
 /*   ORG MANAGEMENT   */
 
 #search-input{
-  margin-top:10px;
+  margin:10px 0 -2px;
 }
 
 #org-list{
@@ -432,5 +432,6 @@ pre {
     border-top-right-radius: 0;
     border-top-left-radius: 0;
     border-top: 0;
+    background: transparent;
   }
 }
