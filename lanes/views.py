@@ -157,7 +157,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
     context.update(room=room,
                    org=room.organisation,
                    is_admin=self.request.user.is_admin(room.organisation),
-                   can_participate=room in self.request.user.organisations.all(),
+                   can_participate=self.request.user.is_member(room.organisation),
                    pinned=pinned,
                    prefs=RoomPrefs.objects.get_or_create(room=room, user=self.request.user)[0],
                    users=online)
