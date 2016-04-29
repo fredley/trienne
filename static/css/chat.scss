@@ -21,6 +21,12 @@ a{
     color:lighten($themeColor2,10%);
   }
 }
+.btn-primary{
+  background: $themeColor2;
+  &:hover, &:active, &:focus{
+    background: lighten($themeColor2,10%);
+  }
+}
 header.navbar{
   border-bottom:1px solid $lightLines;
 }
@@ -465,5 +471,13 @@ pre {
     .user{
       float:left;
     }
+  }
+}
+
+#org-actions{
+  margin-bottom: 20px;
+
+  .btn{
+    display: none;
   }
 }

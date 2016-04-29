@@ -29,9 +29,9 @@ $(document).ready(function(){
 
   var hash = window.location.hash.substring(1);
   var spin = 0;
-  if(hash !== "" && ["mine","all","watched"].indexOf(hash) >= 0){
+  if (hash !== "" && ["mine","all","watched"].indexOf(hash) >= 0) {
     setTab(hash);
-  }else{
+  } else {
     setTab('mine');
   }
 
@@ -43,7 +43,7 @@ $(document).ready(function(){
     updateContent(url);
   }
 
-  $('#org-selection a').click(function (e) {
+  $('#org-selection li a').click(function (e) {
     e.preventDefault();
     if($(this).parent().hasClass('active')){
       return;

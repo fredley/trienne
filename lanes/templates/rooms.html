@@ -8,6 +8,23 @@
 
 {% block main_content %}
 <div class="container-fluid">
+  <div id="org-actions">
+    <button style="display:none;" id="btn-join" type="button" data-url="join" data-action="join" class="action btn btn-primary">
+      <i class="glyphicon glyphicon-star"></i> Join this Community
+    </button>
+    <button style="display:none;" id="btn-apply" type="button" data-url="apply" class="action btn btn-default">
+      <i class="glyphicon glyphicon-star"></i> Apply to join this Community
+    </button>
+    <button style="display:none;" id="btn-leave" type="button" data-url="join" data-action="leave" class="action btn btn-primary">
+      <i class="glyphicon glyphicon-star-empty"></i> Leave this Community
+    </button>
+    <button style="display:none;" id="btn-follow" type="button" data-url="follow" data-action="follow" class="action btn btn-primary">
+      <i class="glyphicon glyphicon-eye-open"></i> Follow this Community
+    </button>
+    <button style="display:none;" id="btn-unfollow" type="button" data-url="follow" data-action="unfollow" class="action btn btn-primary">
+      <i class="glyphicon glyphicon-eye-close"></i> Unfollow this Community
+    </button>
+  </div>
   <div class="row" id="rooms">
     {% for room in rooms %}
       <div class="col-sm-3">
@@ -25,8 +42,68 @@
       </div>
     {% endif %}
     {% if rooms.count == 0 and not is_admin %}
-      <p class="alert alert-info">This community has no boards yet :(</p>
+      <div class="col-xs-12"><p class="alert alert-info">This community has no boards yet :(</p></div>
     {% endif %}
   </div>
 </div>
 {% endblock main_content %}
+
+{% block script_panel %}
+<script type="text/javascript">
+$(document).ready(function(){
+  {% if is_member %}
+      $('#btn-leave').show();
+  {% elif is_follower %}
+    {% if org.privacy == org.PRIVACY_OPEN %}
+      $('#btn-join').show();
+    {% elif org.privacy == org.PRIVACY_APPLY %}
+      $('#btn-apply').show();
+    {% endif %}
+      $('#btn-unfollow').show();
+  {% else %}
+    {% if org.privacy == org.PRIVACY_OPEN %}
+      $('#btn-join').show();
+    {% elif org.privacy == org.PRIVACY_APPLY %}
+      $('#btn-apply').show();
+    {% endif %}
+    $('#btn-follow').show();
+  {% endif %}
+  $('.action').on('click',function(){
+    var action = $(this).attr('data-action');
+    data = {};
+    if(action){
+      data.action = action;
+    }
+    $.ajax({
+      method:'post',
+      url:'/org/{{ org.slug }}/' + $(this).attr('data-url') + '/',
+      data:data,
+      success:function(data){
+        console.log(data);
+        switch(data){
+          case 'followed':
+            $("#btn-follow").hide();
+            $("#btn-unfollow").show();
+            break;
+          case 'unfollowed':
+            $("#btn-follow").show();
+            $("#btn-unfollow").hide();
+            break;
+          case 'joined':
+            $("#btn-leave").show();
+            $("#btn-join").hide();
+            $("#btn-unfollow").hide();
+            $("#btn-follow").hide();
+            break;
+          case 'left':
+            $("#btn-join").show();
+            $("#btn-follow").show();
+            $("#btn-leave").hide();
+            break;
+        }        
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -392,7 +392,10 @@ class OrgMixin(LoginRequiredMixin):
 
   def get_context_data(self, **kwargs):
     context = super(OrgMixin, self).get_context_data(**kwargs)
-    context.update(org=self.org, is_admin=self.request.user.is_admin(self.org))
+    context.update(org=self.org, 
+                   is_admin=self.request.user.is_admin(self.org),
+                   is_member=self.org in self.request.user.organisations.all(),
+                   is_follower=self.org in self.request.user.subscribed.all())
     return context
 
 
@@ -448,6 +451,58 @@ class OrgCreateView(LoginRequiredMixin, CreateView):
 
   def get_success_url(self):
     return reverse('org',kwargs={'slug': self.object.slug })
+
+
+class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
+
+  def post(self, request, *args, **kwargs):
+    org = self.org
+    action = request.POST.get('action')
+    result = 'error'
+    if action == 'join':
+      if org.privacy == Organisation.PRIVACY_OPEN and not request.user.is_member(org):
+        OrgMembership(user=request.user, organisation=org).save()
+        if request.user.is_subscribed(org):
+          request.user.subscribed.remove(org)
+        result = 'joined'
+      else:
+        raise PermissionDenied
+    elif action == 'leave' and request.user.is_member(org):
+      OrgMembership.objects.get(user=request.user, organisation=org).delete()
+      if request.user in org.admins.all():
+        org.admins.remove(request.user)
+      result = 'left'
+    else:
+      raise PermissionDenied
+    return HttpResponse(result)
+
+
+class OrgApplyView(OrgMixin, AjaxResponseMixin, View):
+
+  def post(self, request, *args, **kwargs):
+    org = self.org
+    # TODO
+    return HttpResponse('OK')
+
+
+class OrgWatchView(OrgMixin, AjaxResponseMixin, View):
+
+  def post(self, request, *args, **kwargs):
+    org = self.org
+    action = request.POST.get('action')
+    result = 'error'
+    if action == 'follow':
+      if not request.user.is_subscribed(org):
+        request.user.subscribed.add(org)
+        result = 'followed'
+      else:
+        raise PermissionDenied
+    elif action == 'unfollow' and request.user.is_subscribed(org):
+      request.user.subscribed.remove(org)
+      result = 'unfollowed'
+    else:
+      raise PermissionDenied
+    return HttpResponse(result)
 
 
 class UserProfileView(DetailView):
