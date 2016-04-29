@@ -24,12 +24,17 @@
       <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" id="nav">
         <ul class="nav navbar-nav">
           <li class="{% block rooms_active %}{% endblock %}">
-            <a href="{% url 'orgs' %}">Communities</a>
+            <a href="{% url 'orgs' %}">All Communities</a>
           </li>
-          {% if show_admin %}
-            <li class="{% block users_active %}{% endblock %}">
-              <a href="{% url 'manage_users' %}">Manage Users</a>
+          {% if org %}
+            <li class="{% block current_community_active %}{% endblock %}">
+              <a href="{% url 'org' org.slug %}">{{ org.name }}</a>
             </li>
+            {% if is_admin %}
+              <li class="{% block org_admin_active %}{% endblock %}">
+                <a href="{% url 'manage_org' org.slug %}">Manage {{ org.name }}</a>
+              </li>
+            {% endif %}
           {% endif %}
         </ul>
         <ul class="nav navbar-nav navbar-right">

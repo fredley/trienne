@@ -4,7 +4,7 @@
 
 {% block title %}Rooms{% endblock %}
 
-{% block rooms_active %}active{% endblock %}
+{% block current_community_active %}active{% endblock %}
 
 {% block main_content %}
 <div class="container-fluid">
@@ -23,6 +23,9 @@
           <a href="{% url 'add_room' org.slug %}"><i class="glyphicon glyphicon-plus"></i></a>
         </div>
       </div>
+    {% endif %}
+    {% if rooms.count == 0 and not is_admin %}
+      <p class="alert alert-info">This community has no boards yet :(</p>
     {% endif %}
   </div>
 </div>

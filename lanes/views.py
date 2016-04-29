@@ -155,6 +155,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
     }
     publisher.publish_message(RedisMessage(json.dumps(message)))
     context.update(room=room,
+                   org=room.organisation,
                    is_admin=self.request.user.is_admin(room.organisation),
                    can_participate=room in self.request.user.organisations.all(),
                    pinned=pinned,
@@ -225,29 +226,6 @@ class RoomMessageView(RoomPostView):
     }
     self.publisher.publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
-
-
-class RoomAddView(LoginRequiredMixin, CreateView):
-  model = Room
-  fields = ['name', 'topic',]
-  template_name = "add_room.html"
-
-  def get_context_data(self, *args, **kwargs):
-    if not self.request.user.is_admin(Organisation.objects.get(slug=self.kwargs.get('slug'))):
-      raise PermissionDenied
-    return super(RoomAddView, self).get_context_data(*args, **kwargs)
-
-  def form_valid(self, form):
-    org = Organisation.objects.get(slug=self.kwargs.get('slug'))
-    if not self.request.user.is_admin(org):
-      raise SuspiciousOperation
-    room = form.save(commit=False)
-    room.organisation = org
-    room.creator = self.request.user
-    room.save()
-    room.owners = [self.request.user]
-    self.object = room
-    return HttpResponseRedirect(reverse("room", kwargs={"room_id": room.id}))
 
 
 class RoomEditView(LoginRequiredMixin, UpdateView):
@@ -340,17 +318,6 @@ class PostVoteView(LoginRequiredMixin, View):
     return HttpResponse('OK')
 
 
-class RoomsView(LoginRequiredMixin, TemplateView):
-  template_name = "rooms.html"
-
-  def get_context_data(self, **kwargs):
-    context = super(RoomsView, self).get_context_data(**kwargs)
-    org = Organisation.objects.get(slug=kwargs.get('slug'))
-    is_admin = self.request.user.is_admin(org)
-    context.update(rooms=Room.objects.filter(organisation=org), org=org, is_admin=is_admin)
-    return context
-
-
 class OrgsView(TemplateView):
   template_name = 'orgs.html'
 
@@ -413,17 +380,53 @@ class UserManagementView(LoginRequiredMixin, AjaxResponseMixin, CreateView):
     return response
 
 
-class OrgManagementView(LoginRequiredMixin, UpdateView):
+class OrgMixin(LoginRequiredMixin):
+
+  require_admin = False
+
+  def dispatch(self, *args, **kwargs):
+    self.org = Organisation.objects.get(slug=kwargs.get('slug'))
+    if self.require_admin and not self.request.user.is_admin(self.org):
+      raise PermissionDenied
+    return super(OrgMixin, self).dispatch(*args, **kwargs)
+
+  def get_context_data(self, **kwargs):
+    context = super(OrgMixin, self).get_context_data(**kwargs)
+    context.update(org=self.org, is_admin=self.request.user.is_admin(self.org))
+    return context
+
+
+class RoomsView(OrgMixin, TemplateView):
+  template_name = "rooms.html"
+
+  def get_context_data(self, **kwargs):
+    context = super(RoomsView, self).get_context_data(**kwargs)
+    context.update(rooms=Room.objects.filter(organisation=self.org))
+    return context
+
+
+class RoomAddView(OrgMixin, CreateView):
+  model = Room
+  fields = ['name', 'topic',]
+  template_name = "add_room.html"
+  require_admin = True
+
+  def form_valid(self, form):
+    room = form.save(commit=False)
+    room.organisation = self.org
+    room.creator = self.request.user
+    room.save()
+    room.owners = [self.request.user]
+    self.object = room
+    return HttpResponseRedirect(reverse("room", kwargs={"room_id": room.id}))
+
+
+class OrgManagementView(OrgMixin, UpdateView):
   template_name = 'manage_org.html'
   model = Organisation
   context_object_name = 'org'
   fields = ['visibility', 'privacy', 'admins']
-
-  def dispatch(self, *args, **kwargs):
-    if not self.request.user.is_admin(
-          Organisation.objects.get(slug=kwargs.get(self.slug_url_kwarg))):
-      raise PermissionDenied
-    return super(OrgManagementView, self).dispatch(*args, **kwargs)
+  require_admin = True
 
 
 class OrgCreateView(LoginRequiredMixin, CreateView):
