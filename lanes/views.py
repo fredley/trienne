@@ -17,7 +17,7 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.views.generic import DetailView
 from django.views.generic.base import TemplateView, View
-from django.views.generic.edit import FormView, CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.views.decorators.csrf import csrf_exempt
 
 from django_gravatar.helpers import get_gravatar_url
@@ -115,6 +115,8 @@ class RoomPostView(LoginRequiredMixin, View):
     self.room = Room.objects.get(id=kwargs['room_id'])
     if self.room.organisation not in request.user.organisations.all():
       raise PermissionDenied
+    if self.room.privacy == Room.PRIVACY_PRIVATE and request.user not in self.room.members.all():
+      raise PermissionDenied
     self.publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
     return self.generate_response(request)
 
@@ -127,6 +129,9 @@ class RoomView(LoginRequiredMixin, TemplateView):
     room = Room.objects.get(id=kwargs['room_id'])
     if not self.request.user.can_view(room):
       raise PermissionDenied
+    elif self.request.user not in room.members.all():
+      logger.debug("Added " + str(self.request.user) + " to " + str(room))
+      room.members.add(self.request.user)
     publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
     pinned = []
     for post in room.pinned:
@@ -139,7 +144,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
           "post": post,
           "vote": vote
       })
-    users = room.organisation.users
+    users = room.members.all()
     online = []
     for u in users:
       online.append({
@@ -189,7 +194,8 @@ class RoomPinView(RoomPostView):
     message = {
         'type': 'pin',
         'score': post.score,
-        'content': post.id
+        'id': post.id,
+        'author_id': post.author.id
     }
     if 'pincode' in request.POST:
       message['pincode'] = request.POST.get('pincode')
@@ -243,16 +249,32 @@ class RoomEditView(LoginRequiredMixin, UpdateView):
     return reverse("room", kwargs={"room_id": self.object.id})
 
 
-class PostEditView(LoginRequiredMixin, View):
+class PostView(LoginRequiredMixin):
+
+  require_owner = True
+  require_not_owner = False
 
   @csrf_exempt
   def dispatch(self, *args, **kwargs):
-    return super(PostEditView, self).dispatch(*args, **kwargs)
+    user = self.request.user
+    post = Post.objects.get(id=kwargs.get('post_id'))
+    self.msg = post
+    if not user.is_member(post.room.organisation) or not(user.can_view(post.room)):
+      logger.debug("Not a member")
+      raise PermissionDenied
+    if self.require_owner and not (post.author == user or user.is_admin(post.room.organisation)):
+      logger.debug("Not my post")
+      raise PermissionDenied
+    if self.require_not_owner and post.author == user:
+      logger.debug("My post!")
+      raise PermissionDenied
+    logger.debug("All fine")
+    return super(PostView, self).dispatch(*args, **kwargs)
+
+
+class PostEditView(PostView, View):
 
   def post(self, request, *args, **kwargs):
-    post = Post.objects.get(id=request.POST.get('id'))
-    if post.author != request.user and not request.user.is_admin(post.room.organisation):
-      raise PermissionDenied
     raw = request.POST.get('message')
     try:
         processed = process_text(raw)
@@ -260,7 +282,7 @@ class PostEditView(LoginRequiredMixin, View):
         return HttpResponse('Not OK')
     content = PostContent(
         author=request.user,
-        post=post,
+        post=self.msg,
         raw=raw,
         content=processed)
     content.save()
@@ -268,25 +290,20 @@ class PostEditView(LoginRequiredMixin, View):
         'type': 'edit',
         'content': processed,
         'raw': raw,
-        'id': post.id
+        'id': self.msg.id
     }
-    RedisPublisher(facility='room_' + str(post.room.id), broadcast=True) \
+    RedisPublisher(facility='room_' + str(self.msg.room.id), broadcast=True) \
         .publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
 
 
-class PostVoteView(LoginRequiredMixin, View):
+class PostVoteView(PostView, View):
 
-  @csrf_exempt
-  def dispatch(self, *args, **kwargs):
-    return super(PostVoteView, self).dispatch(*args, **kwargs)
+  require_owner = False
+  require_not_owner = True
 
   def post(self, request, *args, **kwargs):
-    post = Post.objects.get(id=request.POST.get('id'))
-    if not request.user.can_participate(post.room):
-      raise PermissionDenied
-    if post.author == request.user:
-      raise PermissionDenied
+    post = self.msg
     value = int(request.POST.get('value'))
     if value not in [-1, 1]:
       raise PermissionDenied
@@ -316,6 +333,24 @@ class PostVoteView(LoginRequiredMixin, View):
       RedisPublisher(facility='room_' + str(post.room.id), broadcast=True) \
           .publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
+
+
+class PostHistoryView(PostView, TemplateView):
+
+  template_name = "post_history.html"
+
+  def get_context_data(self, **kwargs):
+    context = super(PostHistoryView, self).get_context_data(**kwargs)
+    context.update(post=self.post,
+                   org=self.post.organisation,
+                   is_admin=self.request.user.is_admin(post.room.organisation),
+                   can_participate=self.request.user.is_member(post.room.organisation))
+    return context
+
+  def post(self, request, *args, **kwargs):
+    self.post.deleted = True
+    self.post.save()
+    return HttpResponseRedirect(reverse('post_history', kwargs={'post_id': self.post.id}))
 
 
 class OrgsView(TemplateView):
@@ -392,27 +427,32 @@ class OrgMixin(LoginRequiredMixin):
 
   def get_context_data(self, **kwargs):
     context = super(OrgMixin, self).get_context_data(**kwargs)
-    context.update(org=self.org, 
+    context.update(org=self.org,
                    is_admin=self.request.user.is_admin(self.org),
                    is_member=self.org in self.request.user.organisations.all(),
                    is_follower=self.org in self.request.user.subscribed.all())
     return context
 
 
-class RoomsView(OrgMixin, TemplateView):
-  template_name = "rooms.html"
+class OrgView(OrgMixin, TemplateView):
+  template_name = "org.html"
 
   def get_context_data(self, **kwargs):
-    context = super(RoomsView, self).get_context_data(**kwargs)
-    context.update(rooms=Room.objects.filter(organisation=self.org))
+    context = super(OrgView, self).get_context_data(**kwargs)
+    rooms = Room.objects.filter(organisation=self.org)
+    if not self.request.user.is_admin(self.org):
+      rooms = Room.objects.filter(organisation=self.org, )
+      rs = [r for r in rooms if self.request.user.can_view(r)]
+      context.update(rooms=rs)
+    else:
+      context.update(rooms=rooms)
     return context
 
 
 class RoomAddView(OrgMixin, CreateView):
   model = Room
-  fields = ['name', 'topic',]
+  fields = ['name', 'topic', 'privacy']
   template_name = "add_room.html"
-  require_admin = True
 
   def form_valid(self, form):
     room = form.save(commit=False)
@@ -420,6 +460,7 @@ class RoomAddView(OrgMixin, CreateView):
     room.creator = self.request.user
     room.save()
     room.owners = [self.request.user]
+    room.members = [self.request.user]
     self.object = room
     return HttpResponseRedirect(reverse("room", kwargs={"room_id": room.id}))
 
@@ -438,7 +479,7 @@ class OrgCreateView(LoginRequiredMixin, CreateView):
   form_class = OrgForm
 
   def get_initial(self):
-    return {'admins': "{}".format(self.request.user.id) }
+    return {'admins': "{}".format(self.request.user.id)}
 
   def form_valid(self, form):
     if str(self.request.user.id) not in form.cleaned_data['admins']:
@@ -450,7 +491,7 @@ class OrgCreateView(LoginRequiredMixin, CreateView):
     return result
 
   def get_success_url(self):
-    return reverse('org',kwargs={'slug': self.object.slug })
+    return reverse('org', kwargs={'slug': self.object.slug})
 
 
 class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
@@ -480,7 +521,6 @@ class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
 class OrgApplyView(OrgMixin, AjaxResponseMixin, View):
 
   def post(self, request, *args, **kwargs):
-    org = self.org
     # TODO
     return HttpResponse('OK')
 

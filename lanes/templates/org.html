@@ -29,18 +29,16 @@
     {% for room in rooms %}
       <div class="col-sm-3">
         <div class="well room">
-          <h2><a href="{% url 'room' room.id %}">{{ room.name }}</a></h2>
+          <h2>{% if room.privacy == room.PRIVACY_PRIVATE %}<i class="glyphicon glyphicon-lock" ></i> {% endif %}<a href="{% url 'room' room.id %}">{{ room.name }}</a></h2>
         <p>{{ room.topic }}</p>
         </div>
       </div>
     {% endfor %}
-    {% if is_admin %}
-      <div class="col-sm-3">
-        <div class="well add">
-          <a href="{% url 'add_room' org.slug %}"><i class="glyphicon glyphicon-plus"></i></a>
-        </div>
+    <div class="col-sm-3">
+      <div class="well add">
+        <a href="{% url 'add_room' org.slug %}"><i class="glyphicon glyphicon-plus"></i></a>
       </div>
-    {% endif %}
+    </div>
     {% if rooms.count == 0 and not is_admin %}
       <div class="col-xs-12"><p class="alert alert-info">This community has no boards yet :(</p></div>
     {% endif %}
@@ -100,7 +98,7 @@ $(document).ready(function(){
             $("#btn-follow").show();
             $("#btn-leave").hide();
             break;
-        }        
+        }
       }
     });
   });

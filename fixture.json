@@ -21,9 +21,9 @@
       ]
     }
   },
-  {"model": "lanes.user", "pk": 2, 
-  "fields": {"password": "pbkdf2_sha256$24000$BXhs9pgiSf92$jLKLzebmH/a7CPCk5Fq1xAk7tx6z7olN1QYE9t9rXqc=", 
-  "last_login": "2016-04-23T10:22:14Z", "is_superuser": false, "username": "bob", "first_name": "", "last_name": "", 
+  {"model": "lanes.user", "pk": 2,
+  "fields": {"password": "pbkdf2_sha256$24000$BXhs9pgiSf92$jLKLzebmH/a7CPCk5Fq1xAk7tx6z7olN1QYE9t9rXqc=",
+  "last_login": "2016-04-23T10:22:14Z", "is_superuser": false, "username": "bob", "first_name": "", "last_name": "",
   "email": "tom@tommedley.com", "is_staff": false, "is_active": true, "date_joined": "2016-04-21T12:18:53Z", "groups": [], "user_permissions": []}},
   {
     "model": "lanes.organisation",
@@ -44,6 +44,7 @@
       "name": "Room 3",
       "topic": "room 3",
       "organisation": 1,
+      "privacy": 0,
       "creator": 1,
       "created": "2016-04-18T08:38:32.198Z",
       "owners": [

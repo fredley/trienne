@@ -374,6 +374,15 @@ pre {
   .message{
     &:hover{
       border:1px dotted #ccc;
+      &:before{
+        font-family: 'Glyphicons Halflings';
+        content:"\e144";
+        position: absolute;
+        top: 4px;
+        left: 3px;
+        font-size: 8px;
+        cursor:pointer;
+      }
       .controls i{
         opacity: 1;
       }
@@ -391,6 +400,21 @@ pre {
     h2{
       margin:0;
       font-size:16px;
+
+      i{
+        background:$themeColor2;
+        border-radius:20px;
+        color:#fff;
+        background: #6762E8;
+        border-radius: 20px;
+        color: #fff;
+        font-size: 10px;
+        padding: 5px;
+        text-align: center;
+        display: block;
+        float: left;
+        margin-right: 5px;
+      }
     }
     p{
       margin-top:10px;

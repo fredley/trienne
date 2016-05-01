@@ -49,9 +49,8 @@ jQuery(document).ready(function($) {
         if(editing) {
           $.ajax({
             method: "post",
-            url: urls.edit,
+            url: "/post/" + edit_id + "/edit/",
             data: {
-              id: edit_id,
               message: message
             }
           });
@@ -59,7 +58,7 @@ jQuery(document).ready(function($) {
         } else {
           $.ajax({
             method: "post",
-            url: urls.post,
+            url: "/room/" + room_id + "/post/",
             data: {
               message: message
             }
@@ -103,6 +102,7 @@ jQuery(document).ready(function($) {
     editing = true;
     shout.addClass('editing');
     var val = shout.val();
+    shout.val(el.attr('data-raw'));
     shout.putCursorAtEnd();
   }
 
@@ -118,7 +118,7 @@ jQuery(document).ready(function($) {
 
   function stopEdit(){
     shout.val("");
-    $('.mine .message').removeClass('editing');
+    $('.editing').removeClass('editing');
     editing = false;
     edit_id=0;
     shout.removeClass('editing');
@@ -128,7 +128,7 @@ jQuery(document).ready(function($) {
     var self = $(this);
     if(self.hasClass('active')){ return; }
     $.ajax({
-      url:urls.prefs,
+      url:"/room/" + room_id + "/prefs/",
       data:{volume:self.attr('data-volume')},
       method:'post',
       success:function(){
@@ -151,7 +151,7 @@ jQuery(document).ready(function($) {
         image = image.replace('s=32','s=128');
         console.log(image);
         var opts = {
-          body: text, 
+          body: text,
           icon: image
         }
         var notification = new Notification("Lanes", opts);
@@ -206,7 +206,7 @@ jQuery(document).ready(function($) {
       pincodes.push(code);
       $.ajax({
         method: "post",
-        url: urls.pin,
+        url: "/room/" + room_id + "/pin/",
         data: {
           id: id,
           pin: true,
@@ -300,9 +300,8 @@ jQuery(document).ready(function($) {
   function submitVote (value, id, el) {
     $.ajax({
         method: 'post',
-        url: urls.vote,
+        url: "/post/" + id + "/vote/",
         data: {
-          id: id,
           value: value
         },
         success: function(){
@@ -355,6 +354,7 @@ jQuery(document).ready(function($) {
   }
 
   function receiveMessage(msg) {
+    console.log(msg);
     var msg = JSON.parse(msg);
     switch(msg.type){
       case "msg":
@@ -364,18 +364,25 @@ jQuery(document).ready(function($) {
         var message = $("#medium .msg-" + msg.id).parent();
         message.find('.score').text(msg.content);
       case "pin":
-        var message = $("#messages .msg-" + msg.content);
-        if ($('#medium').find('.msg-' + msg.content).length === 0) {
+        var message = $("#messages .msg-" + msg.id);
+        if ($('#medium').find('.msg-' + msg.id).length === 0) {
           insertMediumMessage(message.clone(true),{
             name: message.parent().find(".author").text(),
-            id: message.parent().attr("data-id")
+            id: msg.id
           });
         }
+        el = $('#medium').find('.msg-' + msg.id).parent();
+        el.find('.score').text(msg.score);
+        el.find('.edited').removeClass('edited');
         var idx = pincodes.indexOf(msg.pincode);
+        if (msg.author_id == my_id){
+          el.find('.vote').addClass('disabled');
+        }
         if (idx >= 0) {
-          el = $('#medium').find('.msg-' + msg.content).parent().find('.votes');
-          markVoted(el, 1);
-          el.find('.score').text(msg.score);
+          console.log("I pinned this!");
+          if (msg.author_id != my_id){
+            markVoted(el.find('.votes'), 1);
+          }
           pincodes.splice(idx,1);
         }
         $('#medium').scrollTop(0);

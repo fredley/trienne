@@ -19,19 +19,24 @@ urlpatterns = [
     url(r'^ajax/select/', include(ajax_select_urls)),
     url(r'^orgs/$', OrgsView.as_view(), name='orgs'),
     url(r'^orgs/new/$', OrgCreateView.as_view(), name='create_org'),
-    url(r'^org/(?P<slug>[\w-]+)/$', RoomsView.as_view(), name='org'),
+
+    url(r'^org/(?P<slug>[\w-]+)/$', OrgView.as_view(), name='org'),
     url(r'^org/(?P<slug>[\w-]+)/manage/$', OrgManagementView.as_view(), name='manage_org'),
     url(r'^org/(?P<slug>[\w-]+)/add_room/$', RoomAddView.as_view(), name='add_room'),
     url(r'^org/(?P<slug>[\w-]+)/join/$', OrgJoinView.as_view()),
     url(r'^org/(?P<slug>[\w-]+)/apply/$', OrgApplyView.as_view()),
     url(r'^org/(?P<slug>[\w-]+)/follow/$', OrgWatchView.as_view()),
+
     url(r'^room/(?P<room_id>\d+)/$', RoomView.as_view(), name='room'),
     url(r'^room/(?P<room_id>\d+)/post/$', RoomMessageView.as_view(), name='room_post'),
     url(r'^room/(?P<room_id>\d+)/pin/$', RoomPinView.as_view(), name='room_pin'),
     url(r'^room/(?P<room_id>\d+)/edit/$', RoomEditView.as_view(), name='room_edit'),
     url(r'^room/(?P<room_id>\d+)/prefs/$', RoomPrefsView.as_view(), name='room_prefs'),
-    url(r'^post/edit/$', PostEditView.as_view(), name='post_edit'),
-    url(r'^post/vote/$', PostVoteView.as_view(), name='post_vote'),
+
+    url(r'^post/(?P<post_id>\d+)/edit/$', PostEditView.as_view(), name='post_edit'),
+    url(r'^post/(?P<post_id>\d+)/vote/$', PostVoteView.as_view(), name='post_vote'),
+    url(r'^post/(?P<post_id>\d+)/history/$', PostHistoryView.as_view()),
+
     url(r'^users/(?P<user_id>\d+)/$', UserProfileView.as_view(), name='user_profile'),
     url(r'^users/', include('django.contrib.auth.urls')),
     url(r'^users/register/(?P<token>\w+)/', RegisterView.as_view(), name='invitation'),

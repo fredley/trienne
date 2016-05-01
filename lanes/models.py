@@ -79,8 +79,9 @@ class User(AbstractUser):
     return org in self.subscribed.all()
 
   def can_view(self, room):
-    return room.organisation in self.organisations.all() or \
-        room.organisation.visibility != Organisation.VISIBILITY_PRIVATE
+    return (room in self.organisations.all() or
+        room.organisation.visibility != Organisation.VISIBILITY_PRIVATE) and (
+        room.privacy == Room.PRIVACY_PUBLIC or self in room.members.all())
 
   def __unicode__(self):
     return self.username
@@ -102,12 +103,23 @@ class OrgMembership(models.Model):
 
 
 class Room(models.Model):
+
+  PRIVACY_PUBLIC = 0   # Anyone can see, chat
+  PRIVACY_PRIVATE = 1  # Only members and mods can see
+
+  PRIVACY_CHOICES = (
+      (PRIVACY_PUBLIC, "Public"),
+      (PRIVACY_PRIVATE, "Private")
+  )
+
   name = models.CharField(max_length=100)
   topic = models.CharField(max_length=200)
   organisation = models.ForeignKey(Organisation)
   creator = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='creator')
   created = models.DateTimeField(auto_now_add=True)
   owners = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='owners')
+  members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='members')
+  privacy = models.IntegerField(choices=PRIVACY_CHOICES)
 
   def get_history(self):
     posts = Post.objects.filter(room=self).order_by('-created')[:100]

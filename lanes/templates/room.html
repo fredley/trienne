@@ -63,6 +63,7 @@
 <script src="/static/js/room.js" type="text/javascript"></script>
 <script type="text/javascript">
 
+var room_id = {{ room.id }};
 var my_id = {{ user.id }};
 var my_name = '{{ user.username }}';
 var volume = {{ prefs.volume }};
@@ -72,13 +73,6 @@ var is_admin = {{ is_admin|yesno:"true,false" }};
 var shout = $('#shout');
 var sock_uri = '{{ WEBSOCKET_URI }}room_{{ room.id }}?subscribe-broadcast';
 var hb = {{ WS4REDIS_HEARTBEAT }};
-var urls = {
-	edit: "{% url 'post_edit' %}",
-	pin: "{% url 'room_pin' room.id %}",
-	post: "{% url 'room_post' room.id %}",
-	prefs: "{% url 'room_prefs' room.id %}",
-	vote: "{% url 'post_vote' %}",
-};
 
 var post_history = [
   {% for post in room.history %}
