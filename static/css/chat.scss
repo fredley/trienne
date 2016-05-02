@@ -258,6 +258,10 @@ pre {
     left: 3px;
     font-size: 8px;
   }
+  &.deleted .content{
+    opacity: 0.5;
+    font-style: italic;
+  }
   &.pinned{
     border-right:3px solid $themeColor2;
     .pin{
@@ -273,6 +277,14 @@ pre {
     font-size:inherit;
     border-left:1px dotted $themeColor1;
     padding:2px 5px;
+  }
+  .link{
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 10px;
+    cursor: pointer;
+    opacity: 0;
   }
   .controls{
     cursor:pointer;
@@ -375,15 +387,10 @@ pre {
     &:hover{
       border:1px dotted #ccc;
       &:before{
-        font-family: 'Glyphicons Halflings';
-        content:"\e144";
-        position: absolute;
-        top: 4px;
-        left: 3px;
-        font-size: 8px;
-        cursor:pointer;
+        opacity: 0;
       }
-      .controls i{
+      .controls i,
+      .link {
         opacity: 1;
       }
     }
@@ -471,6 +478,29 @@ pre {
 }
 
 /*   AUTOCOMPLETE   */
+.ajax-complete{
+  position:relative;
+
+  .ajax-results{
+    height: 15px;
+    width: 100%;
+    overflow: visible;
+    position: absolute;
+    z-index: 2;
+
+    .result{
+      background: #fff;
+      border: 1px solid $lightLines;
+      padding: 5px 12px;
+      border-top: none;
+      width: 100%;
+
+      &.selected{
+        background:#eee;
+      }
+    }
+  }
+}
 
 .results_on_deck{
   div{

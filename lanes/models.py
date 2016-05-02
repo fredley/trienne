@@ -180,12 +180,19 @@ class Post(models.Model):
   def get_raw(self):
     if self.deleted:
       return "(deleted)"
-    return PostContent.objects.filter(post=self).order_by('-created')[0].raw
+    return self.get_history()[0].raw
 
   def get_content(self):
     if self.deleted:
       return "(deleted)"
-    return PostContent.objects.filter(post=self).order_by('-created')[0].content
+    return self.get_history()[0].content
+
+  def get_history(self):
+    qs = PostContent.objects.filter(post=self).order_by('-created')
+    if self.deleted:
+      return [qs[0]]
+    else:
+      return qs
 
   def is_edited(self):
     return PostContent.objects.filter(post=self).count() > 1
@@ -197,6 +204,7 @@ class Post(models.Model):
   raw = property(get_raw)
   edited = property(is_edited)
   score = property(get_score)
+  history = property(get_history)
 
 
 class Vote(models.Model):

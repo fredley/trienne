@@ -12,6 +12,7 @@ admin.autodiscover()
 
 
 urlpatterns = [
+    url(r'^ajax/users/org/$', UserJsonView.as_view(data='org'), name='ajax_users_org'),
     url(r'^ajax/orgs/all/$', OrgJsonView.as_view(data='all'), name='ajax_orgs_all'),
     url(r'^ajax/orgs/mine/$', OrgJsonView.as_view(data='mine'), name='ajax_orgs_mine'),
     url(r'^ajax/orgs/watched/$', OrgJsonView.as_view(data='watched'), name='ajax_orgs_watching'),
@@ -32,10 +33,11 @@ urlpatterns = [
     url(r'^room/(?P<room_id>\d+)/pin/$', RoomPinView.as_view(), name='room_pin'),
     url(r'^room/(?P<room_id>\d+)/edit/$', RoomEditView.as_view(), name='room_edit'),
     url(r'^room/(?P<room_id>\d+)/prefs/$', RoomPrefsView.as_view(), name='room_prefs'),
+    url(r'^room/(?P<room_id>\d+)/add_member/$', RoomMemberView.as_view(), name='room_member'),
 
     url(r'^post/(?P<post_id>\d+)/edit/$', PostEditView.as_view(), name='post_edit'),
     url(r'^post/(?P<post_id>\d+)/vote/$', PostVoteView.as_view(), name='post_vote'),
-    url(r'^post/(?P<post_id>\d+)/history/$', PostHistoryView.as_view()),
+    url(r'^post/(?P<post_id>\d+)/history/$', PostHistoryView.as_view(), name='post_history'),
 
     url(r'^users/(?P<user_id>\d+)/$', UserProfileView.as_view(), name='user_profile'),
     url(r'^users/', include('django.contrib.auth.urls')),

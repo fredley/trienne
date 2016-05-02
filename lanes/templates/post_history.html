@@ -11,9 +11,17 @@
       <legend>History for post {{ post.id }}</legend>
       <div class="list-group">
         {% for state in history %}
-
+          <div class="list-group-item">
+            <span class="label label-default label-pill pull-right">{{ state.created }}</span>
+            <strong>{{ state.author }}:</strong> {{ state.content }}
+          </div>
         {% endfor %}
       </div>
+      {% if not post.deleted %}
+        <form action="." method="post">
+          <button type="submit" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i> Delete this post</button>
+        </form>
+      {% endif %}
     </div>
   </div>
 </div>

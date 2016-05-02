@@ -95,6 +95,88 @@ jQuery(document).ready(function($) {
     }
   });
 
+  // TODO: make this generic
+
+  $('#add-member').on('keydown', function(ev){
+    if(ev.keyCode === 40) { // down arrow
+      // select next
+      ev.preventDefault();
+      var selected = $('.result.selected');
+      if (selected.length === 0){
+        var el = $('.result').first();
+        el.addClass('selected');
+        $(this).val(el.text());
+      }else{
+        var el = selected.next();
+        if(el.length){
+          el.addClass('selected');
+          $(this).val(el.text());
+          selected.removeClass('selected');
+        }
+      }
+    }else if(ev.keyCode === 38) { //up arrow
+      // select previous
+      ev.preventDefault();
+      var selected = $('.result.selected');
+      if (selected.length !== 0){
+        var el = selected.prev();
+        if(el.length){
+          el.addClass('selected');
+          $(this).val(el.text());
+        }
+        selected.removeClass('selected');
+      }
+    }else if(ev.keyCode === 27 && editing) { // escape
+      $('#user-results').html('');
+    }else if (ev.keyCode === 13) { //return
+      // submit
+      ev.preventDefault();
+      $(this).attr('disabled','disabled');
+      var self = $(this);
+      var username = $(this).val();
+      $('#user-results').html('');
+      $.ajax({
+        method:'post',
+        url:'/room/' + room_id + '/add_member/',
+        data:{
+          username: username
+        },
+        success:function(data){
+          self.val('');
+          self.removeAttr('data-id');
+          self.parent().addClass('has-success');
+          var user = $('<div class="user user-' + data + '"></div>').text(username);
+          user.prepend('<span class="online-marker">&bull;</span>');
+          $('#users').append(user);
+        },
+        error:function(){
+          self.parent().addClass('has-error');
+        },
+        complete:function(){
+          self.removeAttr('disabled');
+        }
+      });
+    }else{
+      var val = $(this).val() + String.fromCharCode(ev.keyCode);
+      if(val !== ""){
+        $.ajax({
+          method: 'get',
+          url: '/ajax/users/org/',
+          data: {
+            org: org,
+            s: val
+          },
+          success: function(data){
+            $('#user-results').html('');
+            for (var i in data.results){
+              $('#user-results').append('<div class="result" data-id="' + data.results[i].id + '">' + data.results[i].username + '</div>')
+            }
+          }
+        });
+      }
+    }
+  });
+
   function startEdit(el){
     stopEdit();
     el.addClass('editing');
@@ -190,7 +272,9 @@ jQuery(document).ready(function($) {
     if (!loading && !mine && (volume == VOLUME_LOUD || (to == my_name && volume > VOLUME_QUIET))){
       notify(msg.author.name + ": " + text, msg.author.img);
     }
+    var link = $('<div class="link"><i class="glyphicon glyphicon-link"></i></div>');
     var message = $('<div class="message"></div>')
+      .append(link)
       .append($('<div class="content"></div>').html(parsed.content));
     var controls = $('<div class="controls"></div>');
     if (mine || is_admin) {
@@ -200,6 +284,12 @@ jQuery(document).ready(function($) {
       });
       controls.append(edit);
     }
+    link.on('click', function(){
+      var win = window.open('/post/' + id + '/history/', '_blank');
+      if(win){
+        win.focus();
+      }
+    });
     var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
     pin.on('click', function(){
       var code = Math.random().toString(36);
@@ -238,6 +328,9 @@ jQuery(document).ready(function($) {
     message.attr("data-targets","");
     if(msg.edited){
       message.addClass("edited");
+    }
+    if(msg.deleted){
+      message.addClass("deleted");
     }
     if(reply_to > 0){
       message.attr("data-targets",reply_to);
@@ -409,6 +502,9 @@ jQuery(document).ready(function($) {
       case "leave":
         $('.user-' + msg.id).find('.online-marker').removeClass('online');
         break;
+      case "delete":
+        $(".msg-" + msg.id).addClass('deleted').find(".content").html("(deleted)");
+        $("#medium .msg-" + msg.id).parent().remove();
     }
   }
 });

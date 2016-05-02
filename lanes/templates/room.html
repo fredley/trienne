@@ -25,6 +25,12 @@
 	      {% endif %}
 	    </p>
 		</div>
+    {% if is_admin or is_owner or room.privacy == room.PRIVACY_PUBLIC %}
+    <div class="ajax-complete">
+			<input class="form-control" id="add-member" type="text" placeholder="Add user">
+			<div class="ajax-results" id="user-results"></div>
+		</div>
+		{% endif %}
     <div class="user-list" id="users">
     {% for u in users %}
     	<div class="user user-{{ u.id }}">
@@ -63,6 +69,7 @@
 <script src="/static/js/room.js" type="text/javascript"></script>
 <script type="text/javascript">
 
+var org = '{{ org.slug }}';
 var room_id = {{ room.id }};
 var my_id = {{ user.id }};
 var my_name = '{{ user.username }}';
@@ -85,6 +92,7 @@ var post_history = [
       content: '{{ post.content|multiline|safe }}',
       raw: '{{ post.raw|multiline }}',
       edited: {{ post.edited|yesno:"true,false" }},
+      deleted: {{ post.deleted|yesno:"true,false" }},
       id: {{ post.id }}
     },
   {% endfor %}

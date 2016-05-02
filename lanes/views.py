@@ -107,6 +107,8 @@ class AjaxResponseMixin(object):
 
 class RoomPostView(LoginRequiredMixin, View):
 
+  require_admin = False
+
   @csrf_exempt
   def dispatch(self, *args, **kwargs):
     return super(RoomPostView, self).dispatch(*args, **kwargs)
@@ -116,6 +118,9 @@ class RoomPostView(LoginRequiredMixin, View):
     if self.room.organisation not in request.user.organisations.all():
       raise PermissionDenied
     if self.room.privacy == Room.PRIVACY_PRIVATE and request.user not in self.room.members.all():
+      raise PermissionDenied
+    if self.require_admin and not (request.user.is_admin(self.room.organisation) or
+      request.user not in self.room.owners.all()):
       raise PermissionDenied
     self.publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
     return self.generate_response(request)
@@ -235,6 +240,17 @@ class RoomMessageView(RoomPostView):
     return HttpResponse('OK')
 
 
+class RoomMemberView(RoomPostView):
+
+  require_admin = True
+
+  def generate_response(self, request):
+    user = User.objects.get(username=request.POST.get('username').strip())
+    OrgMembership.objects.get(user=user, organisation=self.room.organisation)
+    self.room.members.add(user)
+    return HttpResponse(user.id)
+
+
 class OrgMixin(LoginRequiredMixin):
 
   require_admin = False
@@ -295,6 +311,7 @@ class PostView(LoginRequiredMixin):
 
   require_owner = True
   require_not_owner = False
+  allow_deleted = False
 
   @csrf_exempt
   def dispatch(self, *args, **kwargs):
@@ -310,7 +327,9 @@ class PostView(LoginRequiredMixin):
     if self.require_not_owner and post.author == user:
       logger.debug("My post!")
       raise PermissionDenied
-    logger.debug("All fine")
+    if not self.allow_deleted and post.deleted:
+      logger.debug("Deleted post!")
+      raise PermissionDenied
     return super(PostView, self).dispatch(*args, **kwargs)
 
 
@@ -380,23 +399,61 @@ class PostVoteView(PostView, View):
 class PostHistoryView(PostView, TemplateView):
 
   template_name = "post_history.html"
+  allow_deleted = True
 
   def get_context_data(self, **kwargs):
     context = super(PostHistoryView, self).get_context_data(**kwargs)
-    context.update(post=self.post,
-                   org=self.post.organisation,
-                   is_admin=self.request.user.is_admin(post.room.organisation),
-                   can_participate=self.request.user.is_member(post.room.organisation))
+    logger.debug(self.msg)
+    context.update(post=self.msg,
+                   history=self.msg.history,
+                   org=self.msg.room.organisation,
+                   is_admin=self.request.user.is_admin(self.msg.room.organisation),
+                   can_participate=self.request.user.is_member(self.msg.room.organisation))
     return context
 
   def post(self, request, *args, **kwargs):
-    self.post.deleted = True
-    self.post.save()
-    return HttpResponseRedirect(reverse('post_history', kwargs={'post_id': self.post.id}))
+    if self.msg.deleted:
+      raise PermissionDenied
+    self.msg.deleted = True
+    self.msg.pinned = False
+    self.msg.save()
+    content = PostContent(
+        author=request.user,
+        post=self.msg,
+        raw="(deleted)",
+        content="(deleted)")
+    content.save()
+    message = {
+        'type': 'delete',
+        'id': self.msg.id
+    }
+    RedisPublisher(facility='room_' + str(self.msg.room.id), broadcast=True) \
+        .publish_message(RedisMessage(json.dumps(message)))
+    return HttpResponseRedirect(reverse('post_history', kwargs={'post_id': self.msg.id}))
 
 
 class OrgsView(TemplateView):
   template_name = 'orgs.html'
+
+
+class UserJsonView(View):
+  """ endpoint to supply data for user autocomplete """
+
+  data = 'org'
+
+  def get(self, request, *args, **kwargs):
+    logger.debug(request.GET)
+    if 'org' not in request.GET or 's' not in request.GET:
+      raise PermissionDenied
+    org = Organisation.objects.get(slug=request.GET.get('org'))
+    memberships = OrgMembership.objects.filter(organisation=org, user__username__icontains=request.GET.get('s'))[:10]
+    res = []
+    for m in memberships:
+      res.append({
+          'id': m.user.id,
+          'username': m.user.username
+      })
+    return JsonResponse({'results': res})
 
 
 class OrgJsonView(View):
