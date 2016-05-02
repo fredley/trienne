@@ -272,24 +272,24 @@ jQuery(document).ready(function($) {
     if (!loading && !mine && (volume == VOLUME_LOUD || (to == my_name && volume > VOLUME_QUIET))){
       notify(msg.author.name + ": " + text, msg.author.img);
     }
-    var link = $('<div class="link"><i class="glyphicon glyphicon-link"></i></div>');
     var message = $('<div class="message"></div>')
-      .append(link)
       .append($('<div class="content"></div>').html(parsed.content));
     var controls = $('<div class="controls"></div>');
     if (mine || is_admin) {
+      var link = $('<div class="link"><i class="glyphicon glyphicon-link"></i></div>');
+      link.on('click', function(){
+        var win = window.open('/post/' + id + '/history/', '_blank');
+        if(win){
+          win.focus();
+        }
+      });
+      message.prepend(link);
       var edit = $('<i class="glyphicon glyphicon-pencil edit"></i>');
       edit.on('click',function(){
         startEdit($(this).parent().parent());
       });
       controls.append(edit);
     }
-    link.on('click', function(){
-      var win = window.open('/post/' + id + '/history/', '_blank');
-      if(win){
-        win.focus();
-      }
-    });
     var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
     pin.on('click', function(){
       var code = Math.random().toString(36);
