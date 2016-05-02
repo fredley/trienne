@@ -20,7 +20,7 @@
 	        <i class="volume glyphicon glyphicon-volume-up   {% if prefs.volume == prefs.LOUD %}active{% endif %}"
 	           data-volume="{{ prefs.LOUD }}"></i>
 	      </span>
-	      {% if user.is_admin %}
+	      {% if is_admin or is_owner %}
 		      <a href="{% url 'room_edit' room.id %}"><i class="glyphicon glyphicon-pencil"></i> Edit this room</a>
 	      {% endif %}
 	    </p>

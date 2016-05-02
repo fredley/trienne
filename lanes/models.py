@@ -119,7 +119,7 @@ class Room(models.Model):
   created = models.DateTimeField(auto_now_add=True)
   owners = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='owners')
   members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='members')
-  privacy = models.IntegerField(choices=PRIVACY_CHOICES)
+  privacy = models.IntegerField(choices=PRIVACY_CHOICES, default=PRIVACY_PRIVATE)
 
   def get_history(self):
     posts = Post.objects.filter(room=self).order_by('-created')[:100]
