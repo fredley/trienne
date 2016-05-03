@@ -23,6 +23,7 @@ urlpatterns = [
 
     url(r'^org/(?P<slug>[\w-]+)/$', OrgView.as_view(), name='org'),
     url(r'^org/(?P<slug>[\w-]+)/manage/$', OrgManagementView.as_view(), name='manage_org'),
+    url(r'^org/(?P<slug>[\w-]+)/manage/approval/$', OrgApprovalView.as_view()),
     url(r'^org/(?P<slug>[\w-]+)/add_room/$', RoomAddView.as_view(), name='add_room'),
     url(r'^org/(?P<slug>[\w-]+)/join/$', OrgJoinView.as_view()),
     url(r'^org/(?P<slug>[\w-]+)/apply/$', OrgApplyView.as_view()),

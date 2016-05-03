@@ -274,10 +274,12 @@ class OrgMixin(LoginRequiredMixin):
 
   def get_context_data(self, **kwargs):
     context = super(OrgMixin, self).get_context_data(**kwargs)
+    user = self.request.user
     context.update(org=self.org,
-                   is_admin=self.request.user.is_admin(self.org),
-                   is_member=self.org in self.request.user.organisations.all(),
-                   is_follower=self.org in self.request.user.subscribed.all())
+                   is_admin=user.is_admin(self.org),
+                   has_applied=OrgApplication.objects.filter(user=user, organisation=self.org).count() > 0,
+                   is_member=self.org in user.organisations.all(),
+                   is_follower=self.org in user.subscribed.all())
     return context
 
 
@@ -365,7 +367,7 @@ class PostEditView(PostView, View):
         'id': self.msg.id
     }
     RedisPublisher(facility='room_' + str(self.msg.room.id), broadcast=True) \
-        .publish_message(RedisMessage(json.dumps(message)))
+        .publish_mressage(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
 
 
@@ -549,9 +551,31 @@ class OrgManagementView(OrgMixin, UpdateView):
   template_name = 'manage_org.html'
   model = Organisation
   context_object_name = 'org'
-  fields = ['visibility', 'privacy', 'admins']
+  form_class = OrgForm
   require_admin = True
 
+  def get_context_data(self, **kwargs):
+    context = super(OrgManagementView, self).get_context_data(**kwargs)
+    context.update(applications=OrgApplication.objects.filter(organisation=self.org, rejected=False))
+    return context
+
+
+class OrgApprovalView(OrgMixin, View):
+
+  require_admin = True
+
+  def post(self, request, *args, **kwargs):
+    user = User.objects.get(id=request.POST.get('id'))
+    application = OrgApplication.objects.get(user=user, organisation=self.org)
+    if request.POST.get('action') == 'approve':
+      OrgMembership(user=user, organisation=self.org).save()
+      application.delete()
+    elif request.POST.get('action') == 'deny':
+      application.rejected = True
+      application.save()
+    else:
+      raise SuspiciousOperation
+    return HttpResponse('OK')
 
 class OrgCreateView(LoginRequiredMixin, CreateView):
   model = Organisation
@@ -601,8 +625,8 @@ class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
 class OrgApplyView(OrgMixin, AjaxResponseMixin, View):
 
   def post(self, request, *args, **kwargs):
-    # TODO
-    return HttpResponse('OK')
+    OrgApplication(user=request.user, organisation=self.org).save()
+    return HttpResponse('applied')
 
 
 class OrgWatchView(OrgMixin, AjaxResponseMixin, View):

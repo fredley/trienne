@@ -8,6 +8,7 @@
 
 {% block main_content %}
 <div class="container-fluid">
+  <div class="alert alert-info" style="display:none;" id="apply-notice">You have applied to join this Community</div>
   <div id="org-actions">
     <button style="display:none;" id="btn-join" type="button" data-url="join" data-action="join" class="action btn btn-primary">
       <i class="glyphicon glyphicon-star"></i> Join this Community
@@ -55,14 +56,22 @@ $(document).ready(function(){
     {% if org.privacy == org.PRIVACY_OPEN %}
       $('#btn-join').show();
     {% elif org.privacy == org.PRIVACY_APPLY %}
-      $('#btn-apply').show();
+      {% if has_applied %}
+        $("#apply-notice").show();
+      {% else %}
+        $('#btn-apply').show();
+      {% endif %}
     {% endif %}
       $('#btn-unfollow').show();
   {% else %}
     {% if org.privacy == org.PRIVACY_OPEN %}
       $('#btn-join').show();
     {% elif org.privacy == org.PRIVACY_APPLY %}
-      $('#btn-apply').show();
+      {% if has_applied %}
+        $("#apply-notice").show();
+      {% else %}
+        $('#btn-apply').show();
+      {% endif %}
     {% endif %}
     $('#btn-follow').show();
   {% endif %}
@@ -97,6 +106,10 @@ $(document).ready(function(){
             $("#btn-join").show();
             $("#btn-follow").show();
             $("#btn-leave").hide();
+            break;
+          case 'applied':
+            $("#btn-apply").hide();
+            $("#apply-notice").show();
             break;
         }
       }

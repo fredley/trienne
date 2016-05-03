@@ -9,10 +9,11 @@ admin.site.register(User)
 
 class OrgAdmin(AjaxSelectAdmin):
 
-    form = make_ajax_form(Organisation, {'admins': 'admins'})
+    form = make_ajax_form(Organisation, {'admins': 'users'})
 
 admin.site.register(Organisation, OrgAdmin)
 admin.site.register(OrgMembership)
+admin.site.register(OrgApplication)
 admin.site.register(Room)
 admin.site.register(RoomPrefs)
 admin.site.register(Post)

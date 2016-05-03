@@ -102,6 +102,17 @@ class OrgMembership(models.Model):
     return str(self.organisation) + " - " + str(self.user)
 
 
+class OrgApplication(models.Model):
+
+  organisation = models.ForeignKey(Organisation)
+  user = models.ForeignKey(User)
+  created = models.DateTimeField(auto_now_add=True)
+  rejected = models.BooleanField(default=False)
+
+  class Meta:
+    unique_together = ('user', 'organisation',)
+
+
 class Room(models.Model):
 
   PRIVACY_PUBLIC = 0   # Anyone can see, chat

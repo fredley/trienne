@@ -10,7 +10,61 @@
     <div class="col-sm-6 col-sm-offset-3">
       <legend>Manage {{ org.name }}</legend>
       {{ form|bootstrap }}
+      <button class="btn btn-success" type="submit">Apply Changes</button>
+    </div>
+    <div class="col-sm-6 col-sm-offset-3">
+      <hr>
+        <div style="display:none;" id="user-list">
+          <legend>Users awaiting approval</legend>
+          <div class="list-group">
+          {% for a in applications %}
+            <div class="list-group-item">
+              {{ a.user.username }}
+              <div class="btn-group pull-right application">
+                <button class="btn approval btn-xs btn-danger" data-action="deny" data-id="{{ a.user.id }}">Deny</button>
+                <button class="btn approval btn-xs btn-success" data-action="approve" data-id="{{ a.user.id }}">Approve</button>
+              </div>
+            </div>
+          {% endfor %}
+          </div>
+        </div>
+        <div style="display:none;" id="no-users" class="alert alert-info">There are no users awaiting approval</div>
     </div>
   </div>
 </div>
 {% endblock main_content %}
+
+{% block script_panel %}
+<script type="text/javascript" src="/static/ajax_select/js/bootstrap.js"></script>
+<script type="text/javascript" src="/static/ajax_select/js/ajax_select.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+
+    {% if applications.count > 0 %}
+      $("#user-list").show();
+    {% else %}
+      $("#no-users").show();
+    {% endif %}
+
+    $('.approval').on('click',function(){
+      var self = $(this);
+      self.parent().find('.btn').attr('disabled', 'disabled');
+      $.ajax({
+        url:"/org/{{ org.slug }}/manage/approval/",
+        method:"post",
+        data:{
+          action:self.attr('data-action'),
+          id:self.attr('data-id')
+        },
+        success: function(){
+          self.parent().parent().slideUp('fast');
+          if($(".application:visible").length == 0){
+            $("#user-list").hide();
+            $("#no-users").show();
+          }
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
