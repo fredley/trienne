@@ -32,13 +32,23 @@ logger = logging.getLogger('django')
 User = get_user_model()
 
 
-def valid_link(text, image=False):
+lf_youtube = re.compile(ur'(.*)v=([A-Za-z0-9]*)')
+
+def valid_link(text, is_onebox=False):
   if len(text.split(" ")) != 1 or '"' in text or "'" in text:
     return False
   url = urlparse(text)
-  if image and url.path.lower().split(".")[-1] not in ["jpg", "jpeg", "png", "gif"]:
-    return False
-  return url.scheme in ['http', 'https'] and len(re.findall(url_dot_test, url.netloc)) > 0
+  if url.scheme in ['http', 'https'] and len(re.findall(url_dot_test, url.netloc)) > 0:
+    # Is a valid link, now find out what kind
+    if not is_onebox:
+      return True
+    if url.path.lower().split(".")[-1] in ["jpg", "jpeg", "png", "gif"]:
+      return onebox('<a href="{0}" rel="nofollow" target="_blank"><img src="{0}" alt="" onload="scrolldown()"></a>'.format(text))
+    elif url.netloc in ["www.youtube.com", "youtube.com", "youtu.be"]:
+      slug = url.path[1:] if url.netloc == "youtu.be" else re.search(lf_youtube, url.query).group(2)
+      return onebox('<iframe width="400" height="300" src="https://www.youtube.com/embed/{}" frameborder="0"></iframe>'.format(slug))
+    else:
+      return False
 
 
 def link_formatter(match_obj):
@@ -48,9 +58,6 @@ def link_formatter(match_obj):
   return r'<a href="{}" rel="nofollow">{}</a>'.format(link, match_obj.group(1))
 
 
-def onebox(text):
-  return '<div class="ob">{}</div>'.format(text)
-
 md_rules = collections.OrderedDict()
 md_rules[re.compile(r'\[([^\[]+)\]\(([^\)]+)\)')] = link_formatter    # links
 md_rules[re.compile(r'(\*\*|__)(.*?)\1')] = r'<strong>\2</strong>'    # bold
@@ -58,6 +65,10 @@ md_rules[re.compile(r'(\*|_)(.*?)\1')] = r'<em>\2</em>'               # emphasis
 md_rules[re.compile(r'\-\-\-(.*?)\-\-\-')] = r'<del>\1</del>'         # del
 md_rules[re.compile(r'^&gt; (.*)')] = r'<blockquote>\1</blockquote>'  # quote
 md_rules[re.compile(r'`(.*?)`')] = r'<code>\1</code>'                 # inline code
+
+
+def onebox(text):
+  return '<div class="ob">' + text + '</div>'
 
 
 def process_text(text):
@@ -76,9 +87,9 @@ def process_text(text):
   if is_code:
     return "<pre>{}</pre>".format(escape(code).replace("'", "&#39;"))
   # Check for oneboxes
-  # Images - entire message is an image url
-  if valid_link(text, image=True):
-    return onebox('<a href="{0}" rel="nofollow" target="_blank"><img src="{0}" alt="" onload="scrolldown()"></a>'.format(text))
+  link = valid_link(text, is_onebox=True)
+  if link != False:
+    return link
   text = escape(text).replace("'", "&#39;").replace("\n", "<br>")
   # Apply Markdown rules
   for regex, replacement in md_rules.items():
