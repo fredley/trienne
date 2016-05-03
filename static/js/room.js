@@ -61,6 +61,9 @@ jQuery(document).ready(function($) {
             url: "/room/" + room_id + "/post/",
             data: {
               message: message
+            },
+            error:function(data){
+              alert(data.message);
             }
           });
         }
