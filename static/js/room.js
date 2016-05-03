@@ -502,7 +502,8 @@ jQuery(document).ready(function($) {
           $('.user-' + msg.id).find('.online-marker').addClass('online');
         } else {
           var user = $('<div class="user user-' + msg.id + '"></div>').text(msg.username);
-          user.prepend('<span class="online-marker online">&bull;</span>');
+          user.prepend('<img src="' + msg.img + '" alt="">');
+          user.append('<div class="online-marker online"></div>');
           $('#users').append(user);
         }
         break;

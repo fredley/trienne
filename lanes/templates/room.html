@@ -34,8 +34,9 @@
     <div class="user-list" id="users">
     {% for u in users %}
     	<div class="user user-{{ u.id }}">
-    		<span class="online-marker {{ u.online|yesno:"online," }}">&bull;</span>
+    		<img src="{% gravatar_url u.email 32 %}" alt="" class="profile-picture">
     		{{ u.username }}
+    		<div class="online-marker {{ u.online|yesno:"online," }}"></div>
     	</div>
     {% endfor %}
     </div>

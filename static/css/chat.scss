@@ -142,17 +142,33 @@ pre {
   border-bottom-right-radius: 5px;
 }
 .user-list{
+
+  .user{
+    position: relative;
+    margin-bottom:5px;
+  }
+
+  img{
+    width: 16px;
+    height: 16px;
+    border-radius:2px;
+    float:left;
+    margin-right:5px;
+    clear:both;
+  }
+
   .online-marker{
-    font-size: 35px;
-    line-height: 12px;
-    margin-top: 2px;
-    display: inline-block;
-    float: left;
-    margin-right: 5px;
-    color:#777;
+    position: absolute;
+    top:12px;
+    left:12px;
+    width:8px;
+    height:8px;
+    background-image:url('../img/indicator-offline.png');
+    z-index: 3;
+    background-size:100% 100%;
 
     &.online{
-      color:#48A04A;
+      background-image:url('../img/indicator-online.png');
     }
   }
 }

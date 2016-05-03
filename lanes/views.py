@@ -35,6 +35,7 @@ User = get_user_model()
 
 lf_youtube = re.compile(ur'(.*)v=([A-Za-z0-9]*)')
 
+
 def valid_link(text, is_onebox=False):
   if len(text.split(" ")) != 1 or '"' in text or "'" in text:
     return False
@@ -91,7 +92,7 @@ def process_text(text):
     return "<pre>{}</pre>".format(escape(code).replace("'", "&#39;"))
   # Check for oneboxes
   link = valid_link(text, is_onebox=True)
-  if link != False:
+  if link is not False:
     return link
   text = escape(text).replace("'", "&#39;").replace("\n", "<br>")
   # Apply Markdown rules
@@ -102,8 +103,8 @@ def process_text(text):
 
 def ratelimit(request, ex):
   return JsonResponse({
-    'error': True,
-    'message': 'Too Fast!'
+      'error': True,
+      'message': 'Too Fast!'
     }, status=418)
 
 
@@ -179,6 +180,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
     for u in users:
       online.append({
           "username": u.username,
+          "email": u.email,
           "id": u.id,
           "online": (publisher.get_present(u) or u == self.request.user)
       })
@@ -186,7 +188,8 @@ class RoomView(LoginRequiredMixin, TemplateView):
         'type': 'join',
         'id': self.request.user.id,
         # Add this in case user is brand new and not in list
-        'username': self.request.user.username
+        'username': self.request.user.username,
+        'img': get_gravatar_url(self.request.user.email, size=32)
     }
     publisher.publish_message(RedisMessage(json.dumps(message)))
     context.update(room=room,
@@ -591,6 +594,7 @@ class OrgApprovalView(OrgMixin, View):
     else:
       raise SuspiciousOperation
     return HttpResponse('OK')
+
 
 class OrgCreateView(LoginRequiredMixin, CreateView):
   model = Organisation
