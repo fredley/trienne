@@ -229,9 +229,7 @@ jQuery(document).ready(function($) {
           var num = parseInt(numStr, 10);
           return String.fromCharCode(num);
         });
-        console.log(image);
         image = image.replace('s=32','s=128');
-        console.log(image);
         var opts = {
           body: text,
           icon: image
@@ -269,7 +267,8 @@ jQuery(document).ready(function($) {
     var text = parsed.text;
     var to = parsed.to;
     var reply_to = parsed.reply_to;
-    if (!loading && !mine && (volume == VOLUME_LOUD || (to == my_name && volume > VOLUME_QUIET))){
+    var pinged = parsed.text.indexOf("@" + my_name) >= 0;
+    if (!loading && !mine && (volume == VOLUME_LOUD || ((to == my_name || pinged) && volume > VOLUME_QUIET))){
       notify(msg.author.name + ": " + text, msg.author.img);
     }
     var message = $('<div class="message"></div>')
@@ -472,7 +471,6 @@ jQuery(document).ready(function($) {
           el.find('.vote').addClass('disabled');
         }
         if (idx >= 0) {
-          console.log("I pinned this!");
           if (msg.author_id != my_id){
             markVoted(el.find('.votes'), 1);
           }
@@ -485,10 +483,16 @@ jQuery(document).ready(function($) {
         break;
       case "edit":
         var parsed = parseReply(msg.content);
-        $('.msg-' + msg.id)
-        .addClass('edited')
+        var msg = $('.msg-' + msg.id);
+        msg.addClass('edited')
         .attr('data-raw', msg.raw)
         .find('.content').html(parsed.content);
+        var ping = msg.content.indexOf("@" + my_name) >= 0;
+        if(volume > VOLUME_QUIET && ping){
+          author = msg.parent().find('.author');
+          img = author.find("img").attr("src");
+          notify(author.text() + ": " + text, img);
+        }
         break;
       case "join":
         if($('.user-' + msg.id).length > 0){
