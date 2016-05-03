@@ -4,30 +4,33 @@
 
 {% block main_content %}
 <div class="row">
-  <div class="col-xs-12 col-sm-8 col-sm-offset-2" style="margin-top: 2em;">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Please register</h3>
-      </div>
-      <div class="panel-body">
-        {% if invite %}
-          <form class="form" action="{% url 'register' %}" method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                <input class="form-control" placeholder="Username" name="username" type="text">
-            </div>
-            <div class="form-group">
-              <input class="form-control" placeholder="Password" name="password" type="password" value="">
-            </div>
-            <input type="hidden" name="email" value="{{ invite.email }}">
-            <input type="hidden" name="organisation" value="{{ invite.organisation.id }}">
-            <input class="btn btn-lg btn-success btn-block" type="submit" value="Register">
-          </form>
-        {% else %}
-          <p class="alert alert-info">Sorry, registration is invitation-only right now</p>
-        {% endif %}
-      </div>
-    </div>
-  </div>
+	<div class="col-xs-12 col-sm-8 col-sm-offset-2" style="margin-top: 2em;">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Please register</h3>
+			</div>
+			<div class="panel-body">
+				<form class="form" action="{% url 'register' %}" method="post">
+					{% csrf_token %}
+					<div class="form-group">
+						<input class="form-control" placeholder="Username" name="username" type="text">
+					</div>
+					<div class="form-group">
+						<input class="form-control" placeholder="Password" name="password" type="password" value="">
+					</div>
+					{% if invite %}
+					<input type="hidden" name="email" value="{{ invite.email }}">
+					<input type="hidden" name="organisation" value="{{ invite.organisation.id }}">
+					<input class="btn btn-lg btn-success btn-block" type="submit" value="Join {{ invite.organisation.name }}">
+					{% else %}
+					<div class="form-group">
+						<input class="form-control" placeholder="Email" name="email" type="email">
+					</div>
+					<input class="btn btn-lg btn-success btn-block" type="submit" value="Register">
+					{% endif %}
+				</form>
+			</div>
+		</div>
+	</div>
 </div>
 {% endblock main_content %}

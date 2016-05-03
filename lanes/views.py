@@ -515,6 +515,11 @@ class UserManagementView(LoginRequiredMixin, AjaxResponseMixin, CreateView):
     return ''
 
   def form_valid(self, form):
+    users = User.objects.filter(email=form.instance.email)
+    if users.count() > 0:
+      # Just add user as member
+      OrgMembership(user=users[0], organisation=form.instance.organisation).save()
+      return HttpResponse('OK')
     response = super(UserManagementView, self).form_valid(form)  # Saves form
     org = form.instance.organisation
     link = 'http://' + settings.ALLOWED_HOSTS[0] + reverse('invitation', kwargs={'token': form.instance.token})
@@ -641,14 +646,18 @@ class RegisterView(TemplateView):
     user = User.objects.create_user(request.POST['username'], request.POST['email'],
                                     request.POST['password'])
     user.save()
-    org = Organisation.objects.get(id=request.POST.get('organisation'))
-    invites = Invitation.objects.filter(email=request.POST.get('email'), organisation=org)
-    if invites.count() == 0:
-      raise PermissionDenied
-    membership = OrgMembership(user=user, organisation=org)
-    membership.save()
-    [i.delete() for i in invites]
+    if 'organisation' in request.POST:
+      org = Organisation.objects.get(id=request.POST.get('organisation'))
+      invites = Invitation.objects.filter(email=request.POST.get('email'), organisation=org)
+      if invites.count() == 0:
+        raise PermissionDenied
+      membership = OrgMembership(user=user, organisation=org)
+      membership.save()
+      [i.delete() for i in invites]
     u = authenticate(username=request.POST['username'], password=request.POST['password'])
     if u is not None and u.is_active:
       login(request, u)
-    return HttpResponseRedirect(reverse('org', kwargs={'slug': org.slug}))
+    if 'organisation' in request.POST:
+      return HttpResponseRedirect(reverse('org', kwargs={'slug': org.slug}))
+    else:
+      return HttpResponseRedirect(reverse('orgs'))
