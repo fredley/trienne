@@ -80,6 +80,7 @@ INSTALLED_APPS = (
     'ajax_select',
     'django_gravatar',
     'bootstrapform',
+    'ratelimit',
     'ws4redis',
     'lanes',
 )
@@ -92,7 +93,10 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'ratelimit.middleware.RatelimitMiddleware',
 )
+
+RATELIMIT_VIEW = 'lanes.views.ratelimit'
 
 WSGI_APPLICATION = 'ws4redis.django_runserver.application'
 

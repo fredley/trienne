@@ -21,6 +21,7 @@ from django.views.generic.edit import CreateView, UpdateView
 from django.views.decorators.csrf import csrf_exempt
 
 from django_gravatar.helpers import get_gravatar_url
+from ratelimit.mixins import RatelimitMixin
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
 
@@ -49,6 +50,8 @@ def valid_link(text, is_onebox=False):
       return onebox('<iframe width="400" height="300" src="https://www.youtube.com/embed/{}" frameborder="0"></iframe>'.format(slug))
     else:
       return False
+  else:
+    return False
 
 
 def link_formatter(match_obj):
@@ -97,6 +100,13 @@ def process_text(text):
   return text.strip()
 
 
+def ratelimit(request, ex):
+  return JsonResponse({
+    'error': True,
+    'message': 'Too Fast!'
+    }, status=418)
+
+
 class AjaxResponseMixin(object):
   def form_invalid(self, form):
     response = super(AjaxResponseMixin, self).form_invalid(form)
@@ -116,9 +126,13 @@ class AjaxResponseMixin(object):
       return response
 
 
-class RoomPostView(LoginRequiredMixin, View):
+class RoomPostView(LoginRequiredMixin, RatelimitMixin, View):
 
+  ratelimit_key = 'user'
+  ratelimit_rate = '1/s'
   require_admin = False
+  ratelimit_block = True
+  ratelimit_method = 'POST'
 
   @csrf_exempt
   def dispatch(self, *args, **kwargs):
@@ -228,6 +242,7 @@ class RoomMessageView(RoomPostView):
     raw = request.POST.get('message')
     try:
         processed = process_text(raw)
+        logger.debug(processed)
     except:
         return HttpResponse('Not OK')
     content = PostContent(
@@ -295,10 +310,10 @@ class RoomAddView(OrgMixin, CreateView):
     room = form.save(commit=False)
     room.organisation = self.org
     room.creator = self.request.user
+    room.save()
     room.members = [self.request.user]
     if self.request.user not in room.owners.all():
       room.owners.add(self.request.user)
-    room.save()
     self.object = room
     return HttpResponseRedirect(reverse("room", kwargs={"room_id": room.id}))
 
