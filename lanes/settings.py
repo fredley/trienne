@@ -45,6 +45,7 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 SESSION_ENGINE = 'redis_sessions.session'
 
+SESSION_REDIS_HOST = os.environ.get("REDIS_URL")
 SESSION_REDIS_PREFIX = 'session'
 
 TEMPLATES = [
@@ -110,6 +111,12 @@ MIDDLEWARE_CLASSES = (
 RATELIMIT_VIEW = 'lanes.views.ratelimit'
 
 WSGI_APPLICATION = 'ws4redis.django_runserver.application'
+
+WS4REDIS_CONNECTION = {
+    'host': os.environ.get("REDIS_URL"),
+    'port': 7539,
+    'db': 1,
+}
 
 WEBSOCKET_URL = '/ws/'
 WS4REDIS_EXPIRE = 3600
