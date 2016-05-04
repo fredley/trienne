@@ -46,10 +46,10 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 SESSION_ENGINE = 'redis_sessions.session'
 
-REDIS_URL = urlparse(os.environ.get("REDIS_URL"))
+HEROKU_REDIS_URL = urlparse(os.environ.get("REDIS_URL"))
 
-SESSION_REDIS_HOST = REDIS_URL.netloc
-SESSION_REDIS_HOST = REDIS_URL.port
+SESSION_REDIS_HOST = HEROKU_REDIS_URL.netloc
+SESSION_REDIS_HOST = HEROKU_REDIS_URL.port
 SESSION_REDIS_DB = 0
 SESSION_REDIS_PREFIX = 'session'
 
@@ -118,9 +118,10 @@ RATELIMIT_VIEW = 'lanes.views.ratelimit'
 WSGI_APPLICATION = 'ws4redis.django_runserver.application'
 
 WS4REDIS_CONNECTION = {
-    'host': REDIS_URL.netloc,
-    'port': REDIS_URL.port,
+    'host': HEROKU_REDIS_URL.netloc,
+    'port': HEROKU_REDIS_URL.port,
     'db': 1,
+    'password': None,
 }
 
 WEBSOCKET_URL = '/ws/'
