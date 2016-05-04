@@ -44,7 +44,10 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 SESSION_ENGINE = 'redis_sessions.session'
 
-HEROKU_REDIS_URL = urlparse(os.environ.get("REDIS_URL"))
+try:
+    HEROKU_REDIS_URL = urlparse(os.environ.get("REDIS_URL"))
+except:
+    HEROKU_REDIS_URL = urlparse('localhost:6379')
 
 SESSION_REDIS_USERNAME = HEROKU_REDIS_URL.username
 SESSION_REDIS_PASSWORD = HEROKU_REDIS_URL.password
@@ -165,3 +168,8 @@ LOGGING = {
         },
     },
 }
+
+try:
+    from local_settings import *
+except:
+    pass
