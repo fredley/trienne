@@ -1,1 +1,1 @@
-web: uwsgi --http :8001 --module lanes.wsgi
+web: uwsgi uwsgi.ini
