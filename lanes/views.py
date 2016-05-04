@@ -705,6 +705,8 @@ class RegisterView(TemplateView):
     return context
 
   def post(self, request, *args, **kwargs):
+    if request.POST.get('key') != "goldfish":
+      raise PermissionDenied
     user = User.objects.create_user(request.POST['username'], request.POST['email'],
                                     request.POST['password'])
     user.save()

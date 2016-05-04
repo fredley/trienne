@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
+from urlparse import urlparse
 
 from .socket import get_allowed_channels
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['lanr.herokuapp.com', 'localhost']
 
 DATABASES = {
     'default': {
@@ -17,7 +18,12 @@ DATABASES = {
     }
 }
 
-ALLOWED_HOSTS = ["localhost"]
+try:
+    import dj_database_url
+    db_from_env = dj_database_url.config()
+    DATABASES['default'].update(db_from_env)
+except:
+    pass
 
 AUTH_USER_MODEL = 'lanes.User'
 
@@ -31,10 +37,20 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
+
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 SESSION_ENGINE = 'redis_sessions.session'
 
+HEROKU_REDIS_URL = urlparse(os.environ.get("REDIS_URL"))
+
+SESSION_REDIS_USERNAME = HEROKU_REDIS_URL.username
+SESSION_REDIS_PASSWORD = HEROKU_REDIS_URL.password
+SESSION_REDIS_HOST = HEROKU_REDIS_URL.hostname
+SESSION_REDIS_PORT = HEROKU_REDIS_URL.port
+SESSION_REDIS_DB = 0
 SESSION_REDIS_PREFIX = 'session'
 
 TEMPLATES = [
@@ -94,11 +110,19 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'ratelimit.middleware.RatelimitMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 )
 
 RATELIMIT_VIEW = 'lanes.views.ratelimit'
 
 WSGI_APPLICATION = 'ws4redis.django_runserver.application'
+
+WS4REDIS_CONNECTION = {
+    'host': HEROKU_REDIS_URL.hostname,
+    'port': HEROKU_REDIS_URL.port,
+    'db': 1,
+    'password': HEROKU_REDIS_URL.password,
+}
 
 WEBSOCKET_URL = '/ws/'
 WS4REDIS_EXPIRE = 3600
