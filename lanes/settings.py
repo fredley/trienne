@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import urlparse
 
 from .socket import get_allowed_channels
 
@@ -45,7 +46,10 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 SESSION_ENGINE = 'redis_sessions.session'
 
-SESSION_REDIS_HOST = os.environ.get("REDIS_URL")
+REDIS_URL = urlparse(os.environ.get("REDIS_URL"))
+
+SESSION_REDIS_HOST = REDIS_URL.netloc
+SESSION_REDIS_HOST = REDIS_URL.port
 SESSION_REDIS_DB = 0
 SESSION_REDIS_PREFIX = 'session'
 
@@ -114,8 +118,8 @@ RATELIMIT_VIEW = 'lanes.views.ratelimit'
 WSGI_APPLICATION = 'ws4redis.django_runserver.application'
 
 WS4REDIS_CONNECTION = {
-    'host': os.environ.get("REDIS_URL"),
-    'port': 7539,
+    'host': REDIS_URL.netloc,
+    'port': REDIS_URL.port,
     'db': 1,
 }
 
