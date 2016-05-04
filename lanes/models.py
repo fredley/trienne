@@ -79,9 +79,18 @@ class User(AbstractUser):
     return org in self.subscribed.all()
 
   def can_view(self, room):
-    return (room in self.organisations.all() or
-        room.organisation.visibility != Organisation.VISIBILITY_PRIVATE) and (
-        room.privacy == Room.PRIVACY_PUBLIC or self in room.members.all())
+    if room.organisation not in self.organisations.all() and \
+        room.organisation.visibility == Organisation.VISIBILITY_PRIVATE:
+      logger.debug("not a member of private org")
+      return False
+    if room.privacy == Room.PRIVACY_PUBLIC:
+      return True
+    if self.is_admin(room.organisation):
+      return True
+    if self in room.members.all():
+      return True
+    logger.debug("Not a member or admin of private room")
+    return False
 
   def __unicode__(self):
     return self.username
@@ -191,12 +200,18 @@ class Post(models.Model):
   def get_raw(self):
     if self.deleted:
       return "(deleted)"
-    return self.get_history()[0].raw
+    try:
+      return self.get_history()[0].raw
+    except:
+      return "(error)"
 
   def get_content(self):
     if self.deleted:
       return "(deleted)"
-    return self.get_history()[0].content
+    try:
+      return self.get_history()[0].content
+    except:
+      return "(error)"
 
   def get_history(self):
     qs = PostContent.objects.filter(post=self).order_by('-created')

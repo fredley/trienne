@@ -161,6 +161,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
     context = super(RoomView, self).get_context_data(**kwargs)
     room = Room.objects.get(id=kwargs['room_id'])
     if not self.request.user.can_view(room):
+      logger.debug("Can't view")
       raise PermissionDenied
     elif self.request.user not in room.members.all():
       logger.debug("Added " + str(self.request.user) + " to " + str(room))
@@ -195,6 +196,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
     }
     publisher.publish_message(RedisMessage(json.dumps(message)))
     context.update(room=room,
+                   rooms=Room.objects.filter(members__in=[self.request.user]),
                    org=room.organisation,
                    is_admin=self.request.user.is_admin(room.organisation),
                    can_participate=self.request.user.is_member(room.organisation),
@@ -296,6 +298,7 @@ class OrgMixin(LoginRequiredMixin):
     context = super(OrgMixin, self).get_context_data(**kwargs)
     user = self.request.user
     context.update(org=self.org,
+                   rooms=Room.objects.filter(members__in=[user]),
                    is_admin=user.is_admin(self.org),
                    has_applied=OrgApplication.objects.filter(user=user, organisation=self.org).count() > 0,
                    is_member=self.org in user.organisations.all(),

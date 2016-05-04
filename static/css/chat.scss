@@ -37,14 +37,19 @@ header.navbar{
   height:50px;
   border-bottom:1px darken($lightLines,50%);
   box-shadow: 0 5px 5px rgba(0,0,0,0.1);
-  a{
+  .nav>li>a{
     color:#fff;
   }
   .nav>li.active>a,
-  .nav>li>a:hover, .nav>li>a:focus,
+  .nav>li>a:hover,
   .nav .open>a, .nav .open>a:hover, .nav .open>a:focus{
     background: lighten($themeColor2,10%);
   }
+
+  .nav>li>a:focus{
+    background: $themeColor2;
+  }
+
   .navbar-right{
     margin-right:0;
   }
