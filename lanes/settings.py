@@ -6,7 +6,7 @@ from .socket import get_allowed_channels
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = False
 
 ALLOWED_HOSTS = []
