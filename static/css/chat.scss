@@ -6,6 +6,7 @@ $myMessageBG:#e8e8ff;
 $themeColor1:#002C84;
 $themeColor2:#6762E8;
 $background:#fcfcfc;
+$dangerRed:#c9302c;
 
 $warningBG:#fcf8e3;
 
@@ -61,7 +62,7 @@ header.navbar{
   background-color:$themeColor2;
   border:none;
   &:hover{
-    background-color: #c9302c;
+    background-color: $dangerRed;
   }
 }
 pre {
@@ -191,6 +192,17 @@ pre {
   margin:0;
   padding:5px;
   display: table;
+
+  .error{
+    position: absolute;
+    top: -30px;
+    left: 42px;
+    background: $dangerRed;
+    color:#fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: none;
+  }
 
   .row-container{
     display: table-row;
@@ -437,9 +449,6 @@ pre {
         background:$themeColor2;
         border-radius:20px;
         color:#fff;
-        background: #6762E8;
-        border-radius: 20px;
-        color: #fff;
         font-size: 10px;
         padding: 5px;
         text-align: center;

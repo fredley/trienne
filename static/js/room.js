@@ -62,8 +62,10 @@ jQuery(document).ready(function($) {
             data: {
               message: message
             },
-            error:function(data){
-              alert(data.message);
+            error:function(response){
+              var data = JSON.parse(response.responseText);
+              console.log(data);
+              showError(data.message);
             }
           });
         }
@@ -179,6 +181,17 @@ jQuery(document).ready(function($) {
       }
     }
   });
+
+  function showError(msg){
+    var error = $('<div class="error">' + msg + '</div>');
+    $('#entry').append(error);
+    error.fadeIn('slow');
+    setTimeout(function(){
+      error.fadeOut('slow', function(){
+        error.remove();
+      });
+    }, 2000);
+  }
 
   function startEdit(el){
     stopEdit();

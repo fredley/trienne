@@ -130,11 +130,13 @@ class AjaxResponseMixin(object):
 class RoomPostView(LoginRequiredMixin, RatelimitMixin, View):
 
   ratelimit_key = 'user'
-  ratelimit_rate = '1/s'
-  require_admin = False
+  ratelimit_rate = '3/3s'
   ratelimit_block = True
   ratelimit_method = 'POST'
+  ratelimit_group = 'posts'
 
+  require_admin = False
+  
   @csrf_exempt
   def dispatch(self, *args, **kwargs):
     return super(RoomPostView, self).dispatch(*args, **kwargs)
