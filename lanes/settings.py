@@ -46,6 +46,8 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 SESSION_ENGINE = 'redis_sessions.session'
 
 SESSION_REDIS_HOST = os.environ.get("REDIS_URL")
+SESSION_REDIS_PORT = None
+SESSION_REDIS_DB = 0
 SESSION_REDIS_PREFIX = 'session'
 
 TEMPLATES = [
