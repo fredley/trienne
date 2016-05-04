@@ -578,6 +578,9 @@ class OrgManagementView(OrgMixin, UpdateView):
   form_class = OrgForm
   require_admin = True
 
+  def get_success_url(self):
+    return reverse('org', kwargs={'slug': self.object.slug})
+
   def get_context_data(self, **kwargs):
     context = super(OrgManagementView, self).get_context_data(**kwargs)
     context.update(applications=OrgApplication.objects.filter(organisation=self.org, rejected=False))
