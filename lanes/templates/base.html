@@ -46,35 +46,32 @@
       <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" id="nav">
         <ul class="nav navbar-nav">
           <li class="{% block rooms_active %}{% endblock %}">
-            <a href="{% url 'orgs' %}">All Communities</a>
+            <a href="{% url 'orgs' %}"><i class="glyphicon glyphicon-home"></i></a>
           </li>
           {% if org %}
             <li class="{% block current_community_active %}{% endblock %}">
-              <a href="{% url 'org' org.slug %}">&gt; {{ org.name }}</a>
+              <a href="{% url 'org' org.slug %}">{{ org.name }}</a>
             </li>
+            {% if is_admin %}
+              <li class="{% block org_admin_active %}{% endblock %}">
+                <a href="{% url 'manage_org' org.slug %}"><i class="glyphicon glyphicon-cog"></i></a>
+              </li>
+            {% endif %}
           {% endif %}
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li class="dropdown">
           {% if user.is_authenticated %}
-            <a class="dropdown-toggle" href="#" data-toggle="dropdown">{{ user.username }}<span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              {% if org and is_admin %}
-                <li class="{% block org_admin_active %}{% endblock %}">
-                  <a href="{% url 'manage_org' org.slug %}" class="btn btn-primary">Manage {{ org.name }}</a>
-                </li>
-              {% endif %}
-              {% if user.organisations.all.count > 1 %}
-                <li role="separator" class="divider"></li>
-              {% endif %}
-              <li>
-                <form class="form" action="{% url 'logout' %}" method="post">{% csrf_token %}
-                  <input type="hidden" name="next" value="{{ request.get_full_path }}" />
-                  <button class="btn btn-danger btn-block" type="submit" >Logout</button>
-                </form>
-              </li>
-            </ul>
+          <li>
+            <a href="{% url 'user_profile' user.id %}">{{ user.username }}</span></a>
+          </li>
+          <li>
+            <form class="form" action="{% url 'logout' %}" method="post">{% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+              <button class="btn btn-danger btn-block" type="submit" id="btn-logout"><i class="glyphicon glyphicon-log-out"></i></button>
+            </form>
+          </li>
           {% else %}
+          <li class="dropdown">
             <a class="dropdown-toggle" href="#" data-toggle="dropdown">Login <span class="caret"></span></a>
             <div class="dropdown-menu" style="padding:1em;">
               <form class="form" action="{% url 'login' %}" method="post">{% csrf_token %}
@@ -88,6 +85,7 @@
                 <input class="btn btn-success btn-block" type="submit" value="Login">
               </form>
             </div>
+          </li>
           {% endif %}
           </li>
         </ul>

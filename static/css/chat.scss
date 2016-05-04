@@ -55,6 +55,15 @@ header.navbar{
     }
   }
 }
+#btn-logout{
+  border-radius: 0;
+  height: 50px;
+  background-color:$themeColor2;
+  border:none;
+  &:hover{
+    background-color: #c9302c;
+  }
+}
 pre {
     white-space: pre-wrap;
     white-space: -moz-pre-wrap;
