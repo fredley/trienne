@@ -15,7 +15,7 @@ urlpatterns = [
     url(r'^ajax/users/org/$', UserJsonView.as_view(data='org'), name='ajax_users_org'),
     url(r'^ajax/orgs/all/$', OrgJsonView.as_view(data='all'), name='ajax_orgs_all'),
     url(r'^ajax/orgs/mine/$', OrgJsonView.as_view(data='mine'), name='ajax_orgs_mine'),
-    url(r'^ajax/orgs/watched/$', OrgJsonView.as_view(data='watched'), name='ajax_orgs_watching'),
+    url(r'^ajax/orgs/followed/$', OrgJsonView.as_view(data='followed'), name='ajax_orgs_watching'),
     url(r'^ajax/orgs/search/$', OrgJsonView.as_view(data='search'), name='ajax_orgs_search'),
     url(r'^ajax/select/', include(ajax_select_urls)),
     url(r'^orgs/$', OrgsView.as_view(), name='orgs'),

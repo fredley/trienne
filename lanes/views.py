@@ -136,7 +136,7 @@ class RoomPostView(LoginRequiredMixin, RatelimitMixin, View):
   ratelimit_group = 'posts'
 
   require_admin = False
-  
+
   @csrf_exempt
   def dispatch(self, *args, **kwargs):
     return super(RoomPostView, self).dispatch(*args, **kwargs)
@@ -465,11 +465,11 @@ class PostHistoryView(PostView, TemplateView):
     return HttpResponseRedirect(reverse('post_history', kwargs={'post_id': self.msg.id}))
 
 
-class OrgsView(TemplateView):
+class OrgsView(LoginRequiredMixin, TemplateView):
   template_name = 'orgs.html'
 
 
-class UserJsonView(View):
+class UserJsonView(LoginRequiredMixin, View):
   """ endpoint to supply data for user autocomplete """
 
   data = 'org'
@@ -489,7 +489,7 @@ class UserJsonView(View):
     return JsonResponse({'results': res})
 
 
-class OrgJsonView(View):
+class OrgJsonView(LoginRequiredMixin, View):
   """ endpoint to supply data for the orgs page
       /ajax/orgs/all/      - all orgs
       /ajax/orgs/mine/     - my orgs
@@ -512,7 +512,7 @@ class OrgJsonView(View):
       if not request.user.is_authenticated():
         raise PermissionDenied
       qs = request.user.organisations.all()[start:end]
-    elif data == 'watched':
+    elif data == 'followed':
       if not request.user.is_authenticated():
         raise PermissionDenied
       qs = request.user.subscribed.all()[start:end]
@@ -670,7 +670,7 @@ class OrgWatchView(OrgMixin, AjaxResponseMixin, View):
     return HttpResponse(result)
 
 
-class UserProfileView(DetailView):
+class UserProfileView(LoginRequiredMixin, DetailView):
   model = User
   pk_url_kwarg = 'user_id'
   template_name = 'user_profile.html'

@@ -10,7 +10,7 @@
 <div class="container">
   <ul class="nav nav-tabs" id="org-selection">
     <li role="presentation"><a data-url="mine" href="#mine">Mine</a></li>
-    <li role="presentation"><a data-url="watched" href="#followed">Followed</a></li>
+    <li role="presentation"><a data-url="followed" href="#followed">Followed</a></li>
     <li role="presentation"><a data-url="all" href="#all">All</a></li>
     <li role="presentation"><a href="#search"><i class="glyphicon glyphicon-search"></i> Search</a></li>
     <a href="{% url 'create_org' %}" class="btn btn-success btn-xs"><i class="glyphicon glyphicon-plus"></i> Create new community</a>
@@ -29,7 +29,7 @@ $(document).ready(function(){
 
   var hash = window.location.hash.substring(1);
   var spin = 0;
-  if (hash !== "" && ["mine","all","watched"].indexOf(hash) >= 0) {
+  if (hash !== "" && ["mine","all","followed"].indexOf(hash) >= 0) {
     setTab(hash);
   } else {
     setTab('mine');
