@@ -17,6 +17,13 @@ DATABASES = {
     }
 }
 
+try:
+    import dj_database_url
+    db_from_env = dj_database_url.config()
+    DATABASES['default'].update(db_from_env)
+except:
+    pass
+
 ALLOWED_HOSTS = ["localhost"]
 
 AUTH_USER_MODEL = 'lanes.User'

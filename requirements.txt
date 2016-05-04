@@ -1,4 +1,5 @@
 backports.ssl-match-hostname==3.4.0.2
+dj-database-url==0.4.1
 Django==1.9.5
 django-ajax-selects==1.4.3
 django-autoslug==1.9.3
