@@ -64,7 +64,7 @@ $(document).ready(function(){
     }
     data.orgs.forEach(function(o){
       $('#org-list').append(
-        '<a href="/org/' + o.slug + '" class="list-group-item">' + o.name + '</a>'
+        '<a href="/c/' + o.slug + '" class="list-group-item">' + o.name + '</a>'
       );
     });
     clearTimeout(spin);
@@ -78,7 +78,7 @@ $(document).ready(function(){
     spin = setTimeout(function(){$('.spinner').show();},1000);
     $.ajax({
       method: "get",
-      url: "/ajax/orgs/" + filter + "/",
+      url: "/ajax/c/" + filter + "/",
       success: handleData
     })
   }
@@ -98,7 +98,7 @@ $(document).ready(function(){
     if(text !== ""){
       $.ajax({
         method:"get",
-        url:"/ajax/orgs/search/?s=" + encodeURIComponent(text),
+        url:"/ajax/c/search/?s=" + encodeURIComponent(text),
         success: handleData
       });
     }

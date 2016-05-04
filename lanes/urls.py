@@ -12,22 +12,21 @@ admin.autodiscover()
 
 
 urlpatterns = [
-    url(r'^ajax/users/org/$', UserJsonView.as_view(data='org'), name='ajax_users_org'),
-    url(r'^ajax/orgs/all/$', OrgJsonView.as_view(data='all'), name='ajax_orgs_all'),
-    url(r'^ajax/orgs/mine/$', OrgJsonView.as_view(data='mine'), name='ajax_orgs_mine'),
-    url(r'^ajax/orgs/followed/$', OrgJsonView.as_view(data='followed'), name='ajax_orgs_watching'),
-    url(r'^ajax/orgs/search/$', OrgJsonView.as_view(data='search'), name='ajax_orgs_search'),
+    url(r'^ajax/users/c/$', UserJsonView.as_view(data='org'), name='ajax_users_org'),
+    url(r'^ajax/c/all/$', OrgJsonView.as_view(data='all'), name='ajax_orgs_all'),
+    url(r'^ajax/c/mine/$', OrgJsonView.as_view(data='mine'), name='ajax_orgs_mine'),
+    url(r'^ajax/c/followed/$', OrgJsonView.as_view(data='followed'), name='ajax_orgs_watching'),
+    url(r'^ajax/c/search/$', OrgJsonView.as_view(data='search'), name='ajax_orgs_search'),
     url(r'^ajax/select/', include(ajax_select_urls)),
-    url(r'^orgs/$', OrgsView.as_view(), name='orgs'),
-    url(r'^orgs/new/$', OrgCreateView.as_view(), name='create_org'),
+    url(r'^create/$', OrgCreateView.as_view(), name='create_org'),
 
-    url(r'^org/(?P<slug>[\w-]+)/$', OrgView.as_view(), name='org'),
-    url(r'^org/(?P<slug>[\w-]+)/manage/$', OrgManagementView.as_view(), name='manage_org'),
-    url(r'^org/(?P<slug>[\w-]+)/manage/approval/$', OrgApprovalView.as_view()),
-    url(r'^org/(?P<slug>[\w-]+)/add_room/$', RoomAddView.as_view(), name='add_room'),
-    url(r'^org/(?P<slug>[\w-]+)/join/$', OrgJoinView.as_view()),
-    url(r'^org/(?P<slug>[\w-]+)/apply/$', OrgApplyView.as_view()),
-    url(r'^org/(?P<slug>[\w-]+)/follow/$', OrgWatchView.as_view()),
+    url(r'^c/(?P<slug>[\w-]+)/$', OrgView.as_view(), name='org'),
+    url(r'^c/(?P<slug>[\w-]+)/manage/$', OrgManagementView.as_view(), name='manage_org'),
+    url(r'^c/(?P<slug>[\w-]+)/manage/approval/$', OrgApprovalView.as_view()),
+    url(r'^c/(?P<slug>[\w-]+)/add_room/$', RoomAddView.as_view(), name='add_room'),
+    url(r'^c/(?P<slug>[\w-]+)/join/$', OrgJoinView.as_view()),
+    url(r'^c/(?P<slug>[\w-]+)/apply/$', OrgApplyView.as_view()),
+    url(r'^c/(?P<slug>[\w-]+)/follow/$', OrgWatchView.as_view()),
 
     url(r'^room/(?P<room_id>\d+)/$', RoomView.as_view(), name='room'),
     url(r'^room/(?P<room_id>\d+)/post/$', RoomMessageView.as_view(), name='room_post'),
@@ -46,5 +45,5 @@ urlpatterns = [
     url(r'^users/register/', RegisterView.as_view(), name='register'),
     url(r'^users/manage/', UserManagementView.as_view(), name='manage_users'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', RedirectView.as_view(url=reverse_lazy('orgs'))),
+    url(r'^$', OrgsView.as_view(), name='orgs'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -291,6 +291,7 @@ class OrgMixin(LoginRequiredMixin):
   def dispatch(self, *args, **kwargs):
     self.org = Organisation.objects.get(slug=kwargs.get('slug'))
     if self.require_admin and not self.request.user.is_admin(self.org):
+      logger.debug("Not admin")
       raise PermissionDenied
     return super(OrgMixin, self).dispatch(*args, **kwargs)
 
@@ -494,9 +495,9 @@ class UserJsonView(LoginRequiredMixin, View):
 
 class OrgJsonView(LoginRequiredMixin, View):
   """ endpoint to supply data for the orgs page
-      /ajax/orgs/all/      - all orgs
-      /ajax/orgs/mine/     - my orgs
-      /ajax/orgs/watching/ - orgs I'm watching
+      /ajax/c/all/      - all orgs
+      /ajax/c/mine/     - my orgs
+      /ajax/c/watching/ - orgs I'm watching
   """
 
   data = 'all'
@@ -629,18 +630,28 @@ class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
     action = request.POST.get('action')
     result = 'error'
     if action == 'join':
-      if org.privacy == Organisation.PRIVACY_OPEN and not request.user.is_member(org):
-        OrgMembership(user=request.user, organisation=org).save()
-        if request.user.is_subscribed(org):
-          request.user.subscribed.remove(org)
-        result = 'joined'
-      else:
-        raise PermissionDenied
+      if org.privacy != Organisation.PRIVACY_OPEN:
+        return HttpResponse('error:You cannot join this community')
+      if request.user.is_member(org):
+        return HttpResponse('error:You are already a member of this community')
+      OrgMembership(user=request.user, organisation=org).save()
+      if request.user.is_subscribed(org):
+        request.user.subscribed.remove(org)
+      result = 'joined'
     elif action == 'leave' and request.user.is_member(org):
-      OrgMembership.objects.get(user=request.user, organisation=org).delete()
-      if request.user in org.admins.all():
+      admins = org.admins.all()
+      if request.user in admins:
+        if admins.count() == 1:
+          # Don't let last admin leave
+          return HttpResponse('error:You must appoint a new admin before leaving')
         org.admins.remove(request.user)
-      result = 'left'
+      OrgMembership.objects.get(user=request.user, organisation=org).delete()
+      if org.privacy == org.PRIVACY_OPEN:
+        result = 'left-join'
+      elif org.privacy == PRIVACY_APPLY:
+        result = 'left-apply'
+      else:
+        result = 'left'
     else:
       raise PermissionDenied
     return HttpResponse(result)
@@ -649,8 +660,11 @@ class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
 class OrgApplyView(OrgMixin, AjaxResponseMixin, View):
 
   def post(self, request, *args, **kwargs):
-    OrgApplication(user=request.user, organisation=self.org).save()
-    return HttpResponse('applied')
+    try:
+      OrgApplication(user=request.user, organisation=self.org).save()
+      return HttpResponse('applied')
+    except:
+        return HttpResponse('error:You have already applied')
 
 
 class OrgWatchView(OrgMixin, AjaxResponseMixin, View):
@@ -664,7 +678,7 @@ class OrgWatchView(OrgMixin, AjaxResponseMixin, View):
         request.user.subscribed.add(org)
         result = 'followed'
       else:
-        raise PermissionDenied
+        return HttpResponse('error:You are already following')
     elif action == 'unfollow' and request.user.is_subscribed(org):
       request.user.subscribed.remove(org)
       result = 'unfollowed'

@@ -52,7 +52,7 @@
       var self = $(this);
       self.parent().find('.btn').attr('disabled', 'disabled');
       $.ajax({
-        url:"/org/{{ org.slug }}/manage/approval/",
+        url:"/c/{{ org.slug }}/manage/approval/",
         method:"post",
         data:{
           action:self.attr('data-action'),

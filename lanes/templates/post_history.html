@@ -8,7 +8,7 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-6 col-sm-offset-3">
-      <legend>History for post {{ post.id }}</legend>
+      <legend>History for post {{ post.id }} in <a href="{% url 'room' post.room.id %}">{{ post.room.name }}</a></legend>
       <div class="list-group">
         {% for state in history %}
           <div class="list-group-item">

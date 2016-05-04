@@ -83,10 +83,14 @@ $(document).ready(function(){
     }
     $.ajax({
       method:'post',
-      url:'/org/{{ org.slug }}/' + $(this).attr('data-url') + '/',
+      url:'/c/{{ org.slug }}/' + $(this).attr('data-url') + '/',
       data:data,
       success:function(data){
         console.log(data);
+        if (data.indexOf('error') === 0){
+          alert(data.substr(6));
+          return;
+        }
         switch(data){
           case 'followed':
             $("#btn-follow").hide();
@@ -102,8 +106,14 @@ $(document).ready(function(){
             $("#btn-unfollow").hide();
             $("#btn-follow").hide();
             break;
-          case 'left':
+          case 'left-apply':
+            $("#btn-apply").show()
+            $("#btn-follow").show();
+            $("#btn-leave").hide();
+            break;
+          case 'left-join':
             $("#btn-join").show();
+          case 'left':
             $("#btn-follow").show();
             $("#btn-leave").hide();
             break;

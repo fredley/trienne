@@ -166,7 +166,7 @@ jQuery(document).ready(function($) {
       if(val !== ""){
         $.ajax({
           method: 'get',
-          url: '/ajax/users/org/',
+          url: '/ajax/users/c/',
           data: {
             org: org,
             s: val
