@@ -1,9 +1,11 @@
 import os
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lanes.settings')
+
 from django.conf import settings
 from django.core.wsgi import get_wsgi_application
 from ws4redis.uwsgi_runserver import uWSGIWebsocketServer
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lanes.settings')
 _django_app = get_wsgi_application()
 _websocket_app = uWSGIWebsocketServer()
 

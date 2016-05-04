@@ -4,5 +4,6 @@ env/
 *.sqlite3
 *.css
 *.css.map
+staticfiles/
 
 .DS_Store
