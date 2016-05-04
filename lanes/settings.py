@@ -97,6 +97,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'ratelimit.middleware.RatelimitMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 )
 
 RATELIMIT_VIEW = 'lanes.views.ratelimit'
