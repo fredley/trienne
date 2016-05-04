@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-import urlparse
+from urlparse import urlparse
 
 from .socket import get_allowed_channels
 
