@@ -123,7 +123,6 @@ WS4REDIS_CONNECTION = {
     'host': HEROKU_REDIS_URL.hostname,
     'port': HEROKU_REDIS_URL.port,
     'db': 1,
-    'username': HEROKU_REDIS_URL.username,
     'password': HEROKU_REDIS_URL.password,
 }
 
