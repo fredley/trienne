@@ -583,7 +583,7 @@ class OrgManagementView(OrgMixin, UpdateView):
   template_name = 'manage_org.html'
   model = Organisation
   context_object_name = 'org'
-  form_class = OrgForm
+  form_class = OrgEditForm
   require_admin = True
 
   def get_success_url(self):

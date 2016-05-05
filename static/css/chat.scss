@@ -106,6 +106,43 @@ pre {
   display: block;
   margin:0 auto;
 }
+.form-group{
+  clear: both;
+}
+.radio {
+  label {
+    display: block;
+    float: left;
+    border: 1px solid $themeColor2;
+    border-left:0; 
+    height: 40px;
+    width: 33%;
+    line-height: 40px;
+    text-align: center;
+    padding:0;
+    margin-bottom:20px;
+  }
+
+  &:nth-of-type(1) label{
+    border-left: 1px solid $themeColor2;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+  }
+
+  &:last-of-type label{
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+  }
+
+  input{
+    display: none;
+
+    &:checked + label{
+      background: $themeColor2;
+      color: #fff;
+    }
+  }
+}
 #main{
   position: absolute;
   top:0;

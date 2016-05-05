@@ -1,5 +1,5 @@
 from django.forms import ModelForm
-
+from django.forms.widgets import RadioSelect
 from ajax_select import make_ajax_field
 
 from .models import Organisation, Room
@@ -12,6 +12,22 @@ class OrgForm(ModelForm):
   class Meta:
     model = Organisation
     fields = ['name', 'visibility', 'privacy', 'admins']
+    widgets = {
+      'privacy': RadioSelect(),
+      'visibility': RadioSelect(),
+    }
+
+  admins = make_ajax_field(Organisation, 'admins', 'users', required=True, help_text="Select one or more users to be admins.")
+
+
+class OrgEditForm(ModelForm):
+  class Meta:
+    model = Organisation
+    fields = ['visibility', 'privacy', 'admins']
+    widgets = {
+      'privacy': RadioSelect(attrs={'class':'hello'}),
+      'visibility': RadioSelect(),
+    }
 
   admins = make_ajax_field(Organisation, 'admins', 'users', required=True, help_text="Select one or more users to be admins.")
 
@@ -23,5 +39,8 @@ class RoomForm(ModelForm):
   class Meta:
     model = Room
     fields = ['name', 'topic', 'privacy', 'owners']
+    widgets = {
+      'privacy': RadioSelect(),
+    }
 
   owners = make_ajax_field(Room, 'owners', 'users', required=True, help_text="Select owners of this room.")
