@@ -578,6 +578,9 @@ class OrgManagementView(OrgMixin, UpdateView):
   form_class = OrgForm
   require_admin = True
 
+  def get_success_url(self):
+    return reverse('org', kwargs={'slug': self.object.slug})
+
   def get_context_data(self, **kwargs):
     context = super(OrgManagementView, self).get_context_data(**kwargs)
     context.update(applications=OrgApplication.objects.filter(organisation=self.org, rejected=False))
@@ -705,6 +708,8 @@ class RegisterView(TemplateView):
     return context
 
   def post(self, request, *args, **kwargs):
+    if request.POST.get('key') != "goldfish":
+      raise PermissionDenied
     user = User.objects.create_user(request.POST['username'], request.POST['email'],
                                     request.POST['password'])
     user.save()

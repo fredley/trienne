@@ -18,6 +18,9 @@
 					<div class="form-group">
 						<input class="form-control" placeholder="Password" name="password" type="password" value="">
 					</div>
+          <div class="form-group">
+            <input class="form-control" placeholder="Secret Key" name="key" type="password" value="">
+          </div>
 					{% if invite %}
 					<input type="hidden" name="email" value="{{ invite.email }}">
 					<input type="hidden" name="organisation" value="{{ invite.organisation.id }}">
