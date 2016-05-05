@@ -43,9 +43,20 @@ header.navbar {
     float: left;
     margin: 6px; }
 
-.status-chooser .btn.inactive {
-  background-color: #fff;
-  color: #000; }
+#user-menu li {
+  margin: 25px 0; }
+  #user-menu li:first-child {
+    margin-top: 0; }
+  #user-menu li:last-child {
+    margin-bottom: 0; }
+
+.status-chooser {
+  width: 100%; }
+  .status-chooser .btn {
+    width: 33%; }
+    .status-chooser .btn.inactive {
+      background-color: #fff;
+      color: #000; }
 
 pre {
   white-space: pre-wrap;

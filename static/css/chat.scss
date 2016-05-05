@@ -66,8 +66,19 @@ header.navbar{
     margin: 6px;
   }
 }
+#user-menu li {
+  margin: 25px 0;
+  &:first-child{
+    margin-top:0;
+  }
+  &:last-child{
+    margin-bottom:0;
+  }
+}
 .status-chooser{
+  width:100%;
   .btn{
+    width:33%;
     &.inactive{
       background-color: #fff;
       color:#000;

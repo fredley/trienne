@@ -75,7 +75,7 @@
               <div class="online-marker status-{{ status }}"></div>
             {% endif %}
             {{ user.username }}<span class="caret"></span></a>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu" id="user-menu">
               {% if org and is_member %}
                 <li>
                   <div class="btn-group status-chooser">
@@ -91,7 +91,7 @@
               <li>
                 <form class="form" action="{% url 'logout' %}" method="post">{% csrf_token %}
                   <input type="hidden" name="next" value="{{ request.get_full_path }}" />
-                  <button type="submit" class="btn btn-danger"><i class="glyphicon glyphicon-log-out"></i> Logout</i></button>
+                  <button type="submit" class="btn btn-danger btn-block"><i class="glyphicon glyphicon-log-out"></i> Logout</i></button>
                 </form>
               </li>
             </ul>
