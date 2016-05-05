@@ -78,6 +78,16 @@ class User(AbstractUser):
   def is_subscribed(self, org):
     return org in self.subscribed.all()
 
+  def get_rooms(self):
+    return Room.objects.filter(members__in=[self])
+
+  def get_orgs(self):
+    memberships = OrgMembership.objects.filter(user=self).values_list('organisation__pk', flat=True)
+    return Organisation.objects.filter(id__in=memberships)
+
+  def get_status(self, org):
+    return OrgMembership.objects.get(user=self, organisation=org).status
+
   def can_view(self, room):
     if room.organisation not in self.organisations.all() and \
         room.organisation.visibility == Organisation.VISIBILITY_PRIVATE:
@@ -103,8 +113,24 @@ class OrgMembership(models.Model):
       (ADMIN, 'Admin'),
       (USER, 'User')
   )
+
+  STATUS_ONLINE = 0
+  STATUS_AWAY = 1
+  STATUS_BUSY = 2
+  STATUS_INVISIBLE = 3
+  STATUS_OFFLINE = 4
+
+  STATUS_CHOICES = (
+      (STATUS_ONLINE, "online"),
+      (STATUS_AWAY, "away"),
+      (STATUS_BUSY, "busy"),
+      (STATUS_INVISIBLE, "invisible"),
+      (STATUS_OFFLINE, "offline")
+  )
+
   user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
   organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
+  status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_OFFLINE)
   role = models.IntegerField(choices=ROLES, default=USER)
 
   def __unicode__(self):

@@ -60,14 +60,18 @@ header.navbar{
       margin-bottom:10px;
     }
   }
+  .online-marker{
+    display: inline;
+    float: left;
+    margin: 6px;
+  }
 }
-#btn-logout{
-  border-radius: 0;
-  height: 50px;
-  background-color:$themeColor2;
-  border:none;
-  &:hover{
-    background-color: $dangerRed;
+.status-chooser{
+  .btn{
+    &.inactive{
+      background-color: #fff;
+      color:#000;
+    }
   }
 }
 pre {
@@ -171,20 +175,21 @@ pre {
     margin-right:5px;
     clear:both;
   }
-
   .online-marker{
     position: absolute;
     top:12px;
     left:12px;
-    width:8px;
-    height:8px;
-    background-image:url('../img/indicator-offline.png');
     z-index: 3;
-    background-size:100% 100%;
+  }
+}
+.online-marker{
+  width:8px;
+  height:8px;
+  background-image:url('../img/indicator-offline.png');
+  background-size:100% 100%;
 
-    &.online{
-      background-image:url('../img/indicator-online.png');
-    }
+  &.status-0{
+    background-image:url('../img/indicator-online.png');
   }
 }
 #entry{

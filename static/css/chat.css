@@ -38,14 +38,14 @@ header.navbar {
     padding: 15px; }
     #nav .dropdown-menu form {
       margin-bottom: 10px; }
+  #nav .online-marker {
+    display: inline;
+    float: left;
+    margin: 6px; }
 
-#btn-logout {
-  border-radius: 0;
-  height: 50px;
-  background-color: #6762E8;
-  border: none; }
-  #btn-logout:hover {
-    background-color: #c9302c; }
+.status-chooser .btn.inactive {
+  background-color: #fff;
+  color: #000; }
 
 pre {
   white-space: pre-wrap;
@@ -139,12 +139,14 @@ pre {
   position: absolute;
   top: 12px;
   left: 12px;
+  z-index: 3; }
+
+.online-marker {
   width: 8px;
   height: 8px;
   background-image: url("../img/indicator-offline.png");
-  z-index: 3;
   background-size: 100% 100%; }
-  .user-list .online-marker.online {
+  .online-marker.status-0 {
     background-image: url("../img/indicator-online.png"); }
 
 #entry {

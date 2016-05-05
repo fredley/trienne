@@ -47,7 +47,7 @@ SESSION_ENGINE = 'redis_sessions.session'
 try:
     HEROKU_REDIS_URL = urlparse(os.environ.get("REDIS_URL"))
 except:
-    HEROKU_REDIS_URL = urlparse('localhost:6379')
+    HEROKU_REDIS_URL = urlparse('redis://localhost:6379')
 
 SESSION_REDIS_USERNAME = HEROKU_REDIS_URL.username
 SESSION_REDIS_PASSWORD = HEROKU_REDIS_URL.password

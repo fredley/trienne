@@ -25,7 +25,7 @@ jQuery(document).ready(function($) {
 
   var sock = WS4Redis({
     uri: sock_uri,
-    receive_message: receiveMessage,
+    receive_message: window.receiveMessage,
     heartbeat_msg: hb
   });
 
@@ -461,7 +461,7 @@ jQuery(document).ready(function($) {
     $('.msg-' + message.attr('data-id')).addClass('pinned');
   }
 
-  function receiveMessage(msg) {
+  window.receiveMessage = function(msg) {
     console.log(msg);
     var msg = JSON.parse(msg);
     switch(msg.type){
@@ -512,16 +512,19 @@ jQuery(document).ready(function($) {
         break;
       case "join":
         if($('.user-' + msg.id).length > 0){
-          $('.user-' + msg.id).find('.online-marker').addClass('online');
+          $('.user-' + msg.id).find('.online-marker').addClass('status-0');
         } else {
           var user = $('<div class="user user-' + msg.id + '"></div>').text(msg.username);
           user.prepend('<img src="' + msg.img + '" alt="">');
-          user.append('<div class="online-marker online"></div>');
+          user.append('<div class="online-marker status-0"></div>');
           $('#users').append(user);
         }
         break;
+      case "status":
+        $('.user-' + msg.id).find('.online-marker').attr('class', 'online-marker').addClass("status-" + msg.status);
+        break;
       case "leave":
-        $('.user-' + msg.id).find('.online-marker').removeClass('online');
+        $('.user-' + msg.id).find('.online-marker').attr('class', 'online-marker');
         break;
       case "delete":
         $(".msg-" + msg.id).addClass('deleted').find(".content").html("(deleted)");

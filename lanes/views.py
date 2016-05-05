@@ -185,7 +185,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
           "username": u.username,
           "email": u.email,
           "id": u.id,
-          "online": (publisher.get_present(u) or u == self.request.user)
+          "status": u.get_status(room.organisation)
       })
     message = {
         'type': 'join',
@@ -196,9 +196,11 @@ class RoomView(LoginRequiredMixin, TemplateView):
     }
     publisher.publish_message(RedisMessage(json.dumps(message)))
     context.update(room=room,
-                   rooms=Room.objects.filter(members__in=[self.request.user]),
+                   rooms=self.request.user.get_rooms(),
                    org=room.organisation,
                    is_admin=self.request.user.is_admin(room.organisation),
+                   is_member=True,
+                   status=OrgMembership.objects.get(user=self.request.user, organisation=room.organisation).status,
                    can_participate=self.request.user.is_member(room.organisation),
                    is_owner=self.request.user in room.owners.all(),
                    pinned=pinned,
@@ -298,11 +300,17 @@ class OrgMixin(LoginRequiredMixin):
   def get_context_data(self, **kwargs):
     context = super(OrgMixin, self).get_context_data(**kwargs)
     user = self.request.user
+    is_member = self.org in user.organisations.all()
+    if is_member:
+      status = OrgMembership.objects.get(user=self.request.user, organisation=self.org).status
+    else:
+      status = "offline"
     context.update(org=self.org,
                    rooms=Room.objects.filter(members__in=[user]),
                    is_admin=user.is_admin(self.org),
                    has_applied=OrgApplication.objects.filter(user=user, organisation=self.org).count() > 0,
-                   is_member=self.org in user.organisations.all(),
+                   is_member=is_member,
+                   status=status,
                    is_follower=self.org in user.subscribed.all())
     return context
 
@@ -695,6 +703,23 @@ class UserProfileView(LoginRequiredMixin, DetailView):
   pk_url_kwarg = 'user_id'
   template_name = 'user_profile.html'
   context_object_name = 'puser'
+
+
+class OrgStatusView(OrgMixin, View):
+
+  def post(self, request, *args, **kwargs):
+    status = int(request.POST.get('status'))
+    membership = OrgMembership.objects.get(user=self.request.user, organisation=self.org)
+    membership.status = status
+    membership.save()
+    message = {
+      "type": "status",
+      "id": request.user.id,
+      "status": membership.status
+    }
+    RedisPublisher(facility='org_' + self.org.slug, broadcast=True) \
+      .publish_message(RedisMessage(json.dumps(message)))
+    return HttpResponse('OK')
 
 
 class RegisterView(TemplateView):
