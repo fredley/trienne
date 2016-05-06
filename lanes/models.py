@@ -130,7 +130,7 @@ class OrgMembership(models.Model):
 
   user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
   organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
-  status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_OFFLINE)
+  status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_ONLINE)
   role = models.IntegerField(choices=ROLES, default=USER)
 
   def __unicode__(self):
