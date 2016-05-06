@@ -6,8 +6,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{% endblock %} | Lanes</title>
-  <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700,300,400italic|Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css" rel="stylesheet">
+  <link href='//fonts.googleapis.com/css?family=Open+Sans:400,700,300,400italic|Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
   <link href="/static/css/chat.css" rel="stylesheet">
 
   <link rel="apple-touch-icon" sizes="57x57" href="/static/img/favicon/apple-touch-icon-57x57.png">
@@ -69,14 +69,34 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
           {% if user.is_authenticated %}
-          <li>
-            <a href="{% url 'user_profile' user.id %}">{{ user.username }}</span></a>
+          <li class="dropdown">
+            <a class="dropdown-toggle" href="#" data-toggle="dropdown" >
+            {% if org and is_member %}
+              <div class="online-marker status-{{ status }}"></div>
+            {% endif %}
+            {{ user.username }}<span class="caret"></span></a>
+            <ul class="dropdown-menu" id="user-menu">
+              {% if org and is_member %}
+                <li>
+                  <div class="btn-group status-chooser">
+                    <button type="button" class="btn btn-success inactive" data-status="0">Online</button>
+                    <button type="button" class="btn btn-warning inactive" data-status="1">Away</button>
+                    <button type="button" class="btn btn-danger inactive" data-status="2">Busy</button>
+                  </div>
+                </li>
+              {% endif %}
+              <li>
+                <a href="{% url 'user_profile' user.id %}" class="btn btn-default">Profile</a>
+              </li>
+              <li>
+                <form class="form" action="{% url 'logout' %}" method="post">{% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+                  <button type="submit" class="btn btn-danger btn-block"><i class="glyphicon glyphicon-log-out"></i> Logout</i></button>
+                </form>
+              </li>
+            </ul>
           </li>
           <li>
-            <form class="form" action="{% url 'logout' %}" method="post">{% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.get_full_path }}" />
-              <button class="btn btn-danger btn-block" type="submit" id="btn-logout"><i class="glyphicon glyphicon-log-out"></i></button>
-            </form>
           </li>
           {% else %}
           <li class="dropdown">
@@ -108,9 +128,59 @@
     {% block footer %}
     {% endblock %}
   </footer>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" type="text/javascript"></script>
-  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" type="text/javascript"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js" type="text/javascript"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min.js" type="text/javascript"></script>
+  <script src="/static/js/ws4redis.js" type="text/javascript"></script>
   <script type="text/javascript">
+
+  $(document).ready(function(){
+    $('.radio input').each(function(){
+      $(this).parent().attr('for',$(this).attr('id'));
+      $(this).prependTo($(this).parent().parent());
+    }); // Filthy hax
+  });
+
+  {% if org and is_member %}
+
+    function receiveGlobal(msg){
+      console.log("global: " + msg);
+      if(typeof receiveMessage !== 'undefined' && $.type(receiveMessage) === 'function'){
+        receiveMessage(msg);
+      }
+    }
+
+    $(document).ready(function(){
+
+      $('.status-chooser .btn[data-status="{{ status }}"]').removeClass('inactive');
+
+      window.gsock = WS4Redis({
+        uri: '{{ WEBSOCKET_URI }}org_{{ org.slug }}?subscribe-broadcast',
+        receive_message: receiveGlobal,
+        heartbeat_msg: {{ WS4REDIS_HEARTBEAT }}
+      });
+
+      $('.status-chooser .btn').on('click', function(){
+        var self = $(this);
+        $.ajax({
+          url: '{% url "org_status" org.slug %}',
+          method: 'post',
+          data: {
+            status: self.attr('data-status')
+          },
+          success: function(response){
+            $('.status-chooser .btn').addClass('inactive');
+            self.removeClass('inactive');
+            $('#nav .online-marker').attr('class', 'online-marker').addClass('status-' + self.attr('data-status'));
+          }
+        })
+      });
+
+      
+    });
+
+  {% endif %}
+
   function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {

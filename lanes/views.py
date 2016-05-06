@@ -160,6 +160,9 @@ class RoomView(LoginRequiredMixin, TemplateView):
   def get_context_data(self, **kwargs):
     context = super(RoomView, self).get_context_data(**kwargs)
     room = Room.objects.get(id=kwargs['room_id'])
+    if not self.request.user.is_member(room.organisation):
+      logger.debug("Not a member")
+      raise PermissionDenied
     if not self.request.user.can_view(room):
       logger.debug("Can't view")
       raise PermissionDenied
@@ -185,20 +188,18 @@ class RoomView(LoginRequiredMixin, TemplateView):
           "username": u.username,
           "email": u.email,
           "id": u.id,
-          "online": (publisher.get_present(u) or u == self.request.user)
+          "status": u.get_status(room.organisation)
       })
-    message = {
-        'type': 'join',
-        'id': self.request.user.id,
-        # Add this in case user is brand new and not in list
-        'username': self.request.user.username,
-        'img': get_gravatar_url(self.request.user.email, size=32)
-    }
-    publisher.publish_message(RedisMessage(json.dumps(message)))
+    status = OrgMembership.objects.get(user=self.request.user, organisation=room.organisation).status
+    if status == OrgMembership.STATUS_OFFLINE:
+      # Just joining, so set to Online
+      status = STATUS_ONLINE
     context.update(room=room,
-                   rooms=Room.objects.filter(members__in=[self.request.user]),
+                   rooms=self.request.user.get_rooms(),
                    org=room.organisation,
                    is_admin=self.request.user.is_admin(room.organisation),
+                   is_member=True,
+                   status=status,
                    can_participate=self.request.user.is_member(room.organisation),
                    is_owner=self.request.user in room.owners.all(),
                    pinned=pinned,
@@ -249,7 +250,6 @@ class RoomMessageView(RoomPostView):
     raw = request.POST.get('message')
     try:
         processed = process_text(raw)
-        logger.debug(processed)
     except:
         return HttpResponse('Not OK')
     content = PostContent(
@@ -298,11 +298,20 @@ class OrgMixin(LoginRequiredMixin):
   def get_context_data(self, **kwargs):
     context = super(OrgMixin, self).get_context_data(**kwargs)
     user = self.request.user
+    is_member = self.org in user.organisations.all()
+    if is_member:
+      status = OrgMembership.objects.get(user=self.request.user, organisation=self.org).status
+      if status == OrgMembership.STATUS_OFFLINE:
+        # Just joining, so set to online
+        status = OrgMembership.STATUS_ONLINE
+    else:
+      status = OrgMembership.STATUS_OFFLINE
     context.update(org=self.org,
                    rooms=Room.objects.filter(members__in=[user]),
                    is_admin=user.is_admin(self.org),
                    has_applied=OrgApplication.objects.filter(user=user, organisation=self.org).count() > 0,
-                   is_member=self.org in user.organisations.all(),
+                   is_member=is_member,
+                   status=status,
                    is_follower=self.org in user.subscribed.all())
     return context
 
@@ -575,7 +584,7 @@ class OrgManagementView(OrgMixin, UpdateView):
   template_name = 'manage_org.html'
   model = Organisation
   context_object_name = 'org'
-  form_class = OrgForm
+  form_class = OrgEditForm
   require_admin = True
 
   def get_success_url(self):
@@ -633,7 +642,7 @@ class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
     action = request.POST.get('action')
     result = 'error'
     if action == 'join':
-      if org.privacy != Organisation.PRIVACY_OPEN:
+      if org.privacy != org.PRIVACY_OPEN:
         return HttpResponse('error:You cannot join this community')
       if request.user.is_member(org):
         return HttpResponse('error:You are already a member of this community')
@@ -651,7 +660,7 @@ class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
       OrgMembership.objects.get(user=request.user, organisation=org).delete()
       if org.privacy == org.PRIVACY_OPEN:
         result = 'left-join'
-      elif org.privacy == PRIVACY_APPLY:
+      elif org.privacy == org.PRIVACY_APPLY:
         result = 'left-apply'
       else:
         result = 'left'
@@ -695,6 +704,23 @@ class UserProfileView(LoginRequiredMixin, DetailView):
   pk_url_kwarg = 'user_id'
   template_name = 'user_profile.html'
   context_object_name = 'puser'
+
+
+class OrgStatusView(OrgMixin, View):
+
+  def post(self, request, *args, **kwargs):
+    status = int(request.POST.get('status'))
+    membership = OrgMembership.objects.get(user=self.request.user, organisation=self.org)
+    membership.status = status
+    membership.save()
+    message = {
+      "type": "status",
+      "id": request.user.id,
+      "status": membership.status
+    }
+    RedisPublisher(facility='org_' + self.org.slug, broadcast=True) \
+      .publish_message(RedisMessage(json.dumps(message)))
+    return HttpResponse('OK')
 
 
 class RegisterView(TemplateView):

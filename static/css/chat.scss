@@ -60,14 +60,29 @@ header.navbar{
       margin-bottom:10px;
     }
   }
+  .online-marker{
+    display: inline;
+    float: left;
+    margin: 6px;
+  }
 }
-#btn-logout{
-  border-radius: 0;
-  height: 50px;
-  background-color:$themeColor2;
-  border:none;
-  &:hover{
-    background-color: $dangerRed;
+#user-menu li {
+  margin: 25px 0;
+  &:first-child{
+    margin-top:0;
+  }
+  &:last-child{
+    margin-bottom:0;
+  }
+}
+.status-chooser{
+  width:100%;
+  .btn{
+    width:33%;
+    &.inactive{
+      background-color: #fff;
+      color:#000;
+    }
   }
 }
 pre {
@@ -101,6 +116,43 @@ pre {
   height: 50px;
   display: block;
   margin:0 auto;
+}
+.form-group{
+  clear: both;
+}
+.radio {
+  label {
+    display: block;
+    float: left;
+    border: 1px solid $themeColor2;
+    border-left:0; 
+    height: 40px;
+    width: 33%;
+    line-height: 40px;
+    text-align: center;
+    padding:0;
+    margin-bottom:20px;
+  }
+
+  &:nth-of-type(1) label{
+    border-left: 1px solid $themeColor2;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+  }
+
+  &:last-of-type label{
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+  }
+
+  input{
+    display: none;
+
+    &:checked + label{
+      background: $themeColor2;
+      color: #fff;
+    }
+  }
 }
 #main{
   position: absolute;
@@ -171,20 +223,21 @@ pre {
     margin-right:5px;
     clear:both;
   }
-
   .online-marker{
     position: absolute;
     top:12px;
     left:12px;
-    width:8px;
-    height:8px;
-    background-image:url('../img/indicator-offline.png');
     z-index: 3;
-    background-size:100% 100%;
+  }
+}
+.online-marker{
+  width:8px;
+  height:8px;
+  background-image:url('../img/indicator-offline.png');
+  background-size:100% 100%;
 
-    &.online{
-      background-image:url('../img/indicator-online.png');
-    }
+  &.status-0{
+    background-image:url('../img/indicator-online.png');
   }
 }
 #entry{
@@ -512,7 +565,10 @@ pre {
     border-top-right-radius: 0;
     border-top-left-radius: 0;
     border-top: 0;
-    background: transparent;
+    background-color: transparent;
+    &:hover{
+      background-color: #f5f5f5;
+    }
   }
 }
 
@@ -543,8 +599,8 @@ pre {
 }
 
 .results_on_deck{
-  div{
-    padding:5px;
+  .active-selection{
+    padding:10px;
 
     /* clearfix */
     &:before,
@@ -557,10 +613,11 @@ pre {
     }
 
     border-bottom:1px solid $lightLines;
-    .ui-icon{
+    .glyphicon{
       float: right;
-      width:20px;
-      cursor:pointer;
+      color: #c9302c;
+      cursor: pointer;
+      font-size: 16px;
     }
     .user{
       float:left;

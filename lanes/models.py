@@ -1,11 +1,17 @@
 import string
 import random
+import json
 import logging
 
 from django.db import models
 from django.db.models import Sum
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+
+from django_gravatar.helpers import get_gravatar_url
+
+from ws4redis.redis_store import RedisMessage
+from ws4redis.publisher import RedisPublisher
 
 from autoslug import AutoSlugField
 
@@ -78,6 +84,30 @@ class User(AbstractUser):
   def is_subscribed(self, org):
     return org in self.subscribed.all()
 
+  def get_rooms(self):
+    return Room.objects.filter(members__in=[self])
+
+  def get_orgs(self):
+    memberships = OrgMembership.objects.filter(user=self).values_list('organisation__pk', flat=True)
+    return Organisation.objects.filter(id__in=memberships)
+
+  def get_status(self, org):
+    return OrgMembership.objects.get(user=self, organisation=org).status
+
+  def set_status(self, org, status):
+    m = OrgMembership.objects.get(user=self, organisation=org)
+    m.status = status
+    m.save()
+    message = {
+      "type": "status",
+      "id": self.id,
+      "status": m.status,
+      "username": self.username,
+      "img": get_gravatar_url(self.email, size=32)
+    }
+    RedisPublisher(facility='org_' + org.slug, broadcast=True) \
+      .publish_message(RedisMessage(json.dumps(message)))
+
   def can_view(self, room):
     if room.organisation not in self.organisations.all() and \
         room.organisation.visibility == Organisation.VISIBILITY_PRIVATE:
@@ -103,8 +133,24 @@ class OrgMembership(models.Model):
       (ADMIN, 'Admin'),
       (USER, 'User')
   )
+
+  STATUS_ONLINE = 0
+  STATUS_AWAY = 1
+  STATUS_BUSY = 2
+  STATUS_INVISIBLE = 3
+  STATUS_OFFLINE = 4
+
+  STATUS_CHOICES = (
+      (STATUS_ONLINE, "online"),
+      (STATUS_AWAY, "away"),
+      (STATUS_BUSY, "busy"),
+      (STATUS_INVISIBLE, "invisible"),
+      (STATUS_OFFLINE, "offline")
+  )
+
   user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
   organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
+  status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_ONLINE)
   role = models.IntegerField(choices=ROLES, default=USER)
 
   def __unicode__(self):

@@ -127,7 +127,7 @@ class RedisStore(object):
         """
         key = "users_present:" + str(user.id)
         if present:
-            self._connection.setex(key, 60, 1)
+            self._connection.set(key, 1)
         else:
             # Give a short timeout, so that if the user is
             # loading another room there isn't a flicker in status
