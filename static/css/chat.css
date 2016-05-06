@@ -192,6 +192,10 @@ pre {
   background-size: 100% 100%; }
   .online-marker.status-0 {
     background-image: url("../img/indicator-online.png"); }
+  .online-marker.status-1 {
+    background-image: url("../img/indicator-away.png"); }
+  .online-marker.status-2 {
+    background-image: url("../img/indicator-busy.png"); }
 
 #entry {
   height: 35px;

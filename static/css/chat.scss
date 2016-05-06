@@ -125,7 +125,7 @@ pre {
     display: block;
     float: left;
     border: 1px solid $themeColor2;
-    border-left:0; 
+    border-left:0;
     height: 40px;
     width: 33%;
     line-height: 40px;
@@ -247,9 +247,14 @@ pre {
   height:8px;
   background-image:url('../img/indicator-offline.png');
   background-size:100% 100%;
-
   &.status-0{
     background-image:url('../img/indicator-online.png');
+  }
+  &.status-1{
+    background-image:url('../img/indicator-away.png');
+  }
+  &.status-2{
+    background-image:url('../img/indicator-busy.png');
   }
 }
 #entry{
