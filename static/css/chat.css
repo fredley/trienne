@@ -459,20 +459,21 @@ pre {
       .ajax-complete .ajax-results .result.selected {
         background: #eee; }
 
-.results_on_deck div {
-  padding: 5px;
+.results_on_deck .active-selection {
+  padding: 10px;
   /* clearfix */
   border-bottom: 1px solid #ddd; }
-  .results_on_deck div:before, .results_on_deck div:after {
+  .results_on_deck .active-selection:before, .results_on_deck .active-selection:after {
     content: " ";
     display: table; }
-  .results_on_deck div:after {
+  .results_on_deck .active-selection:after {
     clear: both; }
-  .results_on_deck div .ui-icon {
+  .results_on_deck .active-selection .glyphicon {
     float: right;
-    width: 20px;
-    cursor: pointer; }
-  .results_on_deck div .user {
+    color: #c9302c;
+    cursor: pointer;
+    font-size: 16px; }
+  .results_on_deck .active-selection .user {
     float: left; }
 
 #org-actions {

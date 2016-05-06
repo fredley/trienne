@@ -596,8 +596,8 @@ pre {
 }
 
 .results_on_deck{
-  div{
-    padding:5px;
+  .active-selection{
+    padding:10px;
 
     /* clearfix */
     &:before,
@@ -610,10 +610,11 @@ pre {
     }
 
     border-bottom:1px solid $lightLines;
-    .ui-icon{
+    .glyphicon{
       float: right;
-      width:20px;
-      cursor:pointer;
+      color: #c9302c;
+      cursor: pointer;
+      font-size: 16px;
     }
     .user{
       float:left;

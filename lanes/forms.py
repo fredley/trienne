@@ -17,7 +17,7 @@ class OrgForm(ModelForm):
       'visibility': RadioSelect(),
     }
 
-  admins = make_ajax_field(Organisation, 'admins', 'users', required=True, help_text="Select one or more users to be admins.")
+  admins = make_ajax_field(Organisation, 'admins', 'users', required=True, help_text="")
 
 
 class OrgEditForm(ModelForm):
@@ -25,11 +25,11 @@ class OrgEditForm(ModelForm):
     model = Organisation
     fields = ['visibility', 'privacy', 'admins']
     widgets = {
-      'privacy': RadioSelect(attrs={'class':'hello'}),
+      'privacy': RadioSelect(),
       'visibility': RadioSelect(),
     }
 
-  admins = make_ajax_field(Organisation, 'admins', 'users', required=True, help_text="Select one or more users to be admins.")
+  admins = make_ajax_field(Organisation, 'admins', 'users', required=True, help_text="")
 
 
 class RoomForm(ModelForm):
@@ -43,4 +43,4 @@ class RoomForm(ModelForm):
       'privacy': RadioSelect(),
     }
 
-  owners = make_ajax_field(Room, 'owners', 'users', required=True, help_text="Select owners of this room.")
+  owners = make_ajax_field(Room, 'owners', 'users', required=True, help_text="")
