@@ -250,7 +250,6 @@ class RoomMessageView(RoomPostView):
     raw = request.POST.get('message')
     try:
         processed = process_text(raw)
-        logger.debug(processed)
     except:
         return HttpResponse('Not OK')
     content = PostContent(

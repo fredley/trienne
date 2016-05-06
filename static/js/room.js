@@ -21,11 +21,76 @@ jQuery(document).ready(function($) {
   var edit_id = 0;
   var pincodes = [];
 
+  window.receiveMessage = function(msg) {
+    console.log(msg);
+    var msg = JSON.parse(msg);
+    switch(msg.type){
+      case "msg":
+        appendFastMessage(msg);
+        break;
+      case "vote":
+        var message = $("#medium .msg-" + msg.id).parent();
+        message.find('.score').text(msg.content);
+      case "pin":
+        var message = $("#messages .msg-" + msg.id);
+        if ($('#medium').find('.msg-' + msg.id).length === 0) {
+          insertMediumMessage(message.clone(true),{
+            name: message.parent().find(".author").text(),
+            id: msg.id
+          });
+        }
+        el = $('#medium').find('.msg-' + msg.id).parent();
+        el.find('.score').text(msg.score);
+        el.find('.edited').removeClass('edited');
+        var idx = pincodes.indexOf(msg.pincode);
+        if (msg.author_id == my_id){
+          el.find('.vote').addClass('disabled');
+        }
+        if (idx >= 0) {
+          if (msg.author_id != my_id){
+            markVoted(el.find('.votes'), 1);
+          }
+          pincodes.splice(idx,1);
+        }
+        $('#medium').scrollTop(0);
+        break;
+      case "unpin":
+        $("#medium .msg-" + msg.id).parent().remove();
+        break;
+      case "edit":
+        var parsed = parseReply(msg.content);
+        var msg = $('.msg-' + msg.id);
+        msg.addClass('edited')
+        .attr('data-raw', msg.raw)
+        .find('.content').html(parsed.content);
+        var ping = msg.content.indexOf("@" + my_name) >= 0;
+        if(volume > VOLUME_QUIET && ping){
+          author = msg.parent().find('.author');
+          img = author.find("img").attr("src");
+          notify(author.text() + ": " + text, img);
+        }
+        break;
+      case "status":
+        if($('.user-' + msg.id).length > 0){
+          $('.user-' + msg.id).find('.online-marker').attr('class', 'online-marker').addClass("status-" + msg.status);
+        } else {
+          var user = $('<div class="user user-' + msg.id + '"></div>').text(msg.username);
+          user.prepend('<img src="' + msg.img + '" alt="">');
+          user.append('<div class="online-marker status-' +  msg.status + '"></div>');
+          $('#users').append(user);
+        }
+        break;
+      case "delete":
+        $(".msg-" + msg.id).addClass('deleted').find(".content").html("(deleted)");
+        $("#medium .msg-" + msg.id).parent().remove();
+    }
+  };
+
   var loading = true;
 
   var sock = WS4Redis({
     uri: sock_uri,
-    receive_message: window.receiveMessage,
+    receive_message: receiveMessage,
     heartbeat_msg: hb
   });
 
@@ -459,70 +524,5 @@ jQuery(document).ready(function($) {
         .append(message)
         .append(votes));
     $('.msg-' + message.attr('data-id')).addClass('pinned');
-  }
-
-  window.receiveMessage = function(msg) {
-    console.log(msg);
-    var msg = JSON.parse(msg);
-    switch(msg.type){
-      case "msg":
-        appendFastMessage(msg);
-        break;
-      case "vote":
-        var message = $("#medium .msg-" + msg.id).parent();
-        message.find('.score').text(msg.content);
-      case "pin":
-        var message = $("#messages .msg-" + msg.id);
-        if ($('#medium').find('.msg-' + msg.id).length === 0) {
-          insertMediumMessage(message.clone(true),{
-            name: message.parent().find(".author").text(),
-            id: msg.id
-          });
-        }
-        el = $('#medium').find('.msg-' + msg.id).parent();
-        el.find('.score').text(msg.score);
-        el.find('.edited').removeClass('edited');
-        var idx = pincodes.indexOf(msg.pincode);
-        if (msg.author_id == my_id){
-          el.find('.vote').addClass('disabled');
-        }
-        if (idx >= 0) {
-          if (msg.author_id != my_id){
-            markVoted(el.find('.votes'), 1);
-          }
-          pincodes.splice(idx,1);
-        }
-        $('#medium').scrollTop(0);
-        break;
-      case "unpin":
-        $("#medium .msg-" + msg.id).parent().remove();
-        break;
-      case "edit":
-        var parsed = parseReply(msg.content);
-        var msg = $('.msg-' + msg.id);
-        msg.addClass('edited')
-        .attr('data-raw', msg.raw)
-        .find('.content').html(parsed.content);
-        var ping = msg.content.indexOf("@" + my_name) >= 0;
-        if(volume > VOLUME_QUIET && ping){
-          author = msg.parent().find('.author');
-          img = author.find("img").attr("src");
-          notify(author.text() + ": " + text, img);
-        }
-        break;
-      case "status":
-        if($('.user-' + msg.id).length > 0){
-          $('.user-' + msg.id).find('.online-marker').attr('class', 'online-marker').addClass("status-" + msg.status);
-        } else {
-          var user = $('<div class="user user-' + msg.id + '"></div>').text(msg.username);
-          user.prepend('<img src="' + msg.img + '" alt="">');
-          user.append('<div class="online-marker status-' +  msg.status + '"></div>');
-          $('#users').append(user);
-        }
-        break;
-      case "delete":
-        $(".msg-" + msg.id).addClass('deleted').find(".content").html("(deleted)");
-        $("#medium .msg-" + msg.id).parent().remove();
-    }
   }
 });
