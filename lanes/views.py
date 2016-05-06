@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 import json
+# -*- coding: utf-8 -*-
 import re
 import collections
 import logging
@@ -27,6 +27,7 @@ from ws4redis.publisher import RedisPublisher
 
 from .models import *
 from .forms import *
+from .utils import is_email_public
 
 url_dot_test = re.compile(ur'.+\..+')
 logger = logging.getLogger('django')
@@ -105,7 +106,7 @@ def ratelimit(request, ex):
   return JsonResponse({
       'error': True,
       'message': 'Too Fast!'
-    }, status=418)
+  }, status=418)
 
 
 class AjaxResponseMixin(object):
@@ -169,7 +170,6 @@ class RoomView(LoginRequiredMixin, TemplateView):
     elif self.request.user not in room.members.all():
       logger.debug("Added " + str(self.request.user) + " to " + str(room))
       room.members.add(self.request.user)
-    publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
     pinned = []
     for post in room.pinned:
       vote = 0
@@ -590,6 +590,12 @@ class OrgManagementView(OrgMixin, UpdateView):
   def get_success_url(self):
     return reverse('org', kwargs={'slug': self.object.slug})
 
+  def form_valid(self, form):
+    logger.debug(form.instance.id)
+    form = super(OrgManagementView, self).form_valid(form)
+
+    return form
+
   def get_context_data(self, **kwargs):
     context = super(OrgManagementView, self).get_context_data(**kwargs)
     context.update(applications=OrgApplication.objects.filter(organisation=self.org, rejected=False))
@@ -619,23 +625,50 @@ class OrgCreateView(LoginRequiredMixin, CreateView):
   template_name = 'create_org.html'
   form_class = OrgForm
 
+  def get_domain(self):
+    return self.request.user.email.split('@')[1]
+
   def get_initial(self):
-    return {'admins': "{}".format(self.request.user.id), 'domain': self.request.user.email.split('@')[1]}
+    return {'admins': "{}".format(self.request.user.id), 'domain': self.get_domain()}
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(OrgCreateView, self).get_context_data(*args, **kwargs)
+    context.update(domain_public=is_email_public(self.get_domain()))
+    return context
 
   def form_valid(self, form):
+    logger.debug("Hello")
+    logger.debug(form.cleaned_data)
     if str(self.request.user.id) not in form.cleaned_data['admins']:
       form.cleaned_data['admins'].append(self.request.user.id)
+    domain = self.get_domain()
+    if form.instance.privacy == Organisation.PRIVACY_ORG:
+      form.cleaned_data['domain'] = domain
+      form.cleaned_data['visibility'] = Organisation.VISIBILITY_PRIVATE
+    else:
+      form.cleaned_data['domain'] = None
     result = super(OrgCreateView, self).form_valid(form)
-    logger.debug(form.instance.id)
+    if form.instance.privacy == Organisation.PRIVACY_ORG:
+      if is_email_public(domain):
+        raise PermissionDenied
+      for u in User.objects.filter(email__iendswith=domain):
+        OrgMembership(user=u, organisation=form.instance).save()
     for admin in form.instance.admins.all():
-      OrgMembership(user=admin, organisation=form.instance, role=OrgMembership.ADMIN).save()
+      try:
+        OrgMembership(user=admin, organisation=form.instance, role=OrgMembership.ADMIN).save()
+      except IntegrityError:
+        # Already exists, so update
+        mem = OrgMembership.objects.get(user=admin, organisation=form.instance)
+        mem.role = OrgMembership.ADMIN
+        mem.save()
+
     return result
 
   def get_success_url(self):
     return reverse('org', kwargs={'slug': self.object.slug})
 
 
-class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
+class OrgJoinView(OrgMixin, View):
 
   def post(self, request, *args, **kwargs):
     org = self.org
@@ -669,7 +702,7 @@ class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
     return HttpResponse(result)
 
 
-class OrgApplyView(OrgMixin, AjaxResponseMixin, View):
+class OrgApplyView(OrgMixin, View):
 
   def post(self, request, *args, **kwargs):
     try:
@@ -679,7 +712,7 @@ class OrgApplyView(OrgMixin, AjaxResponseMixin, View):
         return HttpResponse('error:You have already applied')
 
 
-class OrgWatchView(OrgMixin, AjaxResponseMixin, View):
+class OrgWatchView(OrgMixin, View):
 
   def post(self, request, *args, **kwargs):
     org = self.org
@@ -714,12 +747,12 @@ class OrgStatusView(OrgMixin, View):
     membership.status = status
     membership.save()
     message = {
-      "type": "status",
-      "id": request.user.id,
-      "status": membership.status
+        "type": "status",
+        "id": request.user.id,
+        "status": membership.status
     }
     RedisPublisher(facility='org_' + self.org.slug, broadcast=True) \
-      .publish_message(RedisMessage(json.dumps(message)))
+        .publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
 
 
@@ -747,6 +780,11 @@ class RegisterView(TemplateView):
       membership = OrgMembership(user=user, organisation=org)
       membership.save()
       [i.delete() for i in invites]
+    # Add to domain org if there is one
+    domain = user.email.split('@')[1]
+    orgs = Organisation.objects.filter(domain=domain)
+    if orgs.count() == 1:
+      OrgMembership(user=user, organisation=orgs[0]).save()
     u = authenticate(username=request.POST['username'], password=request.POST['password'])
     if u is not None and u.is_active:
       login(request, u)

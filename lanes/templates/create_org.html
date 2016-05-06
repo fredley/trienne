@@ -23,21 +23,32 @@
 <script type="text/javascript" src="/static/ajax_select/js/ajax_select.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
+  {% if domain_public %}
+    $('#id_privacy_3').parent().remove();
+    $('input[name="privacy"]').removeClass('radio-4');
+  {% else %}
 
-  var domain = $('<div id="domain-msg" class="help-block" style="clear:both;border: 1px solid transparent;width:50px;"></div>');
-  domain.text($('#id_domain').val());
+  var domain = $('<div id="domain-msg" class="help-block" style="clear:both;display:none;"></div>');
+  domain.html("All users with email addresses from <strong>" + $('#id_domain').val() + "</strong> will be automatically added to your community. No other users can join it.");
   $('#id_privacy_0').parents('.form-group').append(domain);
+
+  if($('#id_privacy_3:checked').length > 0){
+      $('#id_visibility_2').prop('checked', true);
+      $('input[name="visibility"]').prop('readonly', true).addClass('disabled');
+      $('#domain-msg').show();
+  }
 
   $('input[name="privacy"]').on('click',function(){
     if($(this).val() == 3){
       $('#id_visibility_2').prop('checked', true);
-      $('input[name="visibility"]').prop('disabled', true).addClass('disabled');
+      $('input[name="visibility"]').prop('readonly', true).addClass('disabled');
       $('#domain-msg').slideDown('fast');
     }else{
-      $('input[name="visibility"]').prop('disabled', false).removeClass('disabled');
+      $('input[name="visibility"]').prop('readonly', false).removeClass('disabled');
       $('#domain-msg').slideUp('fast');
     }
   });
+  {% endif %}
 });
 </script>
 {% endblock %}

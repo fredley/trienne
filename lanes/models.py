@@ -29,7 +29,7 @@ class Organisation(models.Model):
       (PRIVACY_OPEN, "Open"),
       (PRIVACY_APPLY, "Application Only"),
       (PRIVACY_INVITE, "Invitation Only"),
-      (PRIVACY_ORG, "Only for your domain")
+      (PRIVACY_ORG, "Your domain")
   )
 
   VISIBILITY_PUBLIC = 0   # Visible in search
@@ -43,7 +43,7 @@ class Organisation(models.Model):
   )
 
   name = models.CharField(max_length=200)
-  domain = models.CharField(max_length=200)
+  domain = models.CharField(max_length=200, unique=True, null=True, blank=True)
   admins = models.ManyToManyField(settings.AUTH_USER_MODEL)
   privacy = models.IntegerField(choices=PRIVACY_CHOICES, default=PRIVACY_APPLY)
   visibility = models.IntegerField(choices=VISIBILITY_CHOICES, default=VISIBILITY_LINK)
@@ -101,14 +101,14 @@ class User(AbstractUser):
     m.status = status
     m.save()
     message = {
-      "type": "status",
-      "id": self.id,
-      "status": m.status,
-      "username": self.username,
-      "img": get_gravatar_url(self.email, size=32)
+        "type": "status",
+        "id": self.id,
+        "status": m.status,
+        "username": self.username,
+        "img": get_gravatar_url(self.email, size=32)
     }
     RedisPublisher(facility='org_' + org.slug, broadcast=True) \
-      .publish_message(RedisMessage(json.dumps(message)))
+        .publish_message(RedisMessage(json.dumps(message)))
 
   def can_view(self, room):
     if room.organisation not in self.organisations.all() and \
@@ -154,6 +154,9 @@ class OrgMembership(models.Model):
   organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
   status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_ONLINE)
   role = models.IntegerField(choices=ROLES, default=USER)
+
+  class Meta:
+    unique_together = ('user', 'organisation',)
 
   def __unicode__(self):
     return str(self.organisation) + " - " + str(self.user)

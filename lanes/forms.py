@@ -13,9 +13,9 @@ class OrgForm(ModelForm):
     model = Organisation
     fields = ['name', 'privacy', 'visibility', 'admins', 'domain']
     widgets = {
-      'privacy': RadioSelect(attrs={'class': 'radio-4'}),
-      'visibility': RadioSelect(),
-      'domain': HiddenInput()
+        'privacy': RadioSelect(attrs={'class': 'radio-4'}),
+        'visibility': RadioSelect(),
+        'domain': HiddenInput()
     }
 
   admins = make_ajax_field(Organisation, 'admins', 'users', required=True, help_text="")
@@ -24,11 +24,7 @@ class OrgForm(ModelForm):
 class OrgEditForm(ModelForm):
   class Meta:
     model = Organisation
-    fields = ['privacy', 'visibility', 'admins']
-    widgets = {
-      'privacy': RadioSelect(),
-      'visibility': RadioSelect(),
-    }
+    fields = ['admins']
 
   admins = make_ajax_field(Organisation, 'admins', 'users', required=True, help_text="")
 
@@ -41,7 +37,7 @@ class RoomForm(ModelForm):
     model = Room
     fields = ['name', 'topic', 'privacy', 'owners']
     widgets = {
-      'privacy': RadioSelect(),
+        'privacy': RadioSelect(),
     }
 
   owners = make_ajax_field(Room, 'owners', 'users', required=True, help_text="")
