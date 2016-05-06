@@ -123,7 +123,7 @@ WSGI_APPLICATION = 'ws4redis.django_runserver.application'
 WS4REDIS_CONNECTION = {
     'host': HEROKU_REDIS_URL.hostname,
     'port': HEROKU_REDIS_URL.port,
-    'db': 1,
+    'db': 0,
     'password': HEROKU_REDIS_URL.password,
 }
 

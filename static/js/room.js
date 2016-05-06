@@ -510,21 +510,15 @@ jQuery(document).ready(function($) {
           notify(author.text() + ": " + text, img);
         }
         break;
-      case "join":
+      case "status":
         if($('.user-' + msg.id).length > 0){
-          $('.user-' + msg.id).find('.online-marker').addClass('status-0');
+          $('.user-' + msg.id).find('.online-marker').attr('class', 'online-marker').addClass("status-" + msg.status);
         } else {
           var user = $('<div class="user user-' + msg.id + '"></div>').text(msg.username);
           user.prepend('<img src="' + msg.img + '" alt="">');
-          user.append('<div class="online-marker status-0"></div>');
+          user.append('<div class="online-marker status-' +  msg.status + '"></div>');
           $('#users').append(user);
         }
-        break;
-      case "status":
-        $('.user-' + msg.id).find('.online-marker').attr('class', 'online-marker').addClass("status-" + msg.status);
-        break;
-      case "leave":
-        $('.user-' + msg.id).find('.online-marker').attr('class', 'online-marker');
         break;
       case "delete":
         $(".msg-" + msg.id).addClass('deleted').find(".content").html("(deleted)");

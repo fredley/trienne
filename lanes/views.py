@@ -190,20 +190,16 @@ class RoomView(LoginRequiredMixin, TemplateView):
           "id": u.id,
           "status": u.get_status(room.organisation)
       })
-    message = {
-        'type': 'join',
-        'id': self.request.user.id,
-        # Add this in case user is brand new and not in list
-        'username': self.request.user.username,
-        'img': get_gravatar_url(self.request.user.email, size=32)
-    }
-    publisher.publish_message(RedisMessage(json.dumps(message)))
+    status = OrgMembership.objects.get(user=self.request.user, organisation=room.organisation).status
+    if status == OrgMembership.STATUS_OFFLINE:
+      # Just joining, so set to Online
+      status = STATUS_ONLINE
     context.update(room=room,
                    rooms=self.request.user.get_rooms(),
                    org=room.organisation,
                    is_admin=self.request.user.is_admin(room.organisation),
                    is_member=True,
-                   status=OrgMembership.objects.get(user=self.request.user, organisation=room.organisation).status,
+                   status=status,
                    can_participate=self.request.user.is_member(room.organisation),
                    is_owner=self.request.user in room.owners.all(),
                    pinned=pinned,
@@ -306,8 +302,11 @@ class OrgMixin(LoginRequiredMixin):
     is_member = self.org in user.organisations.all()
     if is_member:
       status = OrgMembership.objects.get(user=self.request.user, organisation=self.org).status
+      if status == OrgMembership.STATUS_OFFLINE:
+        # Just joining, so set to online
+        status = OrgMembership.STATUS_ONLINE
     else:
-      status = "offline"
+      status = OrgMembership.STATUS_OFFLINE
     context.update(org=self.org,
                    rooms=Room.objects.filter(members__in=[user]),
                    is_admin=user.is_admin(self.org),

@@ -20,6 +20,8 @@ from ws4redis import settings as private_settings
 from ws4redis.redis_store import RedisMessage
 from ws4redis.exceptions import WebSocketError, HandshakeError, UpgradeRequiredError
 
+from lanes.models import User, Organisation, OrgMembership
+
 import logging
 
 logger = logging.getLogger("django")
@@ -82,6 +84,7 @@ class WebsocketWSGIServer(object):
         """
         websocket = None
         subscriber = self.Subscriber(self._redis_connection)
+        name = ''
         try:
             self.assure_protocol_requirements(environ)
             request = WSGIRequest(environ)
@@ -108,7 +111,10 @@ class WebsocketWSGIServer(object):
             redis_fd = subscriber.get_file_descriptor()
             if redis_fd:
                 listening_fds.append(redis_fd)
-            subscriber.set_present(request.user, True)
+            name = request.path.split('/')[-1]
+            if request.user and name[:4] == 'org_':
+                request.user.set_status(Organisation.objects.get(slug=name[4:]), OrgMembership.STATUS_ONLINE)
+                subscriber.set_present(request.user, True)
             recvmsg = None
             while websocket and not websocket.closed:
                 ready = self.select(listening_fds, [], [], 4.0)[0]
@@ -121,15 +127,11 @@ class WebsocketWSGIServer(object):
                         recvmsg = RedisMessage(recv)
                         if recvmsg:
                             subscriber.publish_message(recvmsg)
-                        elif request.user:
-                            subscriber.set_present(request.user, True)
                     elif fd == redis_fd:
                         sendmsg = RedisMessage(subscriber.parse_response())
-                        if sendmsg and len(sendmsg) > 14 and sendmsg[:14] == "users_present:":
-                            websocket.send(json.dumps({
-                                "type": "leave",
-                                "id": sendmsg[14:]
-                            }))
+                        # redis-cli config set notify-keyspace-events Kx
+                        if sendmsg and name[:4] == 'org_' and len(sendmsg) > 14 and sendmsg[:14] == "users_present:":
+                            User.objects.get(id=sendmsg[14:]).set_status(Organisation.objects.get(slug=name[4:]), OrgMembership.STATUS_OFFLINE)
                             sendmsg = None
                         if sendmsg and (echo_message or sendmsg != recvmsg):
                             websocket.send(sendmsg)
@@ -158,6 +160,7 @@ class WebsocketWSGIServer(object):
             response = http.HttpResponse()
         finally:
             subscriber.set_present(request.user, False)
+            logger.debug("GOING OFFLINE: " + request.user.username)
             subscriber.release()
             if websocket:
                 websocket.close(code=1001, message='Websocket Closed')

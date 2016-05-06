@@ -1,11 +1,17 @@
 import string
 import random
+import json
 import logging
 
 from django.db import models
 from django.db.models import Sum
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+
+from django_gravatar.helpers import get_gravatar_url
+
+from ws4redis.redis_store import RedisMessage
+from ws4redis.publisher import RedisPublisher
 
 from autoslug import AutoSlugField
 
@@ -87,6 +93,20 @@ class User(AbstractUser):
 
   def get_status(self, org):
     return OrgMembership.objects.get(user=self, organisation=org).status
+
+  def set_status(self, org, status):
+    m = OrgMembership.objects.get(user=self, organisation=org)
+    m.status = status
+    m.save()
+    message = {
+      "type": "status",
+      "id": self.id,
+      "status": m.status,
+      "username": self.username,
+      "img": get_gravatar_url(self.email, size=32)
+    }
+    RedisPublisher(facility='org_' + org.slug, broadcast=True) \
+      .publish_message(RedisMessage(json.dumps(message)))
 
   def can_view(self, room):
     if room.organisation not in self.organisations.all() and \
