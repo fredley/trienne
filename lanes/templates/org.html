@@ -26,32 +26,36 @@
       <i class="glyphicon glyphicon-eye-close"></i> Unfollow this Community
     </button>
   </div>
-  <div class="row" id="rooms">
-    {% for room in rooms %}
+  {% if is_member %}
+    <div class="row" id="rooms">
+      {% for room in rooms %}
+        <div class="col-sm-3">
+          <div class="well room">
+            <h2>{% if room.privacy == room.PRIVACY_PRIVATE %}<i class="glyphicon glyphicon-lock" ></i> {% endif %}<a href="{% url 'room' room.id %}" class="room-link">{{ room.name }}</a></h2>
+          <p>{{ room.topic }}</p>
+          </div>
+        </div>
+      {% endfor %}
       <div class="col-sm-3">
-        <div class="well room">
-          <h2>{% if room.privacy == room.PRIVACY_PRIVATE %}<i class="glyphicon glyphicon-lock" ></i> {% endif %}<a href="{% url 'room' room.id %}">{{ room.name }}</a></h2>
-        <p>{{ room.topic }}</p>
+        <div class="well add">
+          <a href="{% url 'add_room' org.slug %}"><i class="glyphicon glyphicon-plus"></i></a>
         </div>
       </div>
-    {% endfor %}
-    <div class="col-sm-3">
-      <div class="well add">
-        <a href="{% url 'add_room' org.slug %}"><i class="glyphicon glyphicon-plus"></i></a>
-      </div>
+      {% if rooms.count == 0 and not is_admin %}
+        <div class="col-xs-12"><p class="alert alert-info">This community has no boards yet :(</p></div>
+      {% endif %}
     </div>
-    {% if rooms.count == 0 and not is_admin %}
-      <div class="col-xs-12"><p class="alert alert-info">This community has no boards yet :(</p></div>
-    {% endif %}
-  </div>
+  {% endif %}
 </div>
 {% endblock main_content %}
 
 {% block script_panel %}
 <script type="text/javascript">
 $(document).ready(function(){
+    var canClick = false;
   {% if is_member %}
       $('#btn-leave').show();
+      canClick = true;
   {% elif is_follower %}
     {% if org.privacy == org.PRIVACY_OPEN %}
       $('#btn-join').show();
@@ -101,10 +105,7 @@ $(document).ready(function(){
             $("#btn-unfollow").hide();
             break;
           case 'joined':
-            $("#btn-leave").show();
-            $("#btn-join").hide();
-            $("#btn-unfollow").hide();
-            $("#btn-follow").hide();
+            location.reload();
             break;
           case 'left-apply':
             $("#btn-apply").show()

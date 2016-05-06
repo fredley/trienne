@@ -160,6 +160,9 @@ class RoomView(LoginRequiredMixin, TemplateView):
   def get_context_data(self, **kwargs):
     context = super(RoomView, self).get_context_data(**kwargs)
     room = Room.objects.get(id=kwargs['room_id'])
+    if not self.request.user.is_member(room.organisation):
+      logger.debug("Not a member")
+      raise PermissionDenied
     if not self.request.user.can_view(room):
       logger.debug("Can't view")
       raise PermissionDenied
