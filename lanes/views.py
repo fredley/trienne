@@ -641,7 +641,7 @@ class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
     action = request.POST.get('action')
     result = 'error'
     if action == 'join':
-      if org.privacy != Organisation.PRIVACY_OPEN:
+      if org.privacy != org.PRIVACY_OPEN:
         return HttpResponse('error:You cannot join this community')
       if request.user.is_member(org):
         return HttpResponse('error:You are already a member of this community')
@@ -659,7 +659,7 @@ class OrgJoinView(OrgMixin, AjaxResponseMixin, View):
       OrgMembership.objects.get(user=request.user, organisation=org).delete()
       if org.privacy == org.PRIVACY_OPEN:
         result = 'left-join'
-      elif org.privacy == PRIVACY_APPLY:
+      elif org.privacy == org.PRIVACY_APPLY:
         result = 'left-apply'
       else:
         result = 'left'
