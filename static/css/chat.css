@@ -438,7 +438,9 @@ pre {
   border-top-right-radius: 0;
   border-top-left-radius: 0;
   border-top: 0;
-  background: transparent; }
+  background-color: transparent; }
+  #org-list .list-group-item:nth-of-type(1):hover {
+    background-color: #f5f5f5; }
 
 /*   AUTOCOMPLETE   */
 .ajax-complete {
