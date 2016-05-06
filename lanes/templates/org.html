@@ -50,12 +50,11 @@
 {% endblock main_content %}
 
 {% block script_panel %}
+{% if org.privacy != org.PRIVACY_ORG %}
 <script type="text/javascript">
 $(document).ready(function(){
-    var canClick = false;
   {% if is_member %}
       $('#btn-leave').show();
-      canClick = true;
   {% elif is_follower %}
     {% if org.privacy == org.PRIVACY_OPEN %}
       $('#btn-join').show();
@@ -77,6 +76,7 @@ $(document).ready(function(){
         $('#btn-apply').show();
       {% endif %}
     {% endif %}
+    {% if org.privacy != org.PRIVACY_ORG %}
     $('#btn-follow').show();
   {% endif %}
   $('.action').on('click',function(){
@@ -128,4 +128,5 @@ $(document).ready(function(){
   });
 });
 </script>
+{% endif %}
 {% endblock %}
