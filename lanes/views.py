@@ -620,7 +620,7 @@ class OrgCreateView(LoginRequiredMixin, CreateView):
   form_class = OrgForm
 
   def get_initial(self):
-    return {'admins': "{}".format(self.request.user.id)}
+    return {'admins': "{}".format(self.request.user.id), 'domain': self.request.user.email.split('@')[1]}
 
   def form_valid(self, form):
     if str(self.request.user.id) not in form.cleaned_data['admins']:

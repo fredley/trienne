@@ -23,11 +23,13 @@ class Organisation(models.Model):
   PRIVACY_OPEN = 0       # Anyone can join, no approval
   PRIVACY_APPLY = 1      # Anyone can apply to join
   PRIVACY_INVITE = 2     # Must have an invitation to join
+  PRIVACY_ORG = 3        # Must be a member of an org
 
   PRIVACY_CHOICES = (
       (PRIVACY_OPEN, "Open"),
       (PRIVACY_APPLY, "Application Only"),
-      (PRIVACY_INVITE, "Invitation Only")
+      (PRIVACY_INVITE, "Invitation Only"),
+      (PRIVACY_ORG, "Only for your domain")
   )
 
   VISIBILITY_PUBLIC = 0   # Visible in search

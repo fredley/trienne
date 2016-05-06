@@ -21,4 +21,23 @@
 
 {% block script_panel %}
 <script type="text/javascript" src="/static/ajax_select/js/ajax_select.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+
+  var domain = $('<div id="domain-msg" class="help-block" style="clear:both;border: 1px solid transparent;width:50px;"></div>');
+  domain.text($('#id_domain').val());
+  $('#id_privacy_0').parents('.form-group').append(domain);
+
+  $('input[name="privacy"]').on('click',function(){
+    if($(this).val() == 3){
+      $('#id_visibility_2').prop('checked', true);
+      $('input[name="visibility"]').prop('disabled', true).addClass('disabled');
+      $('#domain-msg').slideDown('fast');
+    }else{
+      $('input[name="visibility"]').prop('disabled', false).removeClass('disabled');
+      $('#domain-msg').slideUp('fast');
+    }
+  });
+});
+</script>
 {% endblock %}
