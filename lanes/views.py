@@ -421,6 +421,7 @@ class PostVoteView(PostView, View):
         score=value)
     vote.save()
     score = post.score
+    post.update_hotness()
     if score < -4:
       #unpin
       post.pinned = False
@@ -793,3 +794,21 @@ class RegisterView(TemplateView):
       return HttpResponseRedirect(reverse('org', kwargs={'slug': org.slug}))
     else:
       return HttpResponseRedirect(reverse('orgs'))
+
+
+class LandingView(TemplateView):
+  template_name = "index.html"
+
+  def dispatch(self, *args, **kwargs):
+    logger.debug(self.request.user.is_authenticated)
+    # if self.request.user.is_authenticated:
+    #   return OrgsView.as_view()(self.request)
+    return super(LandingView, self).dispatch(*args, **kwargs)
+
+
+class Error500(TemplateView):
+  template_name = "error_500.html"
+
+
+class Error404(TemplateView):
+  template_name = "error_404.html"

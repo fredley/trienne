@@ -44,5 +44,10 @@ urlpatterns = [
     url(r'^users/register/(?P<token>\w+)/', RegisterView.as_view(), name='invitation'),
     url(r'^users/register/$', RegisterView.as_view(), name='register'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', OrgsView.as_view(), name='orgs'),
+    url(r'^$', LandingView.as_view(), name='orgs'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+handler400 = Error500.as_view()
+handler403 = Error404.as_view()
+handler404 = Error404.as_view()
+handler500 = Error500.as_view()

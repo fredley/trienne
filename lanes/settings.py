@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from datetime import timedelta
 from urlparse import urlparse
 
 from .socket import get_allowed_channels
@@ -46,8 +47,20 @@ SESSION_ENGINE = 'redis_sessions.session'
 
 try:
     HEROKU_REDIS_URL = urlparse(os.environ.get("REDIS_URL"))
+    BROKER_URL = os.environ.get("REDIS_URL") + '/0' #  Celery
 except:
     HEROKU_REDIS_URL = urlparse('redis://localhost:6379')
+    BROKER_URL = 'redis://localhost:6379/0' #  Celery
+
+CELERYBEAT_SCHEDULE = {
+    'reorder_stars': {
+        'task': 'lanes.tasks.reorder_stars',
+        'schedule': timedelta(seconds=10)
+    },
+}
+
+CELERY_TIMEZONE = 'UTC'
+CELERY_IMPORTS = ("lanes.tasks", )
 
 SESSION_REDIS_USERNAME = HEROKU_REDIS_URL.username
 SESSION_REDIS_PASSWORD = HEROKU_REDIS_URL.password
