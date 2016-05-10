@@ -540,9 +540,8 @@ class OrgJsonView(LoginRequiredMixin, View):
     } for o in qs]})
 
 
-class UserManagementView(LoginRequiredMixin, AjaxResponseMixin, CreateView):
+class OrgInviteView(OrgMixin, AjaxResponseMixin, CreateView):
 
-  template_name = "user_management.html"
   model = Invitation
   fields = ['organisation', 'email']
 
@@ -550,16 +549,18 @@ class UserManagementView(LoginRequiredMixin, AjaxResponseMixin, CreateView):
     return ''
 
   def form_valid(self, form):
+    if self.org.privacy == Organisation.PRIVACY_ORG and \
+        form.instance.email.split('@', 1) != self.org.domain:
+      return JsonResponse({'email': 'You can only invite people with ' + self.org.domain + ' addresses'}, status=400)
     users = User.objects.filter(email=form.instance.email)
     if users.count() > 0:
       # Just add user as member
-      OrgMembership(user=users[0], organisation=form.instance.organisation).save()
+      OrgMembership(user=users[0], organisation=self.org).save()
       return HttpResponse('OK')
-    response = super(UserManagementView, self).form_valid(form)  # Saves form
-    org = form.instance.organisation
+    response = super(OrgInviteView, self).form_valid(form)  # Saves form
     link = 'http://' + settings.ALLOWED_HOSTS[0] + reverse('invitation', kwargs={'token': form.instance.token})
-    send_mail('Join {} on lanes'.format(org.name),
-        'You have been invited to join {} on lanes, please click this link to sign up:\n\n{}'.format(org.name, link),
+    send_mail('Join {} on lanes'.format(self.org.name),
+        'You have been invited to join {} on lanes, please click this link to sign up:\n\n{}'.format(self.org.name, link),
         'noreply@lanes.net',
     [form.instance.email], fail_silently=True)
     return response

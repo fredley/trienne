@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import url, include
 from django.conf.urls.static import static
-from django.core.urlresolvers import reverse_lazy
-from django.views.generic import RedirectView
 from django.contrib import admin
 
 from ajax_select import urls as ajax_select_urls
@@ -28,6 +26,7 @@ urlpatterns = [
     url(r'^c/(?P<slug>[\w-]+)/apply/$', OrgApplyView.as_view()),
     url(r'^c/(?P<slug>[\w-]+)/follow/$', OrgWatchView.as_view()),
     url(r'^c/(?P<slug>[\w-]+)/status/$', OrgStatusView.as_view(), name='org_status'),
+    url(r'^c/(?P<slug>[\w-]+)/invite/$', OrgInviteView.as_view(), name='org_invite'),
 
     url(r'^room/(?P<room_id>\d+)/$', RoomView.as_view(), name='room'),
     url(r'^room/(?P<room_id>\d+)/post/$', RoomMessageView.as_view(), name='room_post'),
@@ -44,7 +43,6 @@ urlpatterns = [
     url(r'^users/', include('django.contrib.auth.urls')),
     url(r'^users/register/(?P<token>\w+)/', RegisterView.as_view(), name='invitation'),
     url(r'^users/register/$', RegisterView.as_view(), name='register'),
-    url(r'^users/manage/$', UserManagementView.as_view(), name='manage_users'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', OrgsView.as_view(), name='orgs'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
