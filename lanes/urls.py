@@ -46,7 +46,7 @@ urlpatterns = [
     url(r'^users/register/$', RegisterView.as_view(), name='register'),
     url(r'^users/manage/$', UserManagementView.as_view(), name='manage_users'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', OrgsView.as_view(), name='orgs'),
+    url(r'^$', LandingView.as_view(), name='orgs'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 handler400 = Error500.as_view()

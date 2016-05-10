@@ -795,6 +795,16 @@ class RegisterView(TemplateView):
       return HttpResponseRedirect(reverse('orgs'))
 
 
+class LandingView(TemplateView):
+  template_name = "index.html"
+
+  def dispatch(self, *args, **kwargs):
+    logger.debug(self.request.user.is_authenticated)
+    # if self.request.user.is_authenticated:
+    #   return OrgsView.as_view()(self.request)
+    return super(LandingView, self).dispatch(*args, **kwargs)
+
+
 class Error500(TemplateView):
   template_name = "error_500.html"
 
