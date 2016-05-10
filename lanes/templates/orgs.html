@@ -39,16 +39,19 @@ $(document).ready(function(){
     if(url == "search"){
       url = "mine";
     }
-    $('#org-selection a[data-url="' + url + '"]').tab('show');
+    var el = $('#org-selection a[data-url="' + url + '"]');
+    el.tab('show');
+    el.parent().addClass('active');
     updateContent(url);
   }
 
   $('#org-selection li a').click(function (e) {
-    e.preventDefault();
     if($(this).parent().hasClass('active')){
       return;
     }
     $(this).tab('show');
+    $('li').removeClass('active');
+    $(this).parent().addClass('active');
     if($(this).attr('data-url')) {
       endSearch();
       updateContent($(this).attr('data-url'))
