@@ -12,7 +12,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
-from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.views.generic import DetailView
@@ -28,6 +27,7 @@ from ws4redis.publisher import RedisPublisher
 from .models import *
 from .forms import *
 from .utils import is_email_public
+from .emails import *
 
 url_dot_test = re.compile(ur'.+\..+')
 logger = logging.getLogger('django')
@@ -560,10 +560,7 @@ class OrgInviteView(OrgMixin, AjaxResponseMixin, CreateView):
       return HttpResponse('OK')
     response = super(OrgInviteView, self).form_valid(form)  # Saves form
     link = 'http://' + settings.ALLOWED_HOSTS[0] + reverse('invitation', kwargs={'token': form.instance.token})
-    send_mail('Join {} on lanes'.format(self.org.name),
-        'You have been invited to join {} on lanes, please click this link to sign up:\n\n{}'.format(self.org.name, link),
-        'noreply@lanes.net',
-    [form.instance.email], fail_silently=True)
+    InvitationEmail(org=self.org, link=link).send(form.instance.email)
     return response
 
 
