@@ -793,3 +793,11 @@ class RegisterView(TemplateView):
       return HttpResponseRedirect(reverse('org', kwargs={'slug': org.slug}))
     else:
       return HttpResponseRedirect(reverse('orgs'))
+
+
+class Error500(TemplateView):
+  template_name = "error_500.html"
+
+
+class Error404(TemplateView):
+  template_name = "error_404.html"
