@@ -31,6 +31,18 @@ jQuery(document).ready(function($) {
       case "vote":
         var message = $("#medium .msg-" + msg.id).parent();
         message.find('.score').text(msg.content);
+        break;
+      case "hotness":
+        // reorder by id, fetch those we haven't got any more...?
+        $('#medium').addClass('loading');
+        var hotlist = $('<div></div>');
+        msg.posts.forEach(function(post){
+          var p = $('#medium').find('.msg-' + post.id).parent();
+          hotlist.append(p);
+        });
+        $('#medium').html(hotlist);
+        $('#medium').removeClass('loading');
+        break;
       case "pin":
         var message = $("#messages .msg-" + msg.id);
         if ($('#medium').find('.msg-' + msg.id).length === 0) {

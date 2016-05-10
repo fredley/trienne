@@ -421,6 +421,7 @@ class PostVoteView(PostView, View):
         score=value)
     vote.save()
     score = post.score
+    post.update_hotness()
     if score < -4:
       #unpin
       post.pinned = False

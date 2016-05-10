@@ -2,11 +2,15 @@ import string
 import random
 import json
 import logging
+import math
+
+from datetime import datetime
 
 from django.db import models
 from django.db.models import Sum
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 from django_gravatar.helpers import get_gravatar_url
 
@@ -17,6 +21,7 @@ from autoslug import AutoSlugField
 
 logger = logging.getLogger('django')
 
+epoch = timezone.make_aware(datetime(1970, 1, 1), timezone.get_current_timezone())
 
 class Organisation(models.Model):
 
@@ -199,7 +204,7 @@ class Room(models.Model):
   history = property(get_history)
 
   def get_pinned(self):
-    posts = Post.objects.filter(room=self, pinned=True).order_by('-pinned_at')[:20]
+    posts = Post.objects.filter(room=self, pinned=True).order_by('-hotness')[:20]
     return posts[::-1]
 
   pinned = property(get_pinned)
@@ -237,6 +242,7 @@ class Post(models.Model):
   pinned = models.BooleanField(default=False)
   pinned_at = models.DateTimeField(null=True, default=None)
   deleted = models.BooleanField(default=False)
+  hotness = models.FloatField(default=10000.0)
 
   def get_score(self):
     res = 0
@@ -273,6 +279,16 @@ class Post(models.Model):
 
   def is_edited(self):
     return PostContent.objects.filter(post=self).count() > 1
+
+  def update_hotness(self, score=None):
+    if score is None:
+      score = self.get_score()
+    order = math.log(max(abs(score), 1), 10)
+    sign = 1 if score > 0 else -1 if score < 0 else 0
+    td = self.pinned_at - epoch
+    seconds = td.days * 86400 + td.seconds + (float(td.microseconds) / 1000000) - 1134028003
+    self.hotness = round(sign * order + seconds / 45000, 7)
+    self.save()
 
   def __unicode__(self):
     return str(self.author) + " in " + str(self.room) + " at " + str(self.created)
