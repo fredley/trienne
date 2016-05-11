@@ -16,24 +16,37 @@
         {{ form|bootstrap }}
         <button class="btn btn-success" type="submit">Apply Changes</button>
       </form>
-    </div>
-    <div class="col-sm-6 col-sm-offset-3">
+
+      {% if org.privacy == org.PRIVACY_APPLY %}
       <hr>
-        <div style="display:none;" id="user-list">
-          <legend>Users awaiting approval</legend>
-          <div class="list-group">
-          {% for a in applications %}
-            <div class="list-group-item">
-              {{ a.user.username }}
-              <div class="btn-group pull-right application">
-                <button class="btn approval btn-xs btn-danger" data-action="deny" data-id="{{ a.user.id }}">Deny</button>
-                <button class="btn approval btn-xs btn-success" data-action="approve" data-id="{{ a.user.id }}">Approve</button>
-              </div>
+
+      <div style="display:none;" id="user-list">
+        <legend>Users awaiting approval</legend>
+        <div class="list-group">
+        {% for a in applications %}
+          <div class="list-group-item">
+            {{ a.user.username }}
+            <div class="btn-group pull-right application">
+              <button class="btn approval btn-xs btn-danger" data-action="deny" data-id="{{ a.user.id }}">Deny</button>
+              <button class="btn approval btn-xs btn-success" data-action="approve" data-id="{{ a.user.id }}">Approve</button>
             </div>
-          {% endfor %}
           </div>
+        {% endfor %}
         </div>
-        <div style="display:none;" id="no-users" class="alert alert-info">There are no users awaiting approval</div>
+      </div>
+      <div style="display:none;" id="no-users" class="alert alert-info">There are no users awaiting approval</div>
+      {% endif %}
+
+      <hr>
+
+      <legend>Invite someone to join {{ org.name }}</legend>
+      <div class="form-group">
+        <input class="form-control" type="email" name="email" placeholder="Email" id="id_email">
+      </div>
+      <button type="button" class="btn btn-success" id="send-invite">Send Invite</button>
+      <div class="form-group">
+        <p id="message" class="helptext text-success" style="display:none;">An invitation has been sent</p>
+      </div>
     </div>
   </div>
 </div>
@@ -68,6 +81,57 @@
           }
         }
       });
+    });
+
+    function send(){
+      $('#send-invite').addClass('disabled');
+      $('#send-invite').prop('disabled', true);
+      $.ajax({
+        method: "post",
+        url: "{% url 'org_invite' org.slug %}",
+        dataType: "json",
+        data: {
+          email: $('#id_email').val(),
+          organisation: {{ org.id }}
+        },
+        success: function(){
+          $('#id_email').val('');
+          $('#message')
+            .text('An invitation has been sent!')
+            .addClass('text-success')
+            .removeClass('text-danger')
+            .fadeIn('fast');
+        },
+        error: function(response){
+          var data = JSON.parse(response.responseText);
+          var message = "Something went wrong :-("
+          if (data.email){
+            message = data.email;
+          }
+          $('#message')
+            .text(message)
+            .removeClass('text-success')
+            .addClass('text-danger')
+            .fadeIn('fast');
+        },
+        complete: function(){
+          setTimeout(function(){
+            $('#message').fadeOut('slow');
+          },2000);
+          $('#send-invite').removeClass('disabled');
+          $('#send-invite').prop('disabled', false);
+        }
+      });
+    }
+
+    $("#id_email").keydown(function(ev) {
+      if (ev.keyCode === 13 && !ev.shiftKey) {
+        send();
+      }
+    });
+
+    $('#send-invite').on('click',function(){
+      send();
     });
   });
 </script>
