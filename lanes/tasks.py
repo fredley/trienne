@@ -4,7 +4,7 @@ from math import log
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
 
-from .celery import app
+from .celery_app import app
 from .models import *
 
 
