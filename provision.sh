@@ -1,6 +1,6 @@
 sudo apt-get update
 sudo apt-get upgrade -y
-sudo apt-get install -y git libpq-dev python-dev python-pip nginx redis-server uwsgi
+sudo apt-get install -y git libpq-dev python-dev python-pip nginx redis-server libpcre3 libpcre3-dev
 
 sudo pip install virtualenv
 git clone git@bitbucket.org:fredley/lanes.git
