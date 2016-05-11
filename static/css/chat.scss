@@ -37,24 +37,34 @@ header.navbar{
   height:50px;
   border-bottom:1px darken($lightLines,50%);
   box-shadow: 0 5px 5px rgba(0,0,0,0.1);
-  .nav>li>a{
-    color:#fff;
-  }
-  .nav>li.active>a,
-  .nav>li>a:hover,
-  .nav .open>a, .nav .open>a:hover, .nav .open>a:focus{
-    background: lighten($themeColor2,10%);
-  }
 
-  .nav>li>a:focus{
-    background: $themeColor2;
+  .nav{
+    margin: 0;
+
+    &>li{
+      float: right;
+      text-align: right;;
+    }
+
+    &>li>a{
+      color:#fff;
+      padding-top: 15px;
+      padding-bottom: 15px;
+    }
+    &>li.active>a, &>li>a:hover,
+    & .open>a, & .open>a:hover, & .open>a:focus{
+      background: lighten($themeColor2,10%);
+    }
+
+    &>li>a:focus{
+      background: $themeColor2;
+    }
   }
 
   .navbar-right{
     margin-right:0;
   }
   .dropdown-menu{
-    min-width:300px;
     padding:15px;
     form{
       margin-bottom:10px;
@@ -647,5 +657,24 @@ pre {
 
   .btn{
     display: none;
+  }
+}
+@media (max-width: 768px){
+  .action-button{
+    font-size: 0;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+
+    i{
+      font-size: 25px;
+      text-align: center;
+      line-height: 45px;
+      padding-left: 2px;
+    }
   }
 }

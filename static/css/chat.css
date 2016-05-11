@@ -23,18 +23,22 @@ header.navbar {
   height: 50px;
   border-bottom: 1px #5e5e5e;
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1); }
-  #nav .nav > li > a {
-    color: #fff; }
-  #nav .nav > li.active > a,
-  #nav .nav > li > a:hover,
-  #nav .nav .open > a, #nav .nav .open > a:hover, #nav .nav .open > a:focus {
-    background: #928eef; }
-  #nav .nav > li > a:focus {
-    background: #6762E8; }
+  #nav .nav {
+    margin: 0; }
+    #nav .nav > li {
+      float: right;
+      text-align: right; }
+    #nav .nav > li > a {
+      color: #fff;
+      padding-top: 15px;
+      padding-bottom: 15px; }
+    #nav .nav > li.active > a, #nav .nav > li > a:hover, #nav .nav .open > a, #nav .nav .open > a:hover, #nav .nav .open > a:focus {
+      background: #928eef; }
+    #nav .nav > li > a:focus {
+      background: #6762E8; }
   #nav .navbar-right {
     margin-right: 0; }
   #nav .dropdown-menu {
-    min-width: 300px;
     padding: 15px; }
     #nav .dropdown-menu form {
       margin-bottom: 10px; }
@@ -492,5 +496,21 @@ pre {
   margin-bottom: 20px; }
   #org-actions .btn {
     display: none; }
+
+@media (max-width: 768px) {
+  .action-button {
+    font-size: 0;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3); }
+    .action-button i {
+      font-size: 25px;
+      text-align: center;
+      line-height: 45px;
+      padding-left: 2px; } }
 
 /*# sourceMappingURL=chat.css.map */
