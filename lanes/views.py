@@ -798,8 +798,8 @@ class LandingView(TemplateView):
 
   def dispatch(self, *args, **kwargs):
     logger.debug(self.request.user.is_authenticated)
-    # if self.request.user.is_authenticated:
-    #   return OrgsView.as_view()(self.request)
+    if self.request.user.is_authenticated:
+      return OrgsView.as_view()(self.request)
     return super(LandingView, self).dispatch(*args, **kwargs)
 
 
