@@ -57,6 +57,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'lanes.tasks.reorder_stars',
         'schedule': timedelta(seconds=10)
     },
+    'send_notifications': {
+        'task': 'lanes.tasks.send_notifications',
+        'schedule': timedelta(seconds=10*60)
+    },
 }
 
 CELERY_TIMEZONE = 'UTC'

@@ -29,12 +29,12 @@ from .forms import *
 from .utils import is_email_public
 from .emails import *
 
-url_dot_test = re.compile(ur'.+\..+')
 logger = logging.getLogger('django')
 User = get_user_model()
 
-
+url_dot_test = re.compile(ur'.+\..+')
 lf_youtube = re.compile(ur'(.*)v=([A-Za-z0-9]*)')
+reply_test = re.compile(ur'^(:[0-9]+ )')
 
 
 def valid_link(text, is_onebox=False):
@@ -80,6 +80,25 @@ def process_text(text):
   # Check that message is not blank
   if text.strip() == "":
     raise
+  # strip reply if there is one
+  reply = re.search(reply_test, text)
+  reply_prefix = ""
+  notified = set()
+  if reply is not None:
+    reply_prefix = reply.group(0)
+    text = text[len(reply_prefix):]
+    try:
+      notified.add(Post.objects.get(id=int(reply_prefix.strip(': '))).author)
+    except:
+      pass
+  # Check for anyone else that's pinged
+  words = text.split(' ')
+  for word in words:
+    if len(word) > 1 and word[0] == '@':
+      try:
+        notified.add(User.objects.get(username=word[1:]))
+      except:
+        pass
   # Check for entire block indented by 4 spaces
   is_code = True
   code = ""
@@ -90,16 +109,21 @@ def process_text(text):
       is_code = False
       break
   if is_code:
-    return "<pre>{}</pre>".format(escape(code).replace("'", "&#39;"))
-  # Check for oneboxes
-  link = valid_link(text, is_onebox=True)
-  if link is not False:
-    return link
-  text = escape(text).replace("'", "&#39;").replace("\n", "<br>")
-  # Apply Markdown rules
-  for regex, replacement in md_rules.items():
-    text = re.sub(regex, replacement, text)
-  return text.strip()
+    result = "<pre>{}</pre>".format(escape(code).replace("'", "&#39;"))
+  else:
+    # Check for oneboxes
+    link = valid_link(text, is_onebox=True)
+    if link is not False:
+      result = link
+    else:
+      text = escape(text).replace("'", "&#39;").replace("\n", "<br>")
+      # Apply Markdown rules
+      for regex, replacement in md_rules.items():
+        result = re.sub(regex, replacement, text)
+  return {
+      'text': reply_prefix + result.strip(),
+      'notified': notified
+  }
 
 
 def ratelimit(request, ex):
@@ -248,15 +272,12 @@ class RoomMessageView(RoomPostView):
     post = Post(room=self.room, author=request.user)
     post.save()
     raw = request.POST.get('message')
-    try:
-        processed = process_text(raw)
-    except:
-        return HttpResponse('Not OK')
+    processed = process_text(raw)
     content = PostContent(
         author=request.user,
         post=post,
         raw=raw,
-        content=processed)
+        content=processed['text'])
     content.save()
     message = {
         'type': 'msg',
@@ -270,6 +291,8 @@ class RoomMessageView(RoomPostView):
         'id': post.id
     }
     self.publisher.publish_message(RedisMessage(json.dumps(message)))
+    for user in processed['notified']:
+      user.notify(post)
     return HttpResponse('OK')
 
 
@@ -384,14 +407,14 @@ class PostEditView(PostView, View):
   def post(self, request, *args, **kwargs):
     raw = request.POST.get('message')
     try:
-        processed = process_text(raw)
+        processed, notified = process_text(raw)
     except:
         return HttpResponse('Not OK')
     content = PostContent(
         author=request.user,
         post=self.msg,
         raw=raw,
-        content=processed)
+        content=processed['text'])
     content.save()
     message = {
         'type': 'edit',
@@ -401,6 +424,8 @@ class PostEditView(PostView, View):
     }
     RedisPublisher(facility='room_' + str(self.msg.room.id), broadcast=True) \
         .publish_mressage(RedisMessage(json.dumps(message)))
+    for user in processed['notified']:
+      user.notify(self.msg)
     return HttpResponse('OK')
 
 
@@ -552,7 +577,7 @@ class OrgInviteView(OrgMixin, AjaxResponseMixin, CreateView):
   def form_valid(self, form):
     if self.org.privacy == Organisation.PRIVACY_ORG and \
         form.instance.email.split('@', 1) != self.org.domain:
-      return JsonResponse({'email': 'You can only invite people with ' + self.org.domain + ' addresses'}, status=400)
+      return JsonResponse({'error_message=''ail': 'You can only invite people with ' + self.org.domain + ' addresses'}, status=400)
     users = User.objects.filter(email=form.instance.email)
     if users.count() > 0:
       # Just add user as member

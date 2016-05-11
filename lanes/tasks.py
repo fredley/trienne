@@ -3,6 +3,7 @@ from ws4redis.publisher import RedisPublisher
 
 from .celeryapp import app
 from .models import *
+from .emails import NotificationEmail
 
 
 @app.task(bind=True)
@@ -28,3 +29,13 @@ def reorder_stars(self):
     }
     RedisPublisher(facility='room_' + str(room.id), broadcast=True) \
         .publish_message(RedisMessage(json.dumps(message)))
+
+
+@app.task(bind=True)
+def send_notifications(self):
+  # Get all notifications
+  print("Sending notification emails")
+  for n in Notification.objects.all():
+    print("Sending notification to " + n.user.email)
+    NotificationEmail(n.post).send(n.user.email)
+    n.delete()

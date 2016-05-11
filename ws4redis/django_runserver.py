@@ -54,7 +54,6 @@ class WebsocketRunServer(WebsocketWSGIServer):
         if environ.get('HTTP_SEC_WEBSOCKET_PROTOCOL') is not None:
             headers.append(('Sec-WebSocket-Protocol', environ.get('HTTP_SEC_WEBSOCKET_PROTOCOL')))
 
-        logger.debug('WebSocket request accepted, switching protocols')
         start_response(force_str('101 Switching Protocols'), headers)
         six.get_method_self(start_response).finish_content()
         return WebSocket(environ['wsgi.input'])

@@ -104,7 +104,6 @@ class WebsocketWSGIServer(object):
                 except AttributeError:
                     pass
             websocket = self.upgrade_websocket(environ, start_response)
-            logger.debug('Subscribed to channels: {0}'.format(', '.join(channels)))
             subscriber.set_pubsub_channels(request, channels)
             websocket_fd = websocket.get_file_descriptor()
             listening_fds = [websocket_fd]
@@ -160,7 +159,6 @@ class WebsocketWSGIServer(object):
             response = http.HttpResponse()
         finally:
             subscriber.set_present(request.user, False)
-            logger.debug("GOING OFFLINE: " + request.user.username)
             subscriber.release()
             if websocket:
                 websocket.close(code=1001, message='Websocket Closed')

@@ -25,3 +25,10 @@ class InvitationEmail(BaseEmail):
   def __init__(self, org, link):
     self.message = 'You have been invited to join {} on lanes, please click this link to sign up:\n\n{}'.format(org.name, link)
     self.subject = 'Join {} on lanes'.format(org.name)
+
+
+class NotificationEmail(BaseEmail):
+
+  def __init__(self, post):
+    self.message = 'While you were away, {0} sent you a message on lanes:\n\n"{1}"'.format(post.author.username, post.get_content())
+    self.subject = 'New notification on lanes'

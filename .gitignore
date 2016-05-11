@@ -8,9 +8,5 @@ staticfiles/
 local_settings.py
 
 .DS_Store
-celerybeat-schedule
+celerybeat-schedule*
 
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml

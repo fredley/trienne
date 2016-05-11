@@ -23,6 +23,7 @@ logger = logging.getLogger('django')
 
 epoch = timezone.make_aware(datetime(1970, 1, 1), timezone.get_current_timezone())
 
+
 class Organisation(models.Model):
 
   PRIVACY_OPEN = 0       # Anyone can join, no approval
@@ -100,6 +101,10 @@ class User(AbstractUser):
 
   def get_status(self, org):
     return OrgMembership.objects.get(user=self, organisation=org).status
+
+  def notify(self, post):
+    if self.get_status(post.room.organisation) in [OrgMembership.STATUS_AWAY, OrgMembership.STATUS_OFFLINE]:
+      Notification(post=post, user=self).save()
 
   def set_status(self, org, status):
     m = OrgMembership.objects.get(user=self, organisation=org)
@@ -319,3 +324,9 @@ class PostContent(models.Model):
 
   def __unicode__(self):
     return self.content
+
+
+class Notification(models.Model):
+  user = models.ForeignKey(settings.AUTH_USER_MODEL)
+  post = models.ForeignKey(Post)
+  created = models.DateTimeField(auto_now_add=True)
