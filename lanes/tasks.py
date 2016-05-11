@@ -1,6 +1,3 @@
-from datetime import datetime, timedelta
-from math import log
-
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
 
@@ -22,12 +19,12 @@ def reorder_stars(self):
         'type': 'hotness',
         'posts': [
             {
-              'hotness': post.hotness,
-              'score': post.score,
-              'id': post.id
+                'hotness': post.hotness,
+                'score': post.score,
+                'id': post.id
             }
             for post in posts
         ]
     }
     RedisPublisher(facility='room_' + str(room.id), broadcast=True) \
-          .publish_message(RedisMessage(json.dumps(message)))
+        .publish_message(RedisMessage(json.dumps(message)))

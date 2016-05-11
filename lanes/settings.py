@@ -47,10 +47,10 @@ SESSION_ENGINE = 'redis_sessions.session'
 
 try:
     HEROKU_REDIS_URL = urlparse(os.environ.get("REDIS_URL"))
-    BROKER_URL = os.environ.get("REDIS_URL") + '/0' #  Celery
+    BROKER_URL = os.environ.get("REDIS_URL") + '/0'  # Celery
 except:
     HEROKU_REDIS_URL = urlparse('redis://localhost:6379')
-    BROKER_URL = 'redis://localhost:6379/0' #  Celery
+    BROKER_URL = 'redis://localhost:6379/0'  # Celery
 
 CELERYBEAT_SCHEDULE = {
     'reorder_stars': {
