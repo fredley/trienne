@@ -19,6 +19,8 @@ from ws4redis.publisher import RedisPublisher
 
 from autoslug import AutoSlugField
 
+from .tasks import ping_bot
+
 logger = logging.getLogger('django')
 
 epoch = timezone.make_aware(datetime(1970, 1, 1), timezone.get_current_timezone())
@@ -79,7 +81,37 @@ class Invitation(models.Model):
     return self.organisation.name + " - " + self.email
 
 
+class Bot(models.Model):
+  SCOPE_GLOBAL = 0
+  SCOPE_LOCAL = 1
+
+  SCOPES = ((SCOPE_GLOBAL, "All rooms"),
+            (SCOPE_LOCAL, "Only certain rooms"),)
+
+  notify_url = models.CharField(max_length=200)  # URL to hit with @pings
+  notify_key = models.CharField(max_length=200)  # Key to include in notifications
+  organisation = models.ForeignKey(Organisation, related_name="org")
+  rooms = models.ManyToManyField('Room')
+  scope = models.IntegerField(choices=SCOPES)
+  owner = models.OneToOneField('User', related_name="owner")
+
+  def responds_to(self, room):
+    return room in self.rooms.all() or (room.organisation == self.organisation and
+                                        self.scope == self.SCOPE_GLOBAL)
+
+  def __unicode__(self):
+    return self.organisation.name + ": " + self.name
+
+
+class BotToken(models.Model):
+  bot = models.ForeignKey(Bot)
+  token = models.CharField(max_length=20, default=generate_token, unique=True)
+  created = models.DateTimeField(auto_now_add=True)
+
+
 class User(AbstractUser):
+  is_bot = models.BooleanField(default=False)
+  bot = models.OneToOneField(Bot, null=True)
   organisations = models.ManyToManyField(Organisation, through='OrgMembership')
   subscribed = models.ManyToManyField(Organisation, related_name='subscribed')
 
@@ -103,7 +135,9 @@ class User(AbstractUser):
     return OrgMembership.objects.get(user=self, organisation=org).status
 
   def notify(self, post):
-    if self.get_status(post.room.organisation) in [OrgMembership.STATUS_AWAY, OrgMembership.STATUS_OFFLINE]:
+    if self.is_bot and self.bot.responds_to(post.room):
+      ping_bot.delay(post, self)
+    elif self.get_status(post.room.organisation) in [OrgMembership.STATUS_AWAY, OrgMembership.STATUS_OFFLINE]:
       Notification(post=post, user=self).save()
 
   def set_status(self, org, status):

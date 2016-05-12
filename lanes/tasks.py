@@ -1,3 +1,5 @@
+import requests
+
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
 
@@ -39,3 +41,26 @@ def send_notifications(self):
     print("Sending notification to " + n.user.email)
     NotificationEmail(n.post).send(n.user.email)
     n.delete()
+
+
+@app.task(bind=True)
+def ping_bot(self, post, user):
+  print "Pinging bot " + user.username
+  data = {
+      'action': 'message',
+      'key': user.bot.notify_key,
+      'organisation': {
+          'slug': post.organisation.slug,
+          'name': post.organisation.name
+      },
+      'room': {
+          'id': post.room.id,
+          'name': post.room.name
+      },
+      'message': {
+          'id': post.id,
+          'timestamp': post.created,
+          'content': post.get_content()
+      },
+  }
+  requests.post(user.bot.notify_url, data=data)
