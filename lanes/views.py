@@ -217,7 +217,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
     status = OrgMembership.objects.get(user=self.request.user, organisation=room.organisation).status
     if status == OrgMembership.STATUS_OFFLINE:
       # Just joining, so set to Online
-      status = STATUS_ONLINE
+      status = OrgMembership.STATUS_ONLINE
     context.update(room=room,
                    rooms=self.request.user.get_rooms(),
                    org=room.organisation,
@@ -344,6 +344,9 @@ class RoomAddView(OrgMixin, CreateView):
   form_class = RoomForm
   template_name = "add_room.html"
 
+  def get_success_url(self):
+    return ''
+
   def get_initial(self):
     return {'owners': "{}".format(self.request.user.id)}
 
@@ -351,10 +354,10 @@ class RoomAddView(OrgMixin, CreateView):
     room = form.save(commit=False)
     room.organisation = self.org
     room.creator = self.request.user
-    room.save()
-    room.members = [self.request.user]
+    result = super(RoomAddView, self).form_valid(form)
     if self.request.user not in room.owners.all():
       room.owners.add(self.request.user)
+    room.members = [u for u in room.owners.all()]
     self.object = room
     return HttpResponseRedirect(reverse("room", kwargs={"room_id": room.id}))
 
@@ -366,7 +369,6 @@ class RoomEditView(LoginRequiredMixin, UpdateView):
   form_class = RoomForm
 
   def get_context_data(self, *args, **kwargs):
-    logger.debug(self.object.owners.all())
     if not (self.request.user.is_admin(self.object.organisation) or
         self.request.user in self.object.owners.all()):
       raise PermissionDenied
@@ -661,8 +663,6 @@ class OrgCreateView(LoginRequiredMixin, CreateView):
     return context
 
   def form_valid(self, form):
-    logger.debug("Hello")
-    logger.debug(form.cleaned_data)
     if str(self.request.user.id) not in form.cleaned_data['admins']:
       form.cleaned_data['admins'].append(self.request.user.id)
     domain = self.get_domain()
