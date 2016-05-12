@@ -32,3 +32,10 @@ class NotificationEmail(BaseEmail):
   def __init__(self, post):
     self.message = 'While you were away, {0} sent you a message on lanes:\n\n"{1}"'.format(post.author.username, post.get_content())
     self.subject = 'New notification on lanes'
+
+
+class PasswordRecoveryEmail(BaseEmail):
+
+  def __init__(self, link):
+    self.message = 'A request has been made to reset your password on lanes. If you did not make this request, please ignore this message. Please go to {} to reset your password.'.format(link)
+    self.subject = 'Password reset'

@@ -823,6 +823,55 @@ class RegisterView(CreateView):
     return response
 
 
+class PasswordRecoveryView(TemplateView):
+
+  email_sent = False
+
+  def get_template_names(self):
+    if self.email_sent:
+      return ["password_recover_sent.html"]
+    else:
+      return ["password_recover.html"]
+
+  def post(self, request, *args, **kwargs):
+    user = User.objects.get(email=request.POST.get('email'))
+    token = ResetToken(user=user)
+    token.save()
+    link = 'http://' + settings.ALLOWED_HOSTS[0] + reverse('reset_password', kwargs={'token': token.token})
+    PasswordRecoveryEmail(link).send(user.email)
+    self.email_sent = True
+    return super(PasswordRecoveryView, self).get(request, *args, **kwargs)
+
+
+class PasswordResetView(TemplateView):
+  template_name = "password_reset.html"
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(PasswordResetView, self).get_context_data(*args, **kwargs)
+    try:
+      context.update(
+          user=ResetToken.objects.get(token=self.kwargs['token']).user,
+          token=self.kwargs['token']
+      )
+    except:
+      raise SuspiciousOperation
+    return context
+
+  def post(self, request, *args, **kwargs):
+    pw = self.request.POST['password1']
+    if pw == self.request.POST['password2']:
+      user = self.get_context_data()['user']
+      user.set_password(pw)
+      user.save()
+      ResetToken.objects.get(token=kwargs['token']).delete()
+      u = authenticate(username=user.username, password=pw)
+      if u is not None and u.is_active:
+        login(request, u)
+      return HttpResponseRedirect(reverse('orgs'))
+    else:
+      return super(PasswordResetView, self).get(request, *args, **kwargs)
+
+
 class LandingView(TemplateView):
   template_name = "index.html"
 

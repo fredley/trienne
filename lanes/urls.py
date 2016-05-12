@@ -43,6 +43,8 @@ urlpatterns = [
     url(r'^users/', include('django.contrib.auth.urls')),
     url(r'^users/register/(?P<token>\w+)/', RegisterView.as_view(), name='invitation'),
     url(r'^users/register/$', RegisterView.as_view(), name='register'),
+    url(r'^users/recover/$', PasswordRecoveryView.as_view(), name='forgotten_password'),
+    url(r'^users/reset/(?P<token>\w+)/$', PasswordResetView.as_view(), name='reset_password'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', LandingView.as_view(), name='orgs'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -330,3 +330,8 @@ class Notification(models.Model):
   user = models.ForeignKey(settings.AUTH_USER_MODEL)
   post = models.ForeignKey(Post)
   created = models.DateTimeField(auto_now_add=True)
+
+
+class ResetToken(models.Model):
+  user = models.ForeignKey(settings.AUTH_USER_MODEL)
+  token = models.CharField(max_length=20, default=generate_token, unique=True)
