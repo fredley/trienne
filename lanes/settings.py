@@ -85,7 +85,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'ws4redis.context_processors.default',
-                'lanes.context_processors.org_finder',
             ],
         },
     },
@@ -180,7 +179,7 @@ LOGGING = {
             'propagate': False,
             'level': 'DEBUG',
         },
-        'django.template.base': {
+        'django.template': {
             'handlers': ['null'],  # Quiet by default!
             'propagate': False,
             'level': 'DEBUG',

@@ -35,6 +35,7 @@ User = get_user_model()
 url_dot_test = re.compile(ur'.+\..+')
 lf_youtube = re.compile(ur'(.*)v=([A-Za-z0-9]*)')
 reply_test = re.compile(ur'^(:[0-9]+ )')
+username_test = re.compile("^([a-z][0-9]+)+$")
 
 
 def valid_link(text, is_onebox=False):
@@ -354,7 +355,7 @@ class RoomAddView(OrgMixin, CreateView):
     room = form.save(commit=False)
     room.organisation = self.org
     room.creator = self.request.user
-    result = super(RoomAddView, self).form_valid(form)
+    super(RoomAddView, self).form_valid(form)
     if self.request.user not in room.owners.all():
       room.owners.add(self.request.user)
     room.members = [u for u in room.owners.all()]
@@ -780,42 +781,46 @@ class OrgStatusView(OrgMixin, View):
     return HttpResponse('OK')
 
 
-class RegisterView(TemplateView):
+class RegisterView(CreateView):
   template_name = "registration/register.html"
+  model = User
+  form_class = RegisterForm
 
-  def get_context_data(self, **kwargs):
-    context = super(RegisterView, self).get_context_data(**kwargs)
-    if 'token' in kwargs:
+  def get_success_url(self):
+    if 'organisation' in self.request.POST:
+      return reverse('org', kwargs={'slug': self.request.POST.get('organisation')})
+    else:
+      return reverse('orgs')
+
+  def get_context_data(self):
+    context = super(RegisterView, self).get_context_data()
+    if 'token' in self.kwargs:
       logout(self.request)
-      context.update(invite=Invitation.objects.get(token=kwargs.get('token')))
+      context.update(invite=Invitation.objects.get(token=self.kwargs.get('token')))
     return context
 
-  def post(self, request, *args, **kwargs):
-    if request.POST.get('key') != "goldfish":
-      raise PermissionDenied
-    user = User.objects.create_user(request.POST['username'], request.POST['email'],
-                                    request.POST['password'])
-    user.save()
-    if 'organisation' in request.POST:
-      org = Organisation.objects.get(id=request.POST.get('organisation'))
-      invites = Invitation.objects.filter(email=request.POST.get('email'), organisation=org)
+  def get_initial(self, **kwargs):
+    if 'token' in self.kwargs:
+      return {'email': Invitation.objects.get(token=self.kwargs.get('token')).email}
+    else:
+      return {}
+
+  def form_valid(self, form):
+    response = super(RegisterView, self).form_valid(form)
+    # process invitation, if there was one
+    if 'organisation' in self.request.POST:
+      org = Organisation.objects.get(id=self.request.POST.get('organisation'))
+      invites = Invitation.objects.filter(email=self.request.POST.get('email'), organisation=org)
       if invites.count() == 0:
         raise PermissionDenied
       membership = OrgMembership(user=user, organisation=org)
       membership.save()
       [i.delete() for i in invites]
-    # Add to domain org if there is one
-    domain = user.email.split('@')[1]
-    orgs = Organisation.objects.filter(domain=domain)
-    if orgs.count() == 1:
-      OrgMembership(user=user, organisation=orgs[0]).save()
-    u = authenticate(username=request.POST['username'], password=request.POST['password'])
+    # Log in user
+    u = authenticate(username=self.request.POST['username'].lower(), password=self.request.POST['password'])
     if u is not None and u.is_active:
       login(request, u)
-    if 'organisation' in request.POST:
-      return HttpResponseRedirect(reverse('org', kwargs={'slug': org.slug}))
-    else:
-      return HttpResponseRedirect(reverse('orgs'))
+    return response
 
 
 class LandingView(TemplateView):
