@@ -134,7 +134,7 @@ def ratelimit(request, ex):
   }, status=418)
 
 
-class LoginOrMaybeBotMixin(object):
+class LoginOrMaybeBotMixin(AccessMixin):
   allow_bots = False
 
   def dispatch(self, request, *args, **kwargs):
