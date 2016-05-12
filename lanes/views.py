@@ -10,7 +10,7 @@ from urlparse import urlparse
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate, login, logout
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse
 from django.utils import timezone
@@ -134,6 +134,21 @@ def ratelimit(request, ex):
   }, status=418)
 
 
+class LoginOrMaybeBotMixin(object):
+  allow_bots = False
+
+  def dispatch(self, request, *args, **kwargs):
+    if 'bot_token' in request.POST:
+      try:
+        token = BotToken.objects.get(token=request.POST.get('bot_token'))
+        request.user = User.objects.get(bot=token.bot)
+      except:
+        raise PermissionDenied
+    elif not request.user.is_authenticated:
+      return self.handle_no_permission()
+    return super(LoginOrMaybeBotMixin, self).dispatch(request, *args, **kwargs)
+
+
 class AjaxResponseMixin(object):
   def form_invalid(self, form):
     response = super(AjaxResponseMixin, self).form_invalid(form)
@@ -153,7 +168,7 @@ class AjaxResponseMixin(object):
       return response
 
 
-class RoomPostView(LoginRequiredMixin, RatelimitMixin, View):
+class RoomPostView(LoginOrMaybeBotMixin, RatelimitMixin, View):
 
   ratelimit_key = 'user'
   ratelimit_rate = '3/3s'
@@ -169,6 +184,9 @@ class RoomPostView(LoginRequiredMixin, RatelimitMixin, View):
 
   def post(self, request, *args, **kwargs):
     self.room = Room.objects.get(id=kwargs['room_id'])
+    self.publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
+    if request.user.is_bot and request.user.bot.responds_to(room):
+      return self.generate_response(request)
     if self.room.organisation not in request.user.organisations.all():
       raise PermissionDenied
     if self.room.privacy == Room.PRIVACY_PRIVATE and request.user not in self.room.members.all():
@@ -176,7 +194,6 @@ class RoomPostView(LoginRequiredMixin, RatelimitMixin, View):
     if self.require_admin and not (request.user.is_admin(self.room.organisation) or
       request.user not in self.room.owners.all()):
       raise PermissionDenied
-    self.publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
     return self.generate_response(request)
 
 
@@ -268,6 +285,8 @@ class RoomPinView(RoomPostView):
 
 
 class RoomMessageView(RoomPostView):
+
+  allow_bots = True
 
   def generate_response(self, request):
     post = Post(room=self.room, author=request.user)
