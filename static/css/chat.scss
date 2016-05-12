@@ -669,3 +669,8 @@ pre {
     }
   }
 }
+@media (min-width: 768px){
+  .dropdown-menu{
+    min-width: 300px;
+  }
+}

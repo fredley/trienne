@@ -505,5 +505,8 @@ pre {
       text-align: center;
       line-height: 45px;
       padding-left: 2px; } }
+@media (min-width: 768px) {
+  .dropdown-menu {
+    min-width: 300px; } }
 
 /*# sourceMappingURL=chat.css.map */
