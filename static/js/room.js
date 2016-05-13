@@ -310,7 +310,7 @@ jQuery(document).ready(function($) {
     $('.ac').removeClass('active');
     $('.ac:eq(' + ac_index + ')').addClass('active');
     var words = $('#shout').val().split(' ');
-    words[words.length - 1] = '@' + $('.ac.active').text() + ' ';
+    words[words.length - 1] = '@' + $('.ac.active').text();
     $('#shout').val(words.join(' '));
   }
 
