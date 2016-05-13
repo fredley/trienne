@@ -28,6 +28,11 @@ urlpatterns = [
     url(r'^c/(?P<slug>[\w-]+)/status/$', OrgStatusView.as_view(), name='org_status'),
     url(r'^c/(?P<slug>[\w-]+)/invite/$', OrgInviteView.as_view(), name='org_invite'),
 
+    url(r'^c/(?P<slug>[\w-]+)/bot/create/$', BotCreateView.as_view(), name='bot_create'),
+    url(r'^c/(?P<slug>[\w-]+)/bot/(?P<username>[\w-]+)/$', BotUpdateView.as_view(), name='bot'),
+    url(r'^c/(?P<slug>[\w-]+)/bot/(?P<username>[\w-]+)/create_token/$', BotTokenCreateView.as_view(), name='bot_token_create'),
+    url(r'^c/(?P<slug>[\w-]+)/bot/(?P<username>[\w-]+)/delete/$', BotDeleteView.as_view(), name='bot_delete'),
+
     url(r'^room/(?P<room_id>\d+)/$', RoomView.as_view(), name='room'),
     url(r'^room/(?P<room_id>\d+)/post/$', RoomMessageView.as_view(), name='room_post'),
     url(r'^room/(?P<room_id>\d+)/pin/$', RoomPinView.as_view(), name='room_pin'),
@@ -45,6 +50,7 @@ urlpatterns = [
     url(r'^users/register/$', RegisterView.as_view(), name='register'),
     url(r'^users/recover/$', PasswordRecoveryView.as_view(), name='forgotten_password'),
     url(r'^users/reset/(?P<token>\w+)/$', PasswordResetView.as_view(), name='reset_password'),
+
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', LandingView.as_view(), name='orgs'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

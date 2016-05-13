@@ -108,6 +108,8 @@ pre {
   text-align: center;
   padding: 0;
   margin-bottom: 20px; }
+.radio .radio-2 + label {
+  width: 50%; }
 .radio .radio-4 + label {
   width: 25%; }
 .radio:nth-of-type(1) label {

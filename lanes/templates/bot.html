@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% load bootstrap %}
+
+{% block title %}{{ bot.user.username }} on {{ org.name }}{% endblock %}
+
+{% block main_content %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-4 col-sm-offset-4">
+      <form action="." method="post" role="form">
+        <input type="hidden" name="org_id" value="{{ org.id }}">
+        <legend>{{ bot.user.username }}</legend>
+        <div class="form-group">
+          <label>Notification URL</label>
+          <p>{{ bot.notify_url }}</p>
+        </div>
+        <div class="form-group">
+          <label>Notification key</label>
+          <p>{{ bot.notify_key }}</p>
+        </div>
+        <div class="form-group">
+          <label>Creator</label>
+          <p>{{ bot.owner.username }}</p>
+        </div>
+        {% csrf_token %}
+        {{ form|bootstrap }}
+        <div class="form-group">
+          <button type="submit" class="btn btn-success">Update Bot</button>
+        </div>
+      </form>
+
+      <hr>
+
+      <legend>Access Tokens</legend>
+      <p>Use these in your requests to authenticate your bot</p>
+      {% if bot.get_tokens.count == 0 %}
+        <div class="alert alert-danger">No access tokens for {{ bot.user.username }}</div>
+      {% else %}
+        <div class="list-group">
+          {% for token in bot.get_tokens %}
+            <div class="list-group-item">
+              {{ token.token }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <form action="{% url 'bot_token_create' org.slug bot.user.username %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">Add a new token</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock main_content %}

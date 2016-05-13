@@ -16,7 +16,7 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.views.generic import DetailView
 from django.views.generic.base import TemplateView, View
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.decorators.csrf import csrf_exempt
 
 from django_gravatar.helpers import get_gravatar_url
@@ -138,13 +138,13 @@ class LoginOrMaybeBotMixin(AccessMixin):
   allow_bots = False
 
   def dispatch(self, request, *args, **kwargs):
-    if 'bot_token' in request.POST:
+    if self.allow_bots and 'bot_token' in request.POST:
       try:
         token = BotToken.objects.get(token=request.POST.get('bot_token'))
         request.user = User.objects.get(bot=token.bot)
       except:
         raise PermissionDenied
-    elif not request.user.is_authenticated:
+    elif not request.user.is_authenticated():
       return self.handle_no_permission()
     return super(LoginOrMaybeBotMixin, self).dispatch(request, *args, **kwargs)
 
@@ -185,7 +185,7 @@ class RoomPostView(LoginOrMaybeBotMixin, RatelimitMixin, View):
   def post(self, request, *args, **kwargs):
     self.room = Room.objects.get(id=kwargs['room_id'])
     self.publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
-    if request.user.is_bot and request.user.bot.responds_to(room):
+    if request.user.is_bot and request.user.bot.responds_to(self.room):
       return self.generate_response(request)
     if self.room.organisation not in request.user.organisations.all():
       raise PermissionDenied
@@ -645,6 +645,7 @@ class OrgManagementView(OrgMixin, UpdateView):
   def get_context_data(self, **kwargs):
     context = super(OrgManagementView, self).get_context_data(**kwargs)
     context.update(applications=OrgApplication.objects.filter(organisation=self.org, rejected=False))
+    context.update(bots=User.objects.filter(is_bot=True, bot__organisation=self.org))
     return context
 
 
@@ -798,6 +799,73 @@ class OrgStatusView(OrgMixin, View):
     RedisPublisher(facility='org_' + self.org.slug, broadcast=True) \
         .publish_message(RedisMessage(json.dumps(message)))
     return HttpResponse('OK')
+
+
+class BotCreateView(OrgMixin, CreateView):
+  require_admin = True
+  template_name = 'bot_create.html'
+  model = Bot
+  form_class = BotCreateForm
+
+  def form_valid(self, form):
+    bot = form.save(commit=False)
+    bot.organisation = self.org
+    bot.owner = self.request.user
+    user = User(username=form.cleaned_data['username'], is_bot=True)
+    bot.save()
+    user.bot = bot
+    user.save()
+    BotToken(bot=bot).save()
+    return super(BotCreateView, self).form_valid(bot)
+
+  def get_success_url(self):
+    return reverse('bot', kwargs={'slug': self.org.slug, 'username': self.request.POST['username']})
+
+
+class BotUpdateView(OrgMixin, UpdateView):
+  require_admin = True
+  template_name = 'bot.html'
+  model = Bot
+  form_class = BotUpdateForm
+
+  def get_object(self):
+    return Bot.objects.get(user__username=self.kwargs['username'])
+
+  def get_success_url(self):
+    return reverse('manage_org', kwargs={'slug': self.org.slug})
+
+
+class BotDeleteView(OrgMixin, DeleteView):
+  require_admin = True
+  model = Bot
+
+  def get_object(self):
+    return Bot.objects.get(user__username=self.kwargs['username'])
+
+  def form_valid(self, form):
+    User.objects.get(bot=form).delete()
+    return super(BotDeleteView, self).form_valid(form)
+
+  def get_success_url(self):
+    return reverse('manage_org', kwargs={'slug': self.org.slug})
+
+
+class BotTokenCreateView(OrgMixin, CreateView):
+  require_admin = True
+  model = BotToken
+  fields = []
+
+  def dispatch(self, *args, **kwargs):
+    self.bot = Bot.objects.get(user__username=self.kwargs['username'])
+    return super(BotTokenCreateView, self).dispatch(*args, **kwargs)
+
+  def form_valid(self, form):
+    token = form.save(commit=False)
+    token.bot = self.bot
+    return super(BotTokenCreateView, self).form_valid(token)
+
+  def get_success_url(self):
+    return reverse('bot', kwargs={'slug': self.org.slug, 'username': self.bot.user.username})
 
 
 class RegisterView(CreateView):

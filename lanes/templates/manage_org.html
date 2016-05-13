@@ -47,6 +47,24 @@
       <div class="form-group">
         <p id="message" class="helptext text-success" style="display:none;">An invitation has been sent</p>
       </div>
+
+      <hr>
+
+      <legend>Bots for {{ org.name }}</legend>
+      <div class="list-group">
+      {% for bot in bots %}
+        <div class="list-group-item">
+          <a href="{% url 'bot' org.slug bot.username %}">{{ bot.username }} - {{ bot.bot.get_scope_display }}</a>
+          <div class="btn-group pull-right application">
+            <form action="{% url 'bot_delete' org.slug bot.username %}" method="post">
+              {% csrf_token %}
+              <button class="btn btn-xs btn-danger">Remove</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+      <a href="{% url 'bot_create' org.slug %}" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add a new bot</a>
     </div>
   </div>
 </div>

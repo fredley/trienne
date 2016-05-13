@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% load bootstrap %}
+
+{% block title %}Add a bot to {{ org.name }}{% endblock %}
+
+{% block main_content %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-4 col-sm-offset-4">
+      <form action="." method="post">
+        {% csrf_token %}
+        <legend>Add a bot to {{ org.name }}</legend>
+        {{ form|bootstrap }}
+        <button type="submit" class="btn btn-success">Create Bot</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock main_content %}

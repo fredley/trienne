@@ -7,15 +7,13 @@ from django.contrib.auth.forms import UserCreationForm
 from django.forms.widgets import RadioSelect, HiddenInput
 from ajax_select import make_ajax_field
 
-from .models import Organisation, OrgMembership, Room, User
+from .models import Organisation, OrgMembership, Room, User, Bot
 
 logger = logging.getLogger('django')
 username_test = re.compile("^([a-z0-9]+)+$")
 
 
 class OrgForm(ModelForm):
-
-  required_css_class = "required"
 
   class Meta:
     model = Organisation
@@ -39,8 +37,6 @@ class OrgEditForm(ModelForm):
 
 class RoomForm(ModelForm):
 
-  required_css_class = "required"
-
   class Meta:
     model = Room
     fields = ['name', 'topic', 'privacy', 'owners']
@@ -49,6 +45,28 @@ class RoomForm(ModelForm):
     }
 
   owners = make_ajax_field(Room, 'owners', 'users', required=True, help_text="")
+
+
+class BotCreateForm(ModelForm):
+
+  username = forms.CharField(label='Name')
+
+  class Meta:
+    model = Bot
+    fields = ['username', 'notify_url', 'scope']
+    widgets = {
+        'scope': RadioSelect(attrs={'class': 'radio-2'}),
+    }
+
+
+class BotUpdateForm(ModelForm):
+
+  class Meta:
+    model = Bot
+    fields = ['scope']
+    widgets = {
+        'scope': RadioSelect(attrs={'class': 'radio-2'}),
+    }
 
 
 class RegisterForm(UserCreationForm):

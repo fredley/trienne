@@ -1,4 +1,5 @@
 import requests
+import json
 
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
@@ -50,8 +51,8 @@ def ping_bot(self, post, user):
       'action': 'message',
       'key': user.bot.notify_key,
       'organisation': {
-          'slug': post.organisation.slug,
-          'name': post.organisation.name
+          'slug': post.room.organisation.slug,
+          'name': post.room.organisation.name
       },
       'room': {
           'id': post.room.id,
