@@ -13,6 +13,14 @@ logger = logging.getLogger('django')
 username_test = re.compile("^([a-z0-9]+)+$")
 
 
+def validate_username(value):
+  if User.objects.filter(username=value).count() > 0:
+    raise forms.ValidationError('That username is already in use')
+  if not username_test.match(value):
+    raise forms.ValidationError('')
+  return value
+
+
 class OrgForm(ModelForm):
 
   class Meta:
@@ -57,6 +65,18 @@ class BotCreateForm(ModelForm):
     widgets = {
         'scope': RadioSelect(attrs={'class': 'radio-2'}),
     }
+    help_texts = {
+        'username': 'Enter a valid username, numbers and letters only.',
+    }
+    error_messages = {
+        'username': {
+            'invalid': "",
+            'max_length': "This name is too long.",
+        },
+    }
+
+  def clean_username(self):
+    return validate_username(self.cleaned_data.get("username").lower())
 
 
 class BotUpdateForm(ModelForm):
@@ -80,17 +100,13 @@ class RegisterForm(UserCreationForm):
     }
     error_messages = {
         'username': {
-            'max_length': "This writer's name is too long.",
+            'invalid': "",
+            'max_length': "This username is too long.",
         },
     }
 
   def clean_username(self):
-    value = self.cleaned_data.get("username").lower()
-    if User.objects.filter(username=value).count() > 0:
-      raise forms.ValidationError('That username is already in use')
-    if not username_test.match(value):
-      raise forms.ValidationError('')
-    return value
+    return validate_username(self.cleaned_data.get("username").lower())
 
   def clean_email(self):
     value = self.cleaned_data.get("email").lower()
