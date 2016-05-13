@@ -392,7 +392,10 @@ class RoomEditView(LoginRequiredMixin, UpdateView):
     if not (self.request.user.is_admin(self.object.organisation) or
         self.request.user in self.object.owners.all()):
       raise PermissionDenied
-    return super(RoomEditView, self).get_context_data(*args, **kwargs)
+
+    context = super(RoomEditView, self).get_context_data(*args, **kwargs)
+    context.update(bots=User.objects.filter(is_bot=True, bot__organisation=self.object.organisation))
+    return context
 
   def get_success_url(self):
     return reverse("room", kwargs={"room_id": self.object.id})
@@ -833,6 +836,21 @@ class BotUpdateView(OrgMixin, UpdateView):
 
   def get_success_url(self):
     return reverse('manage_org', kwargs={'slug': self.org.slug})
+
+
+class BotEnableView(RoomPostView, View):
+  require_admin = True
+
+  def generate_response(self, request):
+    bot = User.objects.get(username=self.kwargs.get('username')).bot
+    if bot.organisation != self.room.organisation:
+      raise SuspiciousOperation
+    if request.POST.get('action') == 'enable':
+      bot.rooms.add(self.room)
+    else:
+      bot.rooms.remove(self.room)
+    bot.save()
+    return HttpResponseRedirect(reverse('room_edit', kwargs={'room_id': self.room.id}))
 
 
 class BotDeleteView(OrgMixin, DeleteView):

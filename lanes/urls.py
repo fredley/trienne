@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^room/(?P<room_id>\d+)/edit/$', RoomEditView.as_view(), name='room_edit'),
     url(r'^room/(?P<room_id>\d+)/prefs/$', RoomPrefsView.as_view(), name='room_prefs'),
     url(r'^room/(?P<room_id>\d+)/add_member/$', RoomMemberView.as_view(), name='room_member'),
+    url(r'^room/(?P<room_id>\d+)/bot/(?P<username>[\w-]+)/enable/$', BotEnableView.as_view(), name='bot_enable'),
 
     url(r'^post/(?P<post_id>\d+)/edit/$', PostEditView.as_view(), name='post_edit'),
     url(r'^post/(?P<post_id>\d+)/vote/$', PostVoteView.as_view(), name='post_vote'),

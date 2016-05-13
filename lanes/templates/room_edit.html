@@ -14,11 +14,32 @@
         {{ form|bootstrap }}
         <button type="submit" class="btn btn-lg btn-success">Update</button>
       </form>
+      {% if bots.count > 0 %}
+        <hr>
+
+        <legend>Enable bots for {{ room.name }}</legend>
+        <div class="list-group">
+        {% for user in bots %}
+          <div class="list-group-item">
+            {{ user.username }}
+            {% if room in user.bot.rooms.all %}
+              <form method="post" class="pull-right" action="{% url 'bot_enable' room.id user.username %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="disable">
+                <button type="submit" class="btn btn-xs btn-danger">Disable</button>
+              </form>
+            {% else %}
+              <form method="post" class="pull-right" action="{% url 'bot_enable' room.id user.username %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="enable">
+                <button type="submit" class="btn btn-xs btn-success">Enable</button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+        </div>
+      {% endif %}
     </div>
   </div>
 </div>
 {% endblock main_content %}
-
-{% block script_panel %}
-<script type="text/javascript" src="/static/ajax_select/js/ajax_select.js"></script>
-{% endblock %}

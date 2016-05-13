@@ -10,7 +10,7 @@ class UserLookup(LookupChannel):
 
     def get_query(self, q, request):
         # TODO: only return users that are relevant to request.user...
-        return User.objects.filter(username__icontains=q)
+        return User.objects.filter(username__icontains=q, is_bot=False)
 
     def get_result(self, obj):
         return obj.username
