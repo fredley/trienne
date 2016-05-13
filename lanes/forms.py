@@ -49,7 +49,7 @@ class RoomForm(ModelForm):
     model = Room
     fields = ['name', 'topic', 'privacy', 'owners']
     widgets = {
-        'privacy': RadioSelect(),
+        'privacy': RadioSelect(attrs={'class': 'radio-2'}),
     }
 
   owners = make_ajax_field(Room, 'owners', 'users', required=True, help_text="")
