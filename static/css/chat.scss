@@ -356,6 +356,7 @@ pre {
   left:0;
   right:15px;
   border:0;
+  padding-top:5px;
   border-radius: 0;
 }
 .message-group{
@@ -457,7 +458,7 @@ pre {
 }
 #medium{
   font-size:11px;
-  padding:10px 0;
+  padding:5px 0;
   height: 100%;
   overflow-y:auto;
   .message-group{
