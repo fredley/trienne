@@ -33,7 +33,7 @@
 		{% endif %}
     <div class="user-list" id="users">
     {% for u in users %}
-    	<div class="user user-{{ u.id }}">
+    	<div class="user user-{{ u.id }}{% if u.id == user.id %} me{% endif %}">
     		<img src="{% gravatar_url u.email 32 %}" alt="" class="profile-picture">
     		{{ u.username }}
     		<div class="online-marker status-{{ u.status }}"></div>
@@ -55,6 +55,7 @@
 	  	<div class="img-container">
 		  	<img src="{% gravatar_url user.email 64 %}" alt="" class="profile-picture">
 	  	</div>
+      <div id="autocomplete"></div>
 	  	<div class="shout-container">
 		    <textarea class="form-control" id="shout"
 		    {% if not user.is_authenticated %}

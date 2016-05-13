@@ -271,6 +271,24 @@ pre {
     background-image:url('../img/indicator-busy.png');
   }
 }
+#autocomplete{
+  position: absolute;
+  top: -25px;
+  left: 42px;
+  .ac{
+    background: #555;
+    border: 1px solid #333;
+    color:#fff;
+    float: left;
+    margin-right: 5px;
+    padding: 2px 5px;
+    border-radius:3px;
+    &.active{
+      background: #fff;
+      color:#333;
+    }
+  }
+}
 #entry{
   height:35px;
   position:fixed;

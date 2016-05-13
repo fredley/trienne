@@ -203,6 +203,22 @@ pre {
   .online-marker.status-2 {
     background-image: url("../img/indicator-busy.png"); }
 
+#autocomplete {
+  position: absolute;
+  top: -25px;
+  left: 42px; }
+  #autocomplete .ac {
+    background: #555;
+    border: 1px solid #333;
+    color: #fff;
+    float: left;
+    margin-right: 5px;
+    padding: 2px 5px;
+    border-radius: 3px; }
+    #autocomplete .ac.active {
+      background: #fff;
+      color: #333; }
+
 #entry {
   height: 35px;
   position: fixed;

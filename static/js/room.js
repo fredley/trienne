@@ -20,6 +20,8 @@ jQuery(document).ready(function($) {
   var editing = false;
   var edit_id = 0;
   var pincodes = [];
+  var ac_index = -1;
+  var ac_active = false;
 
   window.receiveMessage = function(msg) {
     console.log(msg);
@@ -121,6 +123,10 @@ jQuery(document).ready(function($) {
   $("#shout").keydown(function(ev) {
     if (ev.keyCode === 13 && !ev.shiftKey) {
       ev.preventDefault();
+      if(ac_active){
+        stopAutocomplete();
+        return;
+      }
       var message = shout.val();
       if (message.trim() !== ""){
         if(editing) {
@@ -148,6 +154,13 @@ jQuery(document).ready(function($) {
         }
         shout.val("");
       }
+    }else if (ev.keyCode === 9) { //tab
+      ev.preventDefault();
+      if(ac_active){
+        var amount = (ev.shiftKey) ? -1 : 1;
+        updateAutoComplete(amount);
+        return;
+      }
     }else if(ev.keyCode === 38) { //up arrow
       // select previous message for editing
       ev.preventDefault();
@@ -174,6 +187,27 @@ jQuery(document).ready(function($) {
       }
     }else if(ev.keyCode === 27 && editing) { // escape
       stopEdit();
+    }
+    stopAutocomplete();
+  });
+
+  $("#shout").keyup(function(ev) {
+    if(!ac_active){
+      var words = $(this).val().split(' ');
+      var last = words[words.length - 1];
+      if (last.length > 1 && last[0] === '@'){
+        var search = last.substring(1).toLowerCase();
+        var names = [];
+        $('.user').not('.me').each(function(el){
+          var name = $(this).text().trim().toLowerCase();
+          if (name.indexOf(search) >= 0){
+            names.push(name);
+          }
+        });
+        if(names.length > 0){
+          startAutocomplete(names);
+        }
+      }
     }
   });
 
@@ -258,6 +292,33 @@ jQuery(document).ready(function($) {
       }
     }
   });
+
+  function startAutocomplete(names){
+    ac_active = true;
+    $('#autocomplete').html('');
+    for(var i=0; i<names.length; i++){
+      var el = $('<div class="ac">' + names[i] + '</div>');
+      if (i === ac_index){
+        el.addClass('active');
+      }
+      $('#autocomplete').append(el);
+    }
+  }
+
+  function updateAutoComplete(amnt){
+    ac_index = (ac_index + amnt) % $('.ac').length;
+    $('.ac').removeClass('active');
+    $('.ac:eq(' + ac_index + ')').addClass('active');
+    var words = $('#shout').val().split(' ');
+    words[words.length - 1] = '@' + $('.ac.active').text() + ' ';
+    $('#shout').val(words.join(' '));
+  }
+
+  function stopAutocomplete(){
+    $('#autocomplete').html('');
+    ac_index = -1;
+    ac_active = false;
+  }
 
   function showError(msg){
     var error = $('<div class="error">' + msg + '</div>');
