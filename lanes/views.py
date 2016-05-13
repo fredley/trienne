@@ -897,8 +897,8 @@ class RegisterView(CreateView):
     else:
       return reverse('orgs')
 
-  def get_context_data(self):
-    context = super(RegisterView, self).get_context_data()
+  def get_context_data(self, *args, **kwargs):
+    context = super(RegisterView, self).get_context_data(*args, **kwargs)
     if 'token' in self.kwargs:
       logout(self.request)
       context.update(invite=Invitation.objects.get(token=self.kwargs.get('token')))
@@ -922,9 +922,9 @@ class RegisterView(CreateView):
       membership.save()
       [i.delete() for i in invites]
     # Log in user
-    u = authenticate(username=self.request.POST['username'].lower(), password=self.request.POST['password'])
+    u = authenticate(username=self.request.POST['username'].lower(), password=self.request.POST['password1'])
     if u is not None and u.is_active:
-      login(request, u)
+      login(self.request, u)
     return response
 
 
