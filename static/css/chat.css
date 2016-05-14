@@ -178,6 +178,8 @@ pre {
 .user-list .user {
   position: relative;
   margin-bottom: 5px; }
+  .user-list .user a {
+    color: #000; }
 .user-list img {
   width: 16px;
   height: 16px;
@@ -435,6 +437,10 @@ pre {
     border: 5px solid #ddd;
     max-width: 70%;
     margin: 20px auto; }
+
+/*   USER PROFILE   */
+.user-profile .profile-picture {
+  margin-bottom: 20px; }
 
 /*   ROOMS   */
 #rooms .well {

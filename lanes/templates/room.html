@@ -37,7 +37,7 @@
     {% for u in users %}
     	<div class="user user-{{ u.id }}{% if u.id == user.id %} me{% endif %}">
     		<img src="{% gravatar_url u.email 32 %}" alt="" class="profile-picture">
-    		{{ u.username }}
+    		<a href="{% url 'user_profile' u.id %}">{{ u.username }}</a>
     		<div class="online-marker status-{{ u.status }}"></div>
     	</div>
     {% endfor %}

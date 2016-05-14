@@ -5,13 +5,63 @@
 {% block title %}{{ puser.username }}{% endblock %}
 
 {% block main_content %}
-<h1>{{ puser.username }}
-  {% if puser.is_superuser %}
-  &#1421;
-  {% endif %}
-</h1>
-<img src="{% gravatar_url user.email 300 %}" alt="profile picture" class="img-responsive profile-picture">
-{% if user.is_admin or user.id == puser.id %}
-  Email: {{ user.email }}.
-{% endif %}
+<legend><h1>{{ puser.username }}</h1></legend>
+<div class="row user-profile">
+  <div class="col-sm-3">
+    <img src="{% gravatar_url user.email 300 %}" alt="profile picture" class="img-responsive profile-picture img-rounded">
+    {% if can_manage %}
+      {% if manage_orgs %}
+        <label>Ban this user for (n) minutes{% if manage_orgs|length_is:"1" %} from {{ manage_orgs.0.name }}{% endif %}:
+        </label>
+        <form action="{% url 'user_ban' puser.id %}" method="post">
+        {% csrf_token %}
+          <div class="input-group">
+            <input type="number" value="60" maxlength="3" id="ban_length" class="form-control" name="minutes">
+            <span class="input-group-btn">
+              <button type="submit" class="btn btn-danger">Ban</button>
+            </span>
+          </div>
+          {% if manage_orgs|length_is:"1" %}
+            <input type="hidden" name="org" value="{{ manage_orgs.0.slug }}">
+          {% else %}
+            <label>From:</label>
+            <select name="org" class="form-control">
+              {% for org in manage_orgs %}
+                <option value="{{ org.slug }}">{{ org.name }}</option>
+              {% endfor %}
+            </select>
+          {% endif %}
+        </form>
+      {% endif %}
+      {% if bans %}
+        {% for ban in bans %}
+          <ul class="list-group">
+            <li class="list-group-item list-group-item-danger">Banned from {{ ban.organisation.name }} until {{ ban.ban_expiry }}</li>
+            <li class="list-group-item">
+            <form action="{% url 'user_unban' puser.id %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="org" value="{{ ban.organisation.slug }}">
+              <button class="btn btn-success" type="submit">Unban</button>
+            </form>
+            </li>
+          </ul>
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+  </div>
+  <div class="col-sm-9">
+    {% if puser.organisations.all.count > 0 %}
+      <legend>Communities</legend>
+      <div class="list-group">
+        {% for org in puser.organisations.all %}
+          {% if org.visibility == org.VISIBILITY_PUBLIC %}
+            <a href="{% url 'org' org.slug %}" class="list-group-item">{{ org.name }}</a>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="alert alert-info">{{ puser.name }} is not part of any public communities.</p>
+    {% endif %}
+  </div>
+</div>
 {% endblock main_content %}

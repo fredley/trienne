@@ -847,6 +847,50 @@ class UserProfileView(LoginRequiredMixin, DetailView):
   template_name = 'user_profile.html'
   context_object_name = 'puser'
 
+  def get_context_data(self, *args, **kwargs):
+    context = super(UserProfileView, self).get_context_data(*args, **kwargs)
+    can_manage = False
+    manage_orgs = []
+    bans = []
+    for org in self.object.organisations.all():
+      if self.request.user.is_admin(org):
+        can_manage = True
+        if self.object.is_banned(org):
+          bans.append(OrgMembership.objects.get(organisation=org, user=self.object))
+        else:
+          manage_orgs.append(org)
+    context.update(
+        can_manage=can_manage,
+        manage_orgs=manage_orgs,
+        bans=bans,
+        ban_log=BanLog.objects.filter(user=self.object))
+    return context
+
+
+class UserBanView(LoginRequiredMixin, View):
+
+  def post(self, request, *args, **kwargs):
+    u = User.objects.get(id=self.kwargs.get('user_id'))
+    org = Organisation.objects.get(slug=request.POST.get('org'))
+    if not request.user.is_admin(org):
+      raise PermissionDenied
+    minutes = int(request.POST.get('minutes'))
+    if minutes < 1:
+      raise SuspiciousOperation
+    u.ban_for(org, minutes * 60)
+    return HttpResponseRedirect(reverse('user_profile', kwargs={'user_id': u.id}))
+
+
+class UserUnbanView(LoginRequiredMixin, View):
+
+  def post(self, request, *args, **kwargs):
+    u = User.objects.get(id=self.kwargs.get('user_id'))
+    org = Organisation.objects.get(slug=request.POST.get('org'))
+    if not request.user.is_admin(org):
+      raise PermissionDenied
+    u.unban(org)
+    return HttpResponseRedirect(reverse('user_profile', kwargs={'user_id': u.id}))
+
 
 class OrgStatusView(OrgMixin, View):
 

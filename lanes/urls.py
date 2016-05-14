@@ -48,6 +48,8 @@ urlpatterns = [
     url(r'^post/(?P<post_id>\d+)/history/$', PostHistoryView.as_view(), name='post_history'),
 
     url(r'^users/(?P<user_id>\d+)/$', UserProfileView.as_view(), name='user_profile'),
+    url(r'^users/(?P<user_id>\d+)/ban/$', UserBanView.as_view(), name='user_ban'),
+    url(r'^users/(?P<user_id>\d+)/unban/$', UserUnbanView.as_view(), name='user_unban'),
     url(r'^users/', include('django.contrib.auth.urls')),
     url(r'^users/register/(?P<token>\w+)/', RegisterView.as_view(), name='invitation'),
     url(r'^users/register/$', RegisterView.as_view(), name='register'),

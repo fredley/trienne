@@ -32,6 +32,8 @@
       "name": "Public",
       "slug": "public",
       "domain": "public",
+      "privacy": 0,
+      "visibility": 0,
       "admins": [
         1
       ]

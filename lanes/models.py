@@ -186,6 +186,12 @@ class User(AbstractUser):
     membership.save()
     BanLog(user=self, organisation=org, duration=seconds).save()
 
+  def unban(self, org):
+    membership = OrgMembership.objects.get(user=self, organisation=org)
+    membership.ban_expiry = None
+    membership.save()
+    BanLog(user=self, organisation=org, duration=0).save()
+
   def is_banned(self, org):
     membership = OrgMembership.objects.get(user=self, organisation=org)
     if membership.ban_expiry is not None:
@@ -449,7 +455,7 @@ class BanLog(models.Model):
   """ A log of a ban given to a user """
   user = models.ForeignKey(User)
   organisation = models.ForeignKey(Organisation)
-  duration = models.IntegerField()  # In seconds
+  duration = models.IntegerField()  # In seconds, if 0 is unban
   created = models.DateTimeField(auto_now_add=True)
 
 class InvitationRequest(models.Model):
