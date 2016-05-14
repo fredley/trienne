@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^c/(?P<slug>[\w-]+)/follow/$', OrgWatchView.as_view()),
     url(r'^c/(?P<slug>[\w-]+)/status/$', OrgStatusView.as_view(), name='org_status'),
     url(r'^c/(?P<slug>[\w-]+)/invite/$', OrgInviteView.as_view(), name='org_invite'),
+    url(r'^c/(?P<slug>[\w-]+)/banned/$', BannedView.as_view(), name='banned'),
 
     url(r'^c/(?P<slug>[\w-]+)/bot/create/$', BotCreateView.as_view(), name='bot_create'),
     url(r'^c/(?P<slug>[\w-]+)/bot/(?P<username>[\w-]+)/$', BotUpdateView.as_view(), name='bot'),
@@ -42,6 +43,7 @@ urlpatterns = [
     url(r'^room/(?P<room_id>\d+)/bot/(?P<username>[\w-]+)/enable/$', BotEnableView.as_view(), name='bot_enable'),
 
     url(r'^post/(?P<post_id>\d+)/edit/$', PostEditView.as_view(), name='post_edit'),
+    url(r'^post/(?P<post_id>\d+)/flag/$', PostFlagView.as_view(), name='post_flag'),
     url(r'^post/(?P<post_id>\d+)/vote/$', PostVoteView.as_view(), name='post_vote'),
     url(r'^post/(?P<post_id>\d+)/history/$', PostHistoryView.as_view(), name='post_history'),
 

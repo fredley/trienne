@@ -168,7 +168,37 @@ class AjaxResponseMixin(object):
       return response
 
 
-class RoomPostView(LoginOrMaybeBotMixin, RatelimitMixin, View):
+class BannedView(LoginRequiredMixin, TemplateView):
+  template_name = 'banned.html'
+
+  def dispatch(self, request, *args, **kwargs):
+    self.org = Organisation.objects.get(slug=kwargs.get('slug'))
+    if not self.request.user.is_banned(self.org):
+      return HttpResponseRedirect(reverse('org', kwargs={'slug': self.org.slug}))
+    return super(BannedView, self).dispatch(request, *args, **kwargs)
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(BannedView, self).get_context_data(*args, **kwargs)
+    expiry = OrgMembership.objects.get(user=self.request.user, organisation=self.org).ban_expiry
+    difference = expiry - timezone.now()
+    left = difference.seconds
+    logger.debug(left)
+    if difference.days > 0:
+      s = "s" if difference.days > 1 else ""
+      remaining = "{} day{}".format(difference.days,s)
+    elif left < 60:
+      remaining = "less than one minute"
+    elif left < 60 * 60:  # One hour
+      s = "s" if left / 60 > 1 else ""
+      remaining = "{} minute{}".format(left / 60,s)
+    else:  # One day
+      s = "s" if left / (60 * 60) > 1 else ""
+      remaining = "{} hour{}".format(left / (60 * 60),s)
+    context.update(org=self.org, remaining=remaining)
+    return context
+
+
+class RoomPostMixin(LoginOrMaybeBotMixin, RatelimitMixin, View):
 
   ratelimit_key = 'user'
   ratelimit_rate = '3/3s'
@@ -180,10 +210,12 @@ class RoomPostView(LoginOrMaybeBotMixin, RatelimitMixin, View):
 
   @csrf_exempt
   def dispatch(self, *args, **kwargs):
-    return super(RoomPostView, self).dispatch(*args, **kwargs)
+    return super(RoomPostMixin, self).dispatch(*args, **kwargs)
 
   def post(self, request, *args, **kwargs):
     self.room = Room.objects.get(id=kwargs['room_id'])
+    if self.request.user.is_banned(self.room.organisation):
+      raise PermissionDenied
     self.publisher = RedisPublisher(facility='room_' + str(kwargs['room_id']), broadcast=True)
     if request.user.is_bot and request.user.bot.responds_to(self.room):
       return self.generate_response(request)
@@ -200,9 +232,15 @@ class RoomPostView(LoginOrMaybeBotMixin, RatelimitMixin, View):
 class RoomView(LoginRequiredMixin, TemplateView):
   template_name = 'room.html'
 
+  def dispatch(self, request, *args, **kwargs):
+    self.room = Room.objects.get(id=kwargs['room_id'])
+    if self.request.user.is_banned(self.room.organisation):
+      return HttpResponseRedirect(reverse('banned', kwargs={'slug': self.room.organisation.slug}))
+    return super(RoomView, self).dispatch(request, *args, **kwargs)
+
   def get_context_data(self, **kwargs):
     context = super(RoomView, self).get_context_data(**kwargs)
-    room = Room.objects.get(id=kwargs['room_id'])
+    room = self.room
     if not self.request.user.is_member(room.organisation):
       logger.debug("Not a member")
       raise PermissionDenied
@@ -250,7 +288,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
     return context
 
 
-class RoomPrefsView(RoomPostView):
+class RoomPrefsView(RoomPostMixin):
 
   def generate_response(self, request):
     volume = int(request.POST.get('volume'))
@@ -260,7 +298,7 @@ class RoomPrefsView(RoomPostView):
     return HttpResponse('OK')
 
 
-class RoomPinView(RoomPostView):
+class RoomPinView(RoomPostMixin):
 
   def generate_response(self, request):
     post = Post.objects.get(id=request.POST.get('id'))
@@ -284,7 +322,7 @@ class RoomPinView(RoomPostView):
     return HttpResponse('OK')
 
 
-class RoomMessageView(RoomPostView):
+class RoomMessageView(RoomPostMixin):
 
   allow_bots = True
 
@@ -316,7 +354,7 @@ class RoomMessageView(RoomPostView):
     return HttpResponse('OK')
 
 
-class RoomMemberView(RoomPostView):
+class RoomMemberView(RoomPostMixin):
 
   require_admin = True
 
@@ -333,6 +371,8 @@ class OrgMixin(LoginRequiredMixin):
 
   def dispatch(self, *args, **kwargs):
     self.org = Organisation.objects.get(slug=kwargs.get('slug'))
+    if self.request.user.is_banned(self.org):
+      return HttpResponseRedirect(reverse('banned', kwargs={'slug': self.org.slug}))
     if self.require_admin and not self.request.user.is_admin(self.org):
       logger.debug("Not admin")
       raise PermissionDenied
@@ -401,7 +441,7 @@ class RoomEditView(LoginRequiredMixin, UpdateView):
     return reverse("room", kwargs={"room_id": self.object.id})
 
 
-class PostView(LoginRequiredMixin):
+class PostMixin(LoginRequiredMixin):
 
   require_owner = True
   require_not_owner = False
@@ -411,6 +451,8 @@ class PostView(LoginRequiredMixin):
   def dispatch(self, *args, **kwargs):
     user = self.request.user
     post = Post.objects.get(id=kwargs.get('post_id'))
+    if self.request.user.is_banned(post.room.organisation):
+      raise PermissionDenied
     self.msg = post
     if not user.is_member(post.room.organisation) or not(user.can_view(post.room)):
       logger.debug("Not a member")
@@ -424,10 +466,10 @@ class PostView(LoginRequiredMixin):
     if not self.allow_deleted and post.deleted:
       logger.debug("Deleted post!")
       raise PermissionDenied
-    return super(PostView, self).dispatch(*args, **kwargs)
+    return super(PostMixin, self).dispatch(*args, **kwargs)
 
 
-class PostEditView(PostView, View):
+class PostEditView(PostMixin, View):
 
   def post(self, request, *args, **kwargs):
     raw = request.POST.get('message')
@@ -454,7 +496,32 @@ class PostEditView(PostView, View):
     return HttpResponse('OK')
 
 
-class PostVoteView(PostView, View):
+class PostFlagView(PostMixin, View):
+  require_owner = False
+
+  def post(self, request, *args, **kwargs):
+    try:
+      Flag(post=self.msg, flagger=request.user).save()
+    except:
+      raise PermissionDenied
+    if self.msg.get_flags() > 3 and not self.msg.deleted:
+      self.msg.remove(request.user)
+      self.msg.author.ban_for(self.msg.room.organisation, 60 * 30)  # Half an hour
+      message = {
+          'type': 'delete',
+          'id': self.msg.id
+      }
+    else:
+      message = {
+          'type': 'flag',
+          'id': self.msg.id
+      }
+    RedisPublisher(facility='room_' + str(self.msg.room.id), broadcast=True) \
+        .publish_message(RedisMessage(json.dumps(message)))
+    return HttpResponse('OK')
+
+
+class PostVoteView(PostMixin, View):
 
   require_owner = False
   require_not_owner = True
@@ -464,12 +531,14 @@ class PostVoteView(PostView, View):
     value = int(request.POST.get('value'))
     if value not in [-1, 1]:
       raise PermissionDenied
-    if Vote.objects.filter(post=post, user=request.user).count() > 0:
+    try:
+      vote = Vote(post=post,
+          user=request.user,
+          score=value)
+      vote.save()
+    except:
+      # Already a vote for this user on this post
       raise PermissionDenied
-    vote = Vote(post=post,
-        user=request.user,
-        score=value)
-    vote.save()
     score = post.score
     post.update_hotness()
     if score < -4:
@@ -493,7 +562,7 @@ class PostVoteView(PostView, View):
     return HttpResponse('OK')
 
 
-class PostHistoryView(PostView, TemplateView):
+class PostHistoryView(PostMixin, TemplateView):
 
   template_name = "post_history.html"
   allow_deleted = True
@@ -511,15 +580,7 @@ class PostHistoryView(PostView, TemplateView):
   def post(self, request, *args, **kwargs):
     if self.msg.deleted:
       raise PermissionDenied
-    self.msg.deleted = True
-    self.msg.pinned = False
-    self.msg.save()
-    content = PostContent(
-        author=request.user,
-        post=self.msg,
-        raw="(deleted)",
-        content="(deleted)")
-    content.save()
+    self.msg.remove(request.user)
     message = {
         'type': 'delete',
         'id': self.msg.id
@@ -838,7 +899,7 @@ class BotUpdateView(OrgMixin, UpdateView):
     return reverse('manage_org', kwargs={'slug': self.org.slug})
 
 
-class BotEnableView(RoomPostView, View):
+class BotEnableView(RoomPostMixin, View):
   require_admin = True
 
   def generate_response(self, request):

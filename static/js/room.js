@@ -97,6 +97,9 @@ jQuery(document).ready(function($) {
       case "delete":
         $(".msg-" + msg.id).addClass('deleted').find(".content").html("(deleted)");
         $("#medium .msg-" + msg.id).parent().remove();
+        break;
+      case "flag":
+        $(".msg-" + msg.id).addClass('flagged');
     }
   };
 
@@ -428,6 +431,15 @@ jQuery(document).ready(function($) {
     var message = $('<div class="message"></div>')
       .append($('<div class="content"></div>').html(parsed.content));
     var controls = $('<div class="controls"></div>');
+    var flag = $('<i class="glyphicon glyphicon-flag flag"></i>');
+    flag.on('click', function(){
+      $.ajax({
+        method: "post",
+        url: "/post/" + id + "/flag/"
+      });
+      $(this).remove();
+    });
+    controls.append(flag);
     if (mine || is_admin) {
       var link = $('<div class="link"><i class="glyphicon glyphicon-link"></i></div>');
       link.on('click', function(){

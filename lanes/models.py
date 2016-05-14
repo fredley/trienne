@@ -4,7 +4,7 @@ import json
 import logging
 import math
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db import models
 from django.db.models import Sum
@@ -26,6 +26,7 @@ epoch = timezone.make_aware(datetime(1970, 1, 1), timezone.get_current_timezone(
 
 
 class Organisation(models.Model):
+  """ An organisation or community """
 
   PRIVACY_OPEN = 0       # Anyone can join, no approval
   PRIVACY_APPLY = 1      # Anyone can apply to join
@@ -72,6 +73,7 @@ def generate_token():
 
 
 class Invitation(models.Model):
+  """ An invitation to join a specific org """
   organisation = models.ForeignKey(Organisation)
   email = models.EmailField()
   token = models.CharField(max_length=20, default=generate_token, unique=True)
@@ -81,6 +83,7 @@ class Invitation(models.Model):
 
 
 class Bot(models.Model):
+  """ A profile for a bot, which belongs to a bot user """
   SCOPE_GLOBAL = 0
   SCOPE_LOCAL = 1
 
@@ -109,12 +112,15 @@ class Bot(models.Model):
 
 
 class BotToken(models.Model):
+  """ A token used by bots to authenticate """
   bot = models.ForeignKey(Bot)
   token = models.CharField(max_length=20, default=generate_token, unique=True)
   created = models.DateTimeField(auto_now_add=True)
 
 
 class User(AbstractUser):
+  """ A user """
+
   is_bot = models.BooleanField(default=False)
   bot = models.OneToOneField(Bot, null=True)
   organisations = models.ManyToManyField(Organisation, through='OrgMembership')
@@ -174,11 +180,30 @@ class User(AbstractUser):
     logger.debug("Not a member or admin of private room")
     return False
 
+  def ban_for(self, org, seconds):
+    membership = OrgMembership.objects.get(user=self, organisation=org)
+    membership.ban_expiry = timezone.now() + timedelta(0, seconds)
+    membership.save()
+    BanLog(user=self, organisation=org, duration=seconds).save()
+
+  def is_banned(self, org):
+    membership = OrgMembership.objects.get(user=self, organisation=org)
+    if membership.ban_expiry is not None:
+      if timezone.now() < membership.ban_expiry:
+        return True
+      else:
+        membership.ban_expiry = None
+        membership.save()
+        return False
+    else:
+      return False
+
   def __unicode__(self):
     return self.username
 
 
 class OrgMembership(models.Model):
+  """ through class for user membership of orgs """
   ADMIN = 0
   USER = 1
   ROLES = (
@@ -204,6 +229,7 @@ class OrgMembership(models.Model):
   organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
   status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_ONLINE)
   role = models.IntegerField(choices=ROLES, default=USER)
+  ban_expiry = models.DateTimeField(null=True, blank=True)
 
   class Meta:
     unique_together = ('user', 'organisation',)
@@ -213,6 +239,7 @@ class OrgMembership(models.Model):
 
 
 class OrgApplication(models.Model):
+  """ An application by a user to an organisation """
 
   organisation = models.ForeignKey(Organisation)
   user = models.ForeignKey(User)
@@ -224,6 +251,7 @@ class OrgApplication(models.Model):
 
 
 class Room(models.Model):
+  """ A chat room """
 
   PRIVACY_PUBLIC = 0   # Anyone can see, chat
   PRIVACY_PRIVATE = 1  # Only members and mods can see
@@ -259,6 +287,7 @@ class Room(models.Model):
 
 
 class RoomPrefs(models.Model):
+  """ A user's preferences for a room """
 
   QUIET = 0
   NORMAL = 1
@@ -281,6 +310,7 @@ class RoomPrefs(models.Model):
 
 
 class Post(models.Model):
+  """ A chat post """
   room = models.ForeignKey(Room)
   author = models.ForeignKey(settings.AUTH_USER_MODEL)
   created = models.DateTimeField(auto_now_add=True)
@@ -297,6 +327,16 @@ class Post(models.Model):
         res = 0
     except:
       logger.error("Could not get score for Post " + str(self.id))
+    return res
+
+  def get_flags(self):
+    res = 0
+    try:
+      res = Flag.objects.filter(post=self).aggregate(total=Sum('score')).get('total')
+      if res is None:
+        res = 0
+    except:
+      logger.error("Could not get flags for Post " + str(self.id))
     return res
 
   def get_raw(self):
@@ -322,6 +362,17 @@ class Post(models.Model):
     else:
       return qs
 
+  def remove(self, user):
+    self.deleted = True
+    self.pinned = False
+    self.save()
+    content = PostContent(
+        author=user,
+        post=self,
+        raw="(deleted)",
+        content="(deleted)")
+    content.save()
+
   def is_edited(self):
     return PostContent.objects.filter(post=self).count() > 1
 
@@ -346,16 +397,21 @@ class Post(models.Model):
 
 
 class Vote(models.Model):
+  """ A vote on a post """
   post = models.ForeignKey(Post)
   user = models.ForeignKey(User)
   score = models.IntegerField()
   created = models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    unique_together = ('post', 'user',)
 
   def __unicode__(self):
     return str(self.user) + " on " + str(self.post)
 
 
 class PostContent(models.Model):
+  """ The contents of a post """
   post = models.ForeignKey(Post)
   author = models.ForeignKey(settings.AUTH_USER_MODEL)
   content = models.CharField(max_length=512)
@@ -366,12 +422,32 @@ class PostContent(models.Model):
     return self.content
 
 
+class Flag(models.Model):
+  """ A flag against a post """
+  post = models.ForeignKey(Post)
+  flagger = models.ForeignKey(User)
+  created = models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    unique_together = ('post', 'flagger',)
+
+
 class Notification(models.Model):
+  """ A notification that needs to be sent - deleted when sent """
   user = models.ForeignKey(settings.AUTH_USER_MODEL)
   post = models.ForeignKey(Post)
   created = models.DateTimeField(auto_now_add=True)
 
 
 class ResetToken(models.Model):
+  """ A token for resetting passwords """
   user = models.ForeignKey(settings.AUTH_USER_MODEL)
   token = models.CharField(max_length=20, default=generate_token, unique=True)
+
+
+class BanLog(models.Model):
+  """ A log of a ban given to a user """
+  user = models.ForeignKey(User)
+  organisation = models.ForeignKey(Organisation)
+  duration = models.IntegerField()  # In seconds
+  created = models.DateTimeField(auto_now_add=True)

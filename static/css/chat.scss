@@ -413,6 +413,9 @@ pre {
       display: none;
     }
   }
+  &.flagged{
+    border-right:3px solid $dangerRed;
+  }
   code, pre{
     font-size: inherit;
     margin:0;
