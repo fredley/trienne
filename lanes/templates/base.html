@@ -37,26 +37,28 @@
   <header class="navbar navbar-static-top navbar-default">
       <nav class="" role="navigation" id="nav">
         <ul class="nav navbar-nav pull-left">
-          <li class="{% block rooms_active %}{% endblock %}">
-            <a href="{% url 'orgs' %}"><i class="glyphicon glyphicon-home"></i></a>
-          </li>
-          {% if org %}
-            <li class="{% block current_community_active %}{% endblock %}">
-              <a href="{% url 'org' org.slug %}">{{ org.name }}</a>
+          {% if user.is_authenticated %}
+            <li class="{% block rooms_active %}{% endblock %}">
+              <a href="{% url 'orgs' %}"><i class="glyphicon glyphicon-home"></i></a>
             </li>
-            {% if is_admin %}
-              <li class="{% block org_admin_active %}{% endblock %}">
-                <a href="{% url 'manage_org' org.slug %}"><i class="glyphicon glyphicon-cog"></i></a>
+            {% if org %}
+              <li class="{% block current_community_active %}{% endblock %}">
+                <a href="{% url 'org' org.slug %}">{{ org.name }}</a>
+              </li>
+              {% if is_admin %}
+                <li class="{% block org_admin_active %}{% endblock %}">
+                  <a href="{% url 'manage_org' org.slug %}"><i class="glyphicon glyphicon-cog"></i></a>
+                </li>
+              {% endif %}
+              <li class="dropdown">
+                <a class="dropdown-toggle" href="#" data-toggle="dropdown">Rooms <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  {% for room in rooms %}
+                    <li><a href="{% url 'room' room.id %}">{{ room.name }}</a></li>
+                  {% endfor %}
+                </ul>
               </li>
             {% endif %}
-            <li class="dropdown">
-              <a class="dropdown-toggle" href="#" data-toggle="dropdown">Rooms <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                {% for room in rooms %}
-                  <li><a href="{% url 'room' room.id %}">{{ room.name }}</a></li>
-                {% endfor %}
-              </ul>
-            </li>
           {% endif %}
         </ul>
         <ul class="nav navbar-nav navbar-right pull-right">

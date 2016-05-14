@@ -1,37 +1,91 @@
 {% extends "base.html" %}
 
 {% load bootstrap %}
+{% load static %}
 
-{% block title %}Lanes{% endblock %}
+{% block title %}Trienne{% endblock %}
 
 {% block main_content %}
 <div class="jumbotron">
   <div class="container">
-    <h1>Lanes</h1>
-    <p>Information that moves at the speed you do.</p>
-    <p><a class="btn btn-primary btn-lg" href="#" role="button">Get an invitation »</a></p>
+    <img src="{% get_static_prefix %}img/logo-main.png" class="img-responsive logo-main">
+    <h1>Trienne</h1>
+    <p>Information that moves at the speed you do</p>
+    <div class="form-inline">
+      <div class="form-group">
+        <input type="email" class="form-control" name="email" placeholder="Enter your email" id="email">
+        <button class="btn btn-primary" type="button" id="request">Get an invitation</button>
+        <small class="help-block" id="error"></small>
+      </div>
+    </div>
   </div>
 </div>
 <div class="container">
   <div class="row">
+    <div class="col-xs-12">
+      <h2>Trienne is a living knowledge-base</h2>
+      <p>Collaborate in real-time, and bootstrap your ideas straight from live chat. Trienne is built to allow groups of people to share and promote content.
+      <ul>
+        <li>Brainstorm ideas without slowing down to record them</li>
+        <li>Build documents from your notes that everyone can see</li>
+        <li>Anonymous voting allows good content to shine through</li>
+      </ul>
+    </div>
+  </div>
+  <div class="row">
     <div class="col-md-4">
-      <h2>Information moves quickly</h2>
-      <p>Lanes Chat allows people to communicate quickly and effectively. Markdown and emoji supported, and you can customise your chat with as many bots and plugins as you want. </p>
+      <h2>Communicate easily</h2>
+      <p>The core of trienne is excellent live chat. Markdown and emoji supported, and you can customise it with as many bots and plugins as you want.</p>
     </div>
     <div class="col-md-4">
-      <h2>Information sticks around</h2>
+      <h2>Pin good ideas</h2>
       <p>Pin messages and they'll stay around. Vote on pinned messages so that what's important stays on top.</p>
    </div>
     <div class="col-md-4">
-      <h2>Information stays put</h2>
+      <h2>Easily summarise</h2>
       <p>Every community has a wiki so that important information can always be found.</p>
     </div>
   </div>
 
   <hr>
 
-  <footer>
+  <footer class="pull-right">
     <p>© 2016 Tom Medley</p>
   </footer>
 </div>
 {% endblock main_content %}
+
+{% block script_panel %}
+<script type="text/javascript">
+$(document).ready(function(){
+  var timeout = 0;
+  $('#request').on('click',function(){
+    $.ajax({
+      method: 'post',
+      url: '{% url "invitation_request" %}',
+      data: {
+        email: $('#email').val()
+      },
+      success: function(data){
+        $('#email').val('').prop('disabled', true);
+        clearTimeout(timeout);
+        $('#error').text("Invitation requested").fadeIn(200);
+      },
+      error: function(data){
+        response = JSON.parse(data.responseText);
+        console.log(response);
+        var text;
+        if (response.message){
+          text = response.message;
+        }else{
+          text = response.email[0];
+        }
+        $('#error').text(text).fadeIn(200);
+        clearTimeout(timeout);
+        timeout = setTimeout(function(){$('#error').fadeOut(200);}, 2000);
+      }
+    })
+  });
+});
+</script>
+{% endblock %}

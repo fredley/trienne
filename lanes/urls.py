@@ -54,8 +54,10 @@ urlpatterns = [
     url(r'^users/recover/$', PasswordRecoveryView.as_view(), name='forgotten_password'),
     url(r'^users/reset/(?P<token>\w+)/$', PasswordResetView.as_view(), name='reset_password'),
 
-    url(r'^admin/', include(admin.site.urls)),
     url(r'^$', LandingView.as_view(), name='orgs'),
+    url(r'^request_invitation/$', InvitationRequestView.as_view(), name='invitation_request'),
+
+    url(r'^admin/', include(admin.site.urls), name='home'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 handler400 = Error500.as_view()

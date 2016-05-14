@@ -1042,10 +1042,21 @@ class LandingView(TemplateView):
   template_name = "index.html"
 
   def dispatch(self, *args, **kwargs):
-    logger.debug(self.request.user.is_authenticated)
-    if self.request.user.is_authenticated:
+    logger.debug(self.request.user.is_authenticated())
+    if self.request.user.is_authenticated():
       return OrgsView.as_view()(self.request)
     return super(LandingView, self).dispatch(*args, **kwargs)
+
+
+class InvitationRequestView(RatelimitMixin, AjaxResponseMixin, CreateView):
+  ratelimit_key = 'ip'
+  ratelimit_rate = '1/10s'
+  ratelimit_block = True
+  ratelimit_method = 'POST'
+
+  model = InvitationRequest
+  success_url = '/'
+  fields = ['email']
 
 
 class Error500(TemplateView):

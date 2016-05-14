@@ -451,3 +451,8 @@ class BanLog(models.Model):
   organisation = models.ForeignKey(Organisation)
   duration = models.IntegerField()  # In seconds
   created = models.DateTimeField(auto_now_add=True)
+
+class InvitationRequest(models.Model):
+  """ A request for an invitation """
+  email = models.EmailField()
+  created = models.DateTimeField(auto_now_add=True)
