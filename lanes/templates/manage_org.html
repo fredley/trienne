@@ -7,65 +7,63 @@
 {% block org_admin_active %}active{% endblock %}
 
 {% block main_content %}
-<div class="container">
-  <div class="row">
-    <div class="col-sm-6 col-sm-offset-3">
-      <form action="{% url 'manage_org' org.slug %}" method="post">
-        {% csrf_token %}
-        <legend>Manage {{ org.name }}</legend>
-        {{ form|bootstrap }}
-        <button class="btn btn-success" type="submit">Apply Changes</button>
-      </form>
+<div class="row">
+  <div class="col-sm-6 col-sm-offset-3">
+    <form action="{% url 'manage_org' org.slug %}" method="post">
+      {% csrf_token %}
+      <legend>Manage {{ org.name }}</legend>
+      {{ form|bootstrap }}
+      <button class="btn btn-success" type="submit">Apply Changes</button>
+    </form>
 
-      {% if org.privacy == org.PRIVACY_APPLY %}
-      <hr>
+    {% if org.privacy == org.PRIVACY_APPLY %}
+    <hr>
 
-      <div style="display:none;" id="user-list">
-        <legend>Users awaiting approval</legend>
-        <div class="list-group">
-        {% for a in applications %}
-          <div class="list-group-item">
-            {{ a.user.username }}
-            <div class="btn-group pull-right application">
-              <button class="btn approval btn-xs btn-danger" data-action="deny" data-id="{{ a.user.id }}">Deny</button>
-              <button class="btn approval btn-xs btn-success" data-action="approve" data-id="{{ a.user.id }}">Approve</button>
-            </div>
-          </div>
-        {% endfor %}
-        </div>
-      </div>
-      <div style="display:none;" id="no-users" class="alert alert-info">There are no users awaiting approval</div>
-      {% endif %}
-
-      <hr>
-
-      <legend>Invite someone to join {{ org.name }}</legend>
-      <div class="form-group">
-        <input class="form-control" type="email" name="email" placeholder="Email" id="id_email">
-      </div>
-      <button type="button" class="btn btn-success" id="send-invite">Send Invite</button>
-      <div class="form-group">
-        <p id="message" class="helptext text-success" style="display:none;">An invitation has been sent</p>
-      </div>
-
-      <hr>
-
-      <legend>Bots for {{ org.name }}</legend>
+    <div style="display:none;" id="user-list">
+      <legend>Users awaiting approval</legend>
       <div class="list-group">
-      {% for bot in bots %}
+      {% for a in applications %}
         <div class="list-group-item">
-          <a href="{% url 'bot' org.slug bot.username %}">{{ bot.username }} - {{ bot.bot.get_scope_display }}</a>
+          {{ a.user.username }}
           <div class="btn-group pull-right application">
-            <form action="{% url 'bot_delete' org.slug bot.username %}" method="post">
-              {% csrf_token %}
-              <button class="btn btn-xs btn-danger">Remove</button>
-            </form>
+            <button class="btn approval btn-xs btn-danger" data-action="deny" data-id="{{ a.user.id }}">Deny</button>
+            <button class="btn approval btn-xs btn-success" data-action="approve" data-id="{{ a.user.id }}">Approve</button>
           </div>
         </div>
       {% endfor %}
       </div>
-      <a href="{% url 'bot_create' org.slug %}" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add a new bot</a>
     </div>
+    <div style="display:none;" id="no-users" class="alert alert-info">There are no users awaiting approval</div>
+    {% endif %}
+
+    <hr>
+
+    <legend>Invite someone to join {{ org.name }}</legend>
+    <div class="form-group">
+      <input class="form-control" type="email" name="email" placeholder="Email" id="id_email">
+    </div>
+    <button type="button" class="btn btn-success" id="send-invite">Send Invite</button>
+    <div class="form-group">
+      <p id="message" class="helptext text-success" style="display:none;">An invitation has been sent</p>
+    </div>
+
+    <hr>
+
+    <legend>Bots for {{ org.name }}</legend>
+    <div class="list-group">
+    {% for bot in bots %}
+      <div class="list-group-item">
+        <a href="{% url 'bot' org.slug bot.username %}">{{ bot.username }} - {{ bot.bot.get_scope_display }}</a>
+        <div class="btn-group pull-right application">
+          <form action="{% url 'bot_delete' org.slug bot.username %}" method="post">
+            {% csrf_token %}
+            <button class="btn btn-xs btn-danger">Remove</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+    </div>
+    <a href="{% url 'bot_create' org.slug %}" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add a new bot</a>
   </div>
 </div>
 {% endblock main_content %}

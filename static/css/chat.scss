@@ -546,14 +546,29 @@ pre {
 }
 
 /* LANDING */
+
+.jumbo-form{
+  .email{
+    margin:20px 10px 20px 0;
+  }
+}
+
 .logo-main{
   float: left;
   max-width: 200px;
   max-height: 200px;
-  margin-right: 30px;
-  margin-top: 15px;
+  margin: 15px 30px 20px 0;
 }
 
+.jumbotron-inverse{
+  background:#fff;
+
+  .img-circle{
+    border:5px solid #ddd;
+    max-width:70%;
+    margin:20px auto;
+  }
+}
 
 /*   ROOMS   */
 

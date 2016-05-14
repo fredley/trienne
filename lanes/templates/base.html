@@ -114,7 +114,7 @@
       </nav>
   </header>
 
-  <div class="container" id="main">
+  <div class="container" id="{% block container_id %}{% endblock %}">
     {% block main_content %}
     {% endblock main_content %}
   </div>
