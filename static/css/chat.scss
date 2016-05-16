@@ -1,63 +1,65 @@
 @charset "utf-8";
 
-$lightLines:#ddd;
-$messageBG:#e8e8e8;
-$myMessageBG:#e8e8ff;
-$themeColor1:#002C84;
-$themeColor2:#6762E8;
-$background:#fcfcfc;
-$dangerRed:#c9302c;
+@import "bootstrap/bootstrap.scss";
 
+$lightLines: #f0f0f0;
+$messageBG: #e8e8e8;
+$myMessageBG: #e8e8ff;
+$brand: $brand-primary;
+$brand-disabled: darken(desaturate(adjust-hue($brand, 0.2102), 50.0663), 4.1176);
+$background: #fcfcfc;
+$text: #0F0F13;
 $warningBG:#fcf8e3;
 
 html, body{
   height:100%;
   font-size:12px;
   background: $background;
+  color: $text;
   font-family: 'Open Sans', sans-serif;
 }
 a{
-  color:$themeColor2;
+  color:$brand;
   &:hover, &:focus, &:active{
-    color:lighten($themeColor2,10%);
+    color:lighten($brand,10%);
   }
 }
 .btn-primary{
-  background: $themeColor2;
+  background: $brand;
   &:hover, &:active, &:focus{
-    background: lighten($themeColor2,10%);
+    background: lighten($brand,10%);
   }
 }
 header.navbar{
   border-bottom:1px solid $lightLines;
 }
 #nav{
-  background: $themeColor2;
+  background: $brand;
   font-size:14px;
-  height:50px;
   border-bottom:1px darken($lightLines,50%);
   box-shadow: 0 5px 5px rgba(0,0,0,0.1);
-
+  padding:0;
   .nav{
-    margin: 0;
-
-    &>li{
-      float: left;
-      text-align: right;;
+    & .nav-link{
+      color:$background;
+      padding:1rem;
+      margin:0;
+      &.active, &:hover,
+      & .open>a, & .open>a:hover, & .open>a:focus{
+        background: lighten($brand,10%);
+      }
+      &:focus{
+        background: $brand;
+      }
     }
-
-    &>li>a{
-      color:#fff;
-      padding-top: 15px;
-      padding-bottom: 15px;
+    .icon-link{
+      padding-bottom: 8px;
+      line-height: 25px;
     }
-    &>li.active>a, &>li>a:hover,
-    & .open>a, & .open>a:hover, & .open>a:focus{
-      background: lighten($themeColor2,10%);
-    }
-
-    &>li>a:focus{
-      background: $themeColor2;
+    .fa{
+      font-size: 20px;
+      margin: 3px 0;
+      line-height: 10px;
     }
   }
 
@@ -90,10 +92,13 @@ header.navbar{
   .btn{
     width:33%;
     &.inactive{
-      background-color: #fff;
-      color:#000;
+      background-color: $background;
+      color:$text;
     }
   }
+}
+.container.primary{
+  padding-top:20px;
 }
 pre {
     white-space: pre-wrap;
@@ -102,17 +107,17 @@ pre {
     white-space: -o-pre-wrap;
     word-wrap: break-word;
 }
-.glyphicon.active{
-  color: $themeColor1;
+.fa.active{
+  color: $brand;
   text-shadow: 0 0 5px rgba(0, 131, 243, 0.52);
 }
-.glyphicon-flip-y {
+.fa-flip-y {
   transform: scaleY(-1);
   -moz-transform: scaleY(-1);
   -webkit-transform: scaleY(-1);
   -ms-transform: scaleY(-1);
 }
-.glyphicon-flip-x {
+.fa-flip-x {
   transform: scaleX(-1);
   -moz-transform: scaleX(-1);
   -webkit-transform: scaleX(-1);
@@ -130,11 +135,15 @@ pre {
 .form-group{
   clear: both;
 }
+.control-label{
+  font-weight: bold;
+  margin-top: 15px;
+}
 .radio {
   label {
     display: block;
     float: left;
-    border: 1px solid $themeColor2;
+    border: 1px solid $brand;
     border-left:0;
     height: 40px;
     width: 33%;
@@ -153,7 +162,7 @@ pre {
   }
 
   &:nth-of-type(1) label{
-    border-left: 1px solid $themeColor2;
+    border-left: 1px solid $brand;
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
   }
@@ -167,8 +176,8 @@ pre {
     display: none;
 
     &:checked + label{
-      background: $themeColor2;
-      color: #fff;
+      background: $brand;
+      color: $background;
     }
 
     &.disabled + label{
@@ -176,18 +185,17 @@ pre {
     }
 
     &.disabled:checked + label{
-      background: $themeColor1;
     }
   }
 }
 #main{
   position: absolute;
-  top:0;
+  top:-5px;
+  bottom:0;
   left:0;
+  right:0;
   padding: 50px 0 42px;
   overflow: hidden;
-  height:100%;
-  width:100%;
 
   &>.container-fluid,
   &>.container
@@ -240,14 +248,14 @@ pre {
     position: relative;
     margin-bottom:5px;
     a{
-      color:#000;
+      color:$text;
     }
   }
 
   img{
     width: 16px;
     height: 16px;
-    border-radius:2px;
+    border-radius:0.25rem;
     float:left;
     margin-right:5px;
     clear:both;
@@ -281,11 +289,11 @@ pre {
   .ac{
     background: #555;
     border: 1px solid #333;
-    color:#fff;
+    color:$background;
     float: left;
     margin-right: 5px;
     padding: 2px 5px;
-    border-radius:3px;
+    border-radius:0.25rem;
     &.active{
       background: #fff;
       color:#333;
@@ -307,10 +315,10 @@ pre {
     position: absolute;
     top: -30px;
     left: 42px;
-    background: $dangerRed;
-    color:#fff;
+    background: $brand-danger;
+    color:$background;
     padding: 5px 10px;
-    border-radius: 5px;
+    border-radius:0.25rem;
     display: none;
   }
 
@@ -333,7 +341,7 @@ pre {
     float: left;
     width: 32px;
     height: 32px;
-    border-radius:3px;
+    border-radius:0.25rem;
   }
   .right{
     width:auto;
@@ -360,19 +368,17 @@ pre {
   right:15px;
   border:0;
   padding-top:5px;
-  border-radius: 0;
+  border-radius:0.25rem;
 }
 .message-group{
   background: $messageBG;
-  border-radius: 5px;
+  border-radius:0.25rem;
   margin:5px;
-  padding:5px 0;
-  &.mine{
-    background: $myMessageBG;
-  }
+  overflow: hidden;
   .author{
     font-weight:bold;
-    margin:2px 0 3px 4px;
+    padding:2px 0 3px 4px;
+    background: darken($messageBG, 5);
     &:after{
       content:":";
     }
@@ -380,7 +386,13 @@ pre {
       width: 16px;
       height: 16px;
       margin-right: 5px;
-      border-radius: 2px;
+      border-radius:0.25rem;
+    }
+  }
+  &.mine{
+    background: $myMessageBG;
+    .author{
+      background: darken($myMessageBG, 5);
     }
   }
 }
@@ -411,13 +423,13 @@ pre {
     font-style: italic;
   }
   &.pinned{
-    border-right:3px solid $themeColor2;
+    border-right:3px solid $brand;
     .pin{
       display: none;
     }
   }
   &.flagged{
-    border-right:3px solid $dangerRed;
+    border-right:3px solid $brand-danger;
   }
   code, pre{
     font-size: inherit;
@@ -426,7 +438,7 @@ pre {
   blockquote{
     margin:0;
     font-size:inherit;
-    border-left:1px dotted $themeColor1;
+    border-left:1px dotted $brand;
     padding:2px 5px;
   }
   .link{
@@ -452,10 +464,10 @@ pre {
   }
 }
 .ob{
-  background:#fff;
+  background:$background;
   width:100%;
   padding:10px;
-  border-radius:5px;
+  border-radius:0.25rem;
 
   img{
     max-width: 100%;
@@ -468,8 +480,10 @@ pre {
   height: 100%;
   overflow-y:auto;
   .message-group{
-    padding: 2px 5px 0;
     position: relative;
+  }
+  .author{
+
   }
   .votes{
     position: absolute;
@@ -510,7 +524,7 @@ pre {
     }
   }
   .message{
-    border-radius: 5px;
+    border-radius:0.25rem;
     margin-bottom:5px;
     padding:1px 5px 5px 35px;
     .controls{
@@ -584,7 +598,7 @@ pre {
 /*   ROOMS   */
 
 #rooms{
-  .well{
+  .room{
     height:150px;
     overflow:hidden;
 
@@ -593,9 +607,9 @@ pre {
       font-size:16px;
 
       i{
-        background:$themeColor2;
-        border-radius:20px;
-        color:#fff;
+        background:$brand;
+        border-radius:0.25rem;
+        color:$background;
         font-size: 10px;
         padding: 5px;
         text-align: center;
@@ -609,14 +623,14 @@ pre {
     }
 
     &.add{
-      background:$themeColor2;
+      background:$brand;
       position:relative;
       &:hover{
-        background:lighten($themeColor2, 10%);
+        background:lighten($brand, 10%);
       }
       a{
         font-size:50px;
-        color:#fff;
+        color:$background;
         text-align: center;
         display: block;
         position: absolute;
@@ -633,7 +647,7 @@ pre {
 /*   ORG MANAGEMENT   */
 
 #org-selection .btn{
-  margin:8px 0 0 8px;
+  margin:4px 0 0 5px;
 }
 
 #search-input{
@@ -647,7 +661,7 @@ pre {
     border-top: 0;
     background-color: transparent;
     &:hover{
-      background-color: #f5f5f5;
+      background-color: darken($background, 3.9216);
     }
   }
 }
@@ -665,14 +679,14 @@ pre {
     z-index: 2;
 
     .result{
-      background: #fff;
+      background: $background;
       border: 1px solid $lightLines;
       padding: 5px 12px;
       border-top: none;
       width: 100%;
 
       &.selected{
-        background:#eee;
+        background:darken($background, 3.9216);;
       }
     }
   }
@@ -693,9 +707,9 @@ pre {
     }
 
     border-bottom:1px solid $lightLines;
-    .glyphicon{
+    .fa{
       float: right;
-      color: #c9302c;
+      color: $brand-danger;
       cursor: pointer;
       font-size: 16px;
     }
@@ -720,7 +734,7 @@ pre {
     right: 30px;
     width: 50px;
     height: 50px;
-    border-radius: 50px;
+    border-radius:0.25rem;
     box-shadow: 0 5px 10px rgba(0,0,0,0.3);
 
     i{

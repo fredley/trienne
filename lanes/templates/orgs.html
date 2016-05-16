@@ -8,11 +8,11 @@
 
 {% block main_content %}
 <ul class="nav nav-tabs" id="org-selection">
-  <li role="presentation"><a data-url="mine" href="#mine">Mine</a></li>
-  <li role="presentation"><a data-url="followed" href="#followed">Followed</a></li>
-  <li role="presentation"><a data-url="all" href="#all">All</a></li>
-  <li role="presentation"><a href="#search"><i class="glyphicon glyphicon-search"></i> Search</a></li>
-  <a href="{% url 'create_org' %}" class="btn btn-success btn-xs action-button"><i class="glyphicon glyphicon-plus"></i> Create new community</a>
+  <li class="nav-item" role="presentation"><a class="nav-link" data-url="mine" href="#mine">Mine</a></li>
+  <li class="nav-item" role="presentation"><a class="nav-link" data-url="followed" href="#followed">Followed</a></li>
+  <li class="nav-item" role="presentation"><a class="nav-link" data-url="all" href="#all">All</a></li>
+  <li class="nav-item" role="presentation"><a class="nav-link" href="#search"><i class="fa fa-search"></i> Search</a></li>
+  <a href="{% url 'create_org' %}" class="btn btn-success btn-sm action-button"><i class="fa fa-plus"></i> Create new community</a>
 </ul>
 <div id="search" style="display:none;">
   <input class="form-control" id="search-input" placeholder="Search for Communities">
@@ -48,8 +48,8 @@ $(document).ready(function(){
       return;
     }
     $(this).tab('show');
-    $('li').removeClass('active');
-    $(this).parent().addClass('active');
+    $('a').removeClass('active');
+    $(this).addClass('active');
     if($(this).attr('data-url')) {
       endSearch();
       updateContent($(this).attr('data-url'))

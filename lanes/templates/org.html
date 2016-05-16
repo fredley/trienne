@@ -10,34 +10,36 @@
 <div class="alert alert-info" style="display:none;" id="apply-notice">You have applied to join this Community</div>
 <div id="org-actions">
   <button style="display:none;" id="btn-join" type="button" data-url="join" data-action="join" class="action btn btn-primary">
-    <i class="glyphicon glyphicon-star"></i> Join this Community
+    <i class="fa fa-star"></i> Join this Community
   </button>
-  <button style="display:none;" id="btn-apply" type="button" data-url="apply" class="action btn btn-default">
-    <i class="glyphicon glyphicon-star"></i> Apply to join this Community
+  <button style="display:none;" id="btn-apply" type="button" data-url="apply" class="action btn btn-secondary">
+    <i class="fa fa-star"></i> Apply to join this Community
   </button>
   <button style="display:none;" id="btn-leave" type="button" data-url="join" data-action="leave" class="action btn btn-primary">
-    <i class="glyphicon glyphicon-star-empty"></i> Leave this Community
+    <i class="fa fa-star-o"></i> Leave this Community
   </button>
   <button style="display:none;" id="btn-follow" type="button" data-url="follow" data-action="follow" class="action btn btn-primary">
-    <i class="glyphicon glyphicon-eye-open"></i> Follow this Community
+    <i class="fa fa-eye"></i> Follow this Community
   </button>
   <button style="display:none;" id="btn-unfollow" type="button" data-url="follow" data-action="unfollow" class="action btn btn-primary">
-    <i class="glyphicon glyphicon-eye-close"></i> Unfollow this Community
+    <i class="fa fa-eye-slash"></i> Unfollow this Community
   </button>
 </div>
 {% if is_member %}
   <div class="row" id="rooms">
     {% for room in rooms %}
       <div class="col-sm-3">
-        <div class="well room">
-          <h2>{% if room.privacy == room.PRIVACY_PRIVATE %}<i class="glyphicon glyphicon-lock" ></i> {% endif %}<a href="{% url 'room' room.id %}" class="room-link">{{ room.name }}</a></h2>
-        <p>{{ room.topic }}</p>
+        <div class="card room">
+          <div class="card-block">
+            <h2 class="card-title">{% if room.privacy == room.PRIVACY_PRIVATE %}<i class="fa fa-lock" ></i> {% endif %}<a href="{% url 'room' room.id %}" class="room-link">{{ room.name }}</a></h2>
+            <p>{{ room.topic }}</p>
+          </div>
         </div>
       </div>
     {% endfor %}
     <div class="col-sm-3">
-      <div class="well add">
-        <a href="{% url 'add_room' org.slug %}"><i class="glyphicon glyphicon-plus"></i></a>
+      <div class="room card add">
+        <a href="{% url 'add_room' org.slug %}"><i class="fa fa-plus"></i></a>
       </div>
     </div>
     {% if rooms.count == 0 and not is_admin %}

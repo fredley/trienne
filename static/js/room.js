@@ -409,7 +409,7 @@ jQuery(document).ready(function($) {
       to = $('.msg-' + reply_to).attr('data-author');
       text = content.split(' ').splice(1).join(' ');
       //TODO if not found, get
-      content = '<i class="glyphicon glyphicon-share-alt glyphicon-flip-x"></i> @' +
+      content = '<i class="fa fa-share fa-flip-x"></i> @' +
               to + ' ' + text;
     } else {
       text = content;
@@ -431,7 +431,7 @@ jQuery(document).ready(function($) {
     var message = $('<div class="message"></div>')
       .append($('<div class="content"></div>').html(parsed.content));
     var controls = $('<div class="controls"></div>');
-    var flag = $('<i class="glyphicon glyphicon-flag flag"></i>');
+    var flag = $('<i class="fa fa-flag-o flag"></i>');
     flag.on('click', function(){
       $.ajax({
         method: "post",
@@ -441,7 +441,7 @@ jQuery(document).ready(function($) {
     });
     controls.append(flag);
     if (mine || is_admin) {
-      var link = $('<div class="link"><i class="glyphicon glyphicon-link"></i></div>');
+      var link = $('<div class="link"><i class="fa fa-link"></i></div>');
       link.on('click', function(){
         var win = window.open('/post/' + id + '/history/', '_blank');
         if(win){
@@ -449,13 +449,13 @@ jQuery(document).ready(function($) {
         }
       });
       message.prepend(link);
-      var edit = $('<i class="glyphicon glyphicon-pencil edit"></i>');
+      var edit = $('<i class="fa fa-pencil edit"></i>');
       edit.on('click',function(){
         startEdit($(this).parent().parent());
       });
       controls.append(edit);
     }
-    var pin = $('<i class="glyphicon glyphicon-pushpin pin"></i>');
+    var pin = $('<i class="fa fa-thumb-tack pin"></i>');
     pin.on('click', function(){
       var code = Math.random().toString(36);
       pincodes.push(code);
@@ -471,7 +471,7 @@ jQuery(document).ready(function($) {
     });
     controls.append(pin);
     if (!mine){
-      var reply = $('<i class="glyphicon glyphicon-share-alt glyphicon-flip-y reply"></i>');
+      var reply = $('<i class="fa fa-share fa-flip-y reply"></i>');
       reply.on('click', function(){
         var first = shout.val().split(' ')[0];
         var val;
@@ -570,16 +570,16 @@ jQuery(document).ready(function($) {
 
   function markVoted(el, value) {
     if (value === 1) {
-      el.find('.upvote .glyphicon').addClass('active');
+      el.find('.upvote .fa').addClass('active');
     } else {
-      el.find('.dnvote .glyphicon').addClass('active');
+      el.find('.dnvote .fa').addClass('active');
     }
     el.addClass('voted');
   }
 
   function insertMediumMessage (message, author, extras) {
-    var upvote = $('<div class="vote upvote"><i class="glyphicon glyphicon-triangle-top"></i></div>');
-    var dnvote = $('<div class="vote dnvote"><i class="glyphicon glyphicon-triangle-bottom"></i></div>');
+    var upvote = $('<div class="vote upvote"><i class="fa fa-caret-up"></i></div>');
+    var dnvote = $('<div class="vote dnvote"><i class="fa fa-caret-down"></i></div>');
     var score = $('<div class="score">0</div>');
     if (author.id === my_id) {
       upvote.addClass('disabled');
@@ -596,10 +596,10 @@ jQuery(document).ready(function($) {
     if (extras) {
       score.text(extras.score);
       if (extras.vote === 1) {
-        upvote.find(".glyphicon").addClass("active");
+        upvote.find(".fa").addClass("active");
         votes.addClass("voted");
       } else if (extras.vote === -1) {
-        dnvote.find(".glyphicon").addClass("active");
+        dnvote.find(".fa").addClass("active");
         votes.addClass("voted");
       }
     }

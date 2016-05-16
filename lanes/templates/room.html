@@ -6,6 +6,7 @@
 {% block title %}{{ room.name }}{% endblock %}
 
 {% block container_id %}main{% endblock %}
+{% block container_class %}container-fluid{% endblock %}
 
 {% block main_content %}
 <div class="row">
@@ -13,17 +14,17 @@
     <h1 id="name">{{ room.name }}</h1>
     <div class="room-info clearfix">
 	    <p id="description">{{ room.topic }}</p>
-	    <p class="pull-right">
+	    <p class="pull-xs-right">
 	      <span class="volume-controls">
-	        <i class="volume glyphicon glyphicon-volume-off  {% if prefs.volume == prefs.QUIET %}active{% endif %}"
+	        <i class="volume fa fa-volume-off  {% if prefs.volume == prefs.QUIET %}active{% endif %}"
 	           data-volume="{{ prefs.QUIET }}"></i>
-	        <i class="volume glyphicon glyphicon-volume-down {% if prefs.volume == prefs.NORMAL %}active{% endif %}"
+	        <i class="volume fa fa-volume-down {% if prefs.volume == prefs.NORMAL %}active{% endif %}"
 	           data-volume="{{ prefs.NORMAL }}"></i>
-	        <i class="volume glyphicon glyphicon-volume-up   {% if prefs.volume == prefs.LOUD %}active{% endif %}"
+	        <i class="volume fa fa-volume-up   {% if prefs.volume == prefs.LOUD %}active{% endif %}"
 	           data-volume="{{ prefs.LOUD }}"></i>
 	      </span>
 	      {% if is_admin or is_owner %}
-		      <a href="{% url 'room_edit' room.id %}"><i class="glyphicon glyphicon-pencil"></i> Edit this room</a>
+		      <a href="{% url 'room_edit' room.id %}"><i class="fa fa-pencil"></i> Edit this room</a>
 	      {% endif %}
 	    </p>
 		</div>

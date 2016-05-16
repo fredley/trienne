@@ -90,7 +90,7 @@
 
       function addKiller(repr, pk) {
         var killId = 'kill_' + pk + id,
-            killButton = '<i id="' + killId + '" class="glyphicon glyphicon-remove-circle"></i> ';
+            killButton = '<i id="' + killId + '" class="fa fa-times-circle-o"></i> ';
         $deck.append('<div class="active-selection" id="' + id + '_on_deck_' + pk + '">' + killButton + repr + ' </div>');
 
         $('#' + killId).click(function() {

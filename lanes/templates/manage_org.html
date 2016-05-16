@@ -25,7 +25,7 @@
       {% for a in applications %}
         <div class="list-group-item">
           {{ a.user.username }}
-          <div class="btn-group pull-right application">
+          <div class="btn-group pull-xs-right application">
             <button class="btn approval btn-xs btn-danger" data-action="deny" data-id="{{ a.user.id }}">Deny</button>
             <button class="btn approval btn-xs btn-success" data-action="approve" data-id="{{ a.user.id }}">Approve</button>
           </div>
@@ -54,7 +54,7 @@
     {% for bot in bots %}
       <div class="list-group-item">
         <a href="{% url 'bot' org.slug bot.username %}">{{ bot.username }} - {{ bot.bot.get_scope_display }}</a>
-        <div class="btn-group pull-right application">
+        <div class="btn-group pull-xs-right application">
           <form action="{% url 'bot_delete' org.slug bot.username %}" method="post">
             {% csrf_token %}
             <button class="btn btn-xs btn-danger">Remove</button>
@@ -63,7 +63,7 @@
       </div>
     {% endfor %}
     </div>
-    <a href="{% url 'bot_create' org.slug %}" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add a new bot</a>
+    <a href="{% url 'bot_create' org.slug %}" class="btn btn-primary"><i class="fa fa-plus"></i> Add a new bot</a>
   </div>
 </div>
 {% endblock main_content %}
