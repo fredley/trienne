@@ -1,11 +1,11 @@
-import json
 # -*- coding: utf-8 -*-
+import json
 import re
 import collections
 import logging
 
 from cgi import escape
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.conf import settings
@@ -32,9 +32,9 @@ from .emails import *
 logger = logging.getLogger('django')
 User = get_user_model()
 
-url_dot_test = re.compile(ur'.+\..+')
-lf_youtube = re.compile(ur'(.*)v=([A-Za-z0-9]*)')
-reply_test = re.compile(ur'^(:[0-9]+ )')
+url_dot_test = re.compile(r'.+\..+')
+lf_youtube = re.compile(r'(.*)v=([A-Za-z0-9]*)')
+reply_test = re.compile(r'^(:[0-9]+ )')
 username_test = re.compile("^([a-z][0-9]+)+$")
 
 
@@ -182,7 +182,6 @@ class BannedView(LoginRequiredMixin, TemplateView):
     expiry = OrgMembership.objects.get(user=self.request.user, organisation=self.org).ban_expiry
     difference = expiry - timezone.now()
     left = difference.seconds
-    logger.debug(left)
     if difference.days > 0:
       s = "s" if difference.days > 1 else ""
       remaining = "{} day{}".format(difference.days,s)
@@ -569,7 +568,6 @@ class PostHistoryView(PostMixin, TemplateView):
 
   def get_context_data(self, **kwargs):
     context = super(PostHistoryView, self).get_context_data(**kwargs)
-    logger.debug(self.msg)
     context.update(post=self.msg,
                    history=self.msg.history,
                    org=self.msg.room.organisation,
@@ -600,7 +598,6 @@ class UserJsonView(LoginRequiredMixin, View):
   data = 'org'
 
   def get(self, request, *args, **kwargs):
-    logger.debug(request.GET)
     if 'org' not in request.GET or 's' not in request.GET:
       raise PermissionDenied
     org = Organisation.objects.get(slug=request.GET.get('org'))
@@ -701,7 +698,6 @@ class OrgManagementView(OrgMixin, UpdateView):
     return reverse('org', kwargs={'slug': self.object.slug})
 
   def form_valid(self, form):
-    logger.debug(form.instance.id)
     form = super(OrgManagementView, self).form_valid(form)
 
     return form
@@ -1086,7 +1082,6 @@ class LandingView(TemplateView):
   template_name = "index.html"
 
   def dispatch(self, *args, **kwargs):
-    logger.debug(self.request.user.is_authenticated())
     if self.request.user.is_authenticated():
       return OrgsView.as_view()(self.request)
     return super(LandingView, self).dispatch(*args, **kwargs)

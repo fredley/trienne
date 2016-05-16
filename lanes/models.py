@@ -62,7 +62,7 @@ class Organisation(models.Model):
 
   users = property(get_users)
 
-  def __unicode__(self):
+  def __str__(self):
     return self.name
 
 
@@ -78,7 +78,7 @@ class Invitation(models.Model):
   email = models.EmailField()
   token = models.CharField(max_length=20, default=generate_token, unique=True)
 
-  def __unicode__(self):
+  def __str__(self):
     return self.organisation.name + " - " + self.email
 
 
@@ -104,7 +104,7 @@ class Bot(models.Model):
   def get_tokens(self):
     return BotToken.objects.filter(bot=self)
 
-  def __unicode__(self):
+  def __str__(self):
     try:
       return self.organisation.name + ": " + self.user.username
     except:
@@ -204,7 +204,7 @@ class User(AbstractUser):
     else:
       return False
 
-  def __unicode__(self):
+  def __str__(self):
     return self.username
 
 
@@ -240,7 +240,7 @@ class OrgMembership(models.Model):
   class Meta:
     unique_together = ('user', 'organisation',)
 
-  def __unicode__(self):
+  def __str__(self):
     return str(self.organisation) + " - " + str(self.user)
 
 
@@ -288,7 +288,7 @@ class Room(models.Model):
 
   pinned = property(get_pinned)
 
-  def __unicode__(self):
+  def __str__(self):
     return self.name
 
 
@@ -311,7 +311,7 @@ class RoomPrefs(models.Model):
   class Meta:
     unique_together = ('user', 'room',)
 
-  def __unicode__(self):
+  def __str__(self):
     return str(self.room) + " - " + str(self.user)
 
 
@@ -392,7 +392,7 @@ class Post(models.Model):
     self.hotness = round(sign * order + seconds / 45000, 7)
     self.save()
 
-  def __unicode__(self):
+  def __str__(self):
     return str(self.author) + " in " + str(self.room) + " at " + str(self.created)
 
   content = property(get_content)
@@ -412,7 +412,7 @@ class Vote(models.Model):
   class Meta:
     unique_together = ('post', 'user',)
 
-  def __unicode__(self):
+  def __str__(self):
     return str(self.user) + " on " + str(self.post)
 
 
@@ -424,7 +424,7 @@ class PostContent(models.Model):
   raw = models.CharField(max_length=512)
   created = models.DateTimeField(auto_now_add=True)
 
-  def __unicode__(self):
+  def __str__(self):
     return self.content
 
 

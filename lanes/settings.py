@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from datetime import timedelta
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from .socket import get_allowed_channels
 
@@ -188,6 +188,6 @@ LOGGING = {
 }
 
 try:
-    from local_settings import *
+    from lanes.local_settings import *
 except:
     pass
