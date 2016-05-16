@@ -173,7 +173,7 @@ class BannedView(LoginRequiredMixin, TemplateView):
 
   def dispatch(self, request, *args, **kwargs):
     self.org = Organisation.objects.get(slug=kwargs.get('slug'))
-    if not self.request.user.is_banned(self.org):
+    if not request.user.is_anonymous() and not request.user.is_banned(self.org):
       return HttpResponseRedirect(reverse('org', kwargs={'slug': self.org.slug}))
     return super(BannedView, self).dispatch(request, *args, **kwargs)
 
@@ -234,7 +234,7 @@ class RoomView(LoginRequiredMixin, TemplateView):
 
   def dispatch(self, request, *args, **kwargs):
     self.room = Room.objects.get(id=kwargs['room_id'])
-    if self.request.user.is_banned(self.room.organisation):
+    if not request.user.is_anonymous() and self.request.user.is_banned(self.room.organisation):
       return HttpResponseRedirect(reverse('banned', kwargs={'slug': self.room.organisation.slug}))
     return super(RoomView, self).dispatch(request, *args, **kwargs)
 
