@@ -120,7 +120,8 @@ def process_text(text):
       text = escape(text).replace("'", "&#39;").replace("\n", "<br>")
       # Apply Markdown rules
       for regex, replacement in md_rules.items():
-        result = re.sub(regex, replacement, text)
+        text = re.sub(regex, replacement, text)
+      result = text
   return {
       'text': reply_prefix + result.strip(),
       'notified': notified

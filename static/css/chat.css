@@ -4949,7 +4949,8 @@ pre {
   background: #e8e8e8;
   border-radius: 0.25rem;
   margin: 5px;
-  overflow: hidden; }
+  overflow: hidden;
+  padding-bottom: 2px; }
   .message-group .author {
     font-weight: bold;
     padding: 2px 0 3px 4px;
@@ -4972,7 +4973,8 @@ pre {
   float: left;
   clear: both;
   width: 100%;
-  position: relative; }
+  position: relative;
+  background: inherit; }
   .message.highlight, .message.editing {
     background: rgba(0, 0, 0, 0.1); }
   .message.editing {
@@ -4995,7 +4997,8 @@ pre {
     border-right: 3px solid #d9534f; }
   .message code, .message pre {
     font-size: inherit;
-    margin: 0; }
+    margin: 0;
+    color: #6762E8; }
   .message blockquote {
     margin: 0;
     font-size: inherit;
@@ -5012,9 +5015,11 @@ pre {
     cursor: pointer;
     position: absolute;
     top: 2px;
-    right: 2px; }
+    right: 2px;
+    background: inherit;
+    padding: 0 5px;
+    opacity: 0; }
     .message .controls i {
-      opacity: 0;
       font-size: 90%;
       font-color: #333;
       cursor: pointer;
@@ -5056,6 +5061,8 @@ pre {
       #medium .votes .vote.disabled {
         cursor: default;
         opacity: 0.5; }
+      #medium .votes .vote .fa {
+        font-size: 16px; }
     #medium .votes.voted .vote {
       cursor: default; }
       #medium .votes.voted .vote i {
@@ -5068,13 +5075,13 @@ pre {
     padding: 1px 5px 5px 35px; }
     #medium .message .controls {
       top: -15px;
-      right: 5px; }
+      right: 5px;
+      opacity: 1; }
       #medium .message .controls i {
         display: none; }
         #medium .message .controls i.reply {
           float: right;
-          display: block;
-          opacity: 1; }
+          display: block; }
     #medium .message.pinned {
       border: none; }
     #medium .message .ob img {
@@ -5084,7 +5091,7 @@ pre {
   border: 1px dotted #ccc; }
   #fast .message:hover:before {
     opacity: 0; }
-  #fast .message:hover .controls i,
+  #fast .message:hover .controls,
   #fast .message:hover .link {
     opacity: 1; }
 

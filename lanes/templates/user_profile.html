@@ -8,7 +8,7 @@
 <legend><h1>{{ puser.username }}</h1></legend>
 <div class="row user-profile">
   <div class="col-sm-3">
-    <img src="{% gravatar_url user.email 300 %}" alt="profile picture" class="img-responsive profile-picture img-rounded">
+    <img src="{% gravatar_url user.email 300 %}" alt="profile picture" class="img-fluid profile-picture img-rounded">
     {% if can_manage %}
       {% if manage_orgs %}
         <label>Ban this user for (n) minutes{% if manage_orgs|length_is:"1" %} from {{ manage_orgs.0.name }}{% endif %}:

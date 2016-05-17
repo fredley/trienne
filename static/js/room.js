@@ -592,7 +592,7 @@ jQuery(document).ready(function($) {
         submitVote(-1, message.attr('data-id'), $(this).parent());
       });
     }
-    var votes = $('<div class="votes"></div>').append(score).append(upvote).append(dnvote);
+    var votes = $('<div class="votes"></div>').append(upvote).append(dnvote).append(score);
     if (extras) {
       score.text(extras.score);
       if (extras.vote === 1) {

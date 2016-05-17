@@ -12,7 +12,7 @@
       {% for state in history %}
         <div class="list-group-item">
           <span class="label label-default label-pill pull-xs-right">{{ state.created }}</span>
-          <strong>{{ state.author }}:</strong> {{ state.content }}
+          <strong>{{ state.author }}:</strong> {{ state.content|safe }}
         </div>
       {% endfor %}
     </div>

@@ -6,7 +6,7 @@ $lightLines: #f0f0f0;
 $messageBG: #e8e8e8;
 $myMessageBG: #e8e8ff;
 $brand: $brand-primary;
-$brand-disabled: darken(desaturate(adjust-hue($brand, 0.2102), 50.0663), 4.1176);
+$brand-disabled: darken(desaturate(adjust-hue($brand, 0.2), 50), 4);
 $background: #fcfcfc;
 $text: #0F0F13;
 $warningBG:#fcf8e3;
@@ -375,6 +375,7 @@ pre {
   border-radius:0.25rem;
   margin:5px;
   overflow: hidden;
+  padding-bottom:2px;
   .author{
     font-weight:bold;
     padding:2px 0 3px 4px;
@@ -403,6 +404,7 @@ pre {
   clear:both;
   width:100%;
   position: relative;
+  background: inherit;
   &.highlight,
   &.editing{
     background: rgba(0,0,0,0.1);
@@ -434,6 +436,7 @@ pre {
   code, pre{
     font-size: inherit;
     margin:0;
+    color: $brand;
   }
   blockquote{
     margin:0;
@@ -454,8 +457,10 @@ pre {
     position: absolute;
     top:2px;
     right:2px;
+    background: inherit;
+    padding:0 5px;
+    opacity: 0;
     i{
-      opacity: 0;
       font-size:90%;
       font-color:#333;
       cursor:pointer;
@@ -510,6 +515,9 @@ pre {
         cursor: default;
         opacity: 0.5;
       }
+      .fa{
+        font-size:16px;
+      }
     }
     &.voted{
       .vote{
@@ -530,12 +538,12 @@ pre {
     .controls{
       top:-15px;
       right:5px;
+      opacity:1;
       i{
         display: none;
         &.reply{
           float:right;
           display: block;
-          opacity:1;
         }
       }
     }
@@ -554,7 +562,7 @@ pre {
       &:before{
         opacity: 0;
       }
-      .controls i,
+      .controls,
       .link {
         opacity: 1;
       }
