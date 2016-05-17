@@ -38,7 +38,17 @@
     {% for u in users %}
     	<div class="user user-{{ u.id }}{% if u.id == user.id %} me{% endif %}">
     		<img src="{% gravatar_url u.email 32 %}" alt="" class="profile-picture">
-    		<a href="{% url 'user_profile' u.id %}">{{ u.username }}</a>
+        <div class="dropdown">
+          <a class="dropdown-toggle btn-block" type="button" id="user_dropdown_{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href='#'>
+            {{ u.username }}
+          </a>
+          <div class="dropdown-menu" aria-labelledby="user_dropdown_{{ u.id }}">
+            <a class="dropdown-item" href="{% url 'user_profile' u.id %}">Profile</a>
+            {% if u.id != user.id %}
+              <a class="dropdown-item" href="{% url 'dm' room.organisation.slug u.username %}">Chat with {{ u.username }}</a>
+            {% endif %}
+          </div>
+        </div>
     		<div class="online-marker status-{{ u.status }}"></div>
     	</div>
     {% endfor %}

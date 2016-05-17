@@ -275,6 +275,7 @@ class Room(models.Model):
   owners = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='owners')
   members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='members')
   privacy = models.IntegerField(choices=PRIVACY_CHOICES, default=PRIVACY_PRIVATE)
+  is_dm = models.BooleanField(default=False)
 
   def get_history(self):
     posts = Post.objects.filter(room=self).order_by('-created')[:100]
@@ -290,6 +291,16 @@ class Room(models.Model):
 
   def __str__(self):
     return self.name
+
+
+class DMRoom(models.Model):
+  user1 = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='user_1')
+  user2 = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='user_2')
+  org = models.ForeignKey(Organisation)
+  room = models.OneToOneField(Room)
+
+  class Meta:
+    unique_together = ('user1', 'user2', 'org')
 
 
 class RoomPrefs(models.Model):

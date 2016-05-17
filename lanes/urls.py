@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^c/(?P<slug>[\w-]+)/status/$', OrgStatusView.as_view(), name='org_status'),
     url(r'^c/(?P<slug>[\w-]+)/invite/$', OrgInviteView.as_view(), name='org_invite'),
     url(r'^c/(?P<slug>[\w-]+)/banned/$', BannedView.as_view(), name='banned'),
+    url(r'^c/(?P<slug>[\w-]+)/dm/(?P<username>[\w-]+)/$', DMView.as_view(), name='dm'),
 
     url(r'^c/(?P<slug>[\w-]+)/bot/create/$', BotCreateView.as_view(), name='bot_create'),
     url(r'^c/(?P<slug>[\w-]+)/bot/(?P<username>[\w-]+)/$', BotUpdateView.as_view(), name='bot'),

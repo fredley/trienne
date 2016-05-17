@@ -232,8 +232,11 @@ class RoomPostMixin(LoginOrMaybeBotMixin, RatelimitMixin, View):
 class RoomView(LoginRequiredMixin, TemplateView):
   template_name = 'room.html'
 
+  def get_room(self):
+    return Room.objects.get(id=self.kwargs['room_id'])
+
   def dispatch(self, request, *args, **kwargs):
-    self.room = Room.objects.get(id=kwargs['room_id'])
+    self.room = self.get_room()
     if not request.user.is_anonymous() and self.request.user.is_banned(self.room.organisation):
       return HttpResponseRedirect(reverse('banned', kwargs={'slug': self.room.organisation.slug}))
     return super(RoomView, self).dispatch(request, *args, **kwargs)
@@ -286,6 +289,38 @@ class RoomView(LoginRequiredMixin, TemplateView):
                    prefs=RoomPrefs.objects.get_or_create(room=room, user=self.request.user)[0],
                    users=online)
     return context
+
+
+class DMView(RoomView):
+
+  def get_room(self):
+    other_user = User.objects.get(username=self.kwargs.get('username'))
+    org = Organisation.objects.get(slug=self.kwargs.get('slug'))
+    if self.request.user.id == other_user.id:
+      raise PermissionDenied
+    if self.request.user.id < other_user.id:
+      user1 = self.request.user
+      user2 = other_user
+    else:
+      user1 = other_user
+      user2 = self.request.user
+    try:
+      room = DMRoom.objects.get(user1=user1, user2=user2, org=org).room
+      logger.debug('Found room')
+    except:
+      room = Room(
+          organisation=org,
+          creator=self.request.user,
+          name=user1.username + " & " + user2.username, 
+          topic="Conversation between {} and {}".format(user1.username, user2.username),
+          privacy=Room.PRIVACY_PRIVATE,
+          is_dm=True)
+      room.save()
+      room.members = [user1, user2]
+      room.owners = []
+      DMRoom(user1=user1, user2=user2, org=org, room=room).save()
+      logger.debug("Created room")
+    return room
 
 
 class RoomPrefsView(RoomPostMixin):
