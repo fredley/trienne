@@ -428,8 +428,29 @@ jQuery(document).ready(function($) {
     if (!loading && !mine && (volume == VOLUME_LOUD || ((to == my_name || pinged) && volume > VOLUME_QUIET))){
       notify(msg.author.name + ": " + text, msg.author.img);
     }
+    var text = parsed.content;
+    if (text.length > 250){
+      console.log("too long!")
+      var el = $('<span>' + text.substr(0, 250) + '</span>');
+      var hidden = $('<span class="hidden">' + text.substr(250) + '</span>');
+      var show = $('<a data-action="show" class="show-post" href="#">Show Post</a>');
+      show.on('click',function(e){
+        e.preventDefault();
+        if($(this).attr('data-action') === 'show'){
+          hidden.removeClass('hidden').addClass('shown');
+          $(this).text('Hide Post');
+          $(this).attr('data-action', 'hide');
+        }else{
+          hidden.removeClass('shown').addClass('hidden');
+          $(this).text('Show Post');
+          $(this).attr('data-action', 'show');
+        }
+      });
+      el.append(hidden).append(show);
+      text = el;
+    }
     var message = $('<div class="message"></div>')
-      .append($('<div class="content"></div>').html(parsed.content));
+      .append($('<div class="content"></div>').html(text));
     var controls = $('<div class="controls"></div>');
     var flag = $('<i class="fa fa-flag-o flag"></i>');
     flag.on('click', function(){

@@ -5004,6 +5004,10 @@ pre {
     font-size: inherit;
     border-left: 1px dotted #6762E8;
     padding: 2px 5px; }
+  .message .show-post {
+    display: block; }
+  .message .hidden {
+    display: none; }
   .message .link {
     position: absolute;
     top: 2px;

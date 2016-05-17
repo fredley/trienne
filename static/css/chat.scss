@@ -444,6 +444,12 @@ pre {
     border-left:1px dotted $brand;
     padding:2px 5px;
   }
+  .show-post{
+    display: block;
+  }
+  .hidden{
+    display: none;
+  }
   .link{
     position: absolute;
     top: 2px;
