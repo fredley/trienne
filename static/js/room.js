@@ -587,9 +587,11 @@ jQuery(document).ready(function($) {
     } else {
       upvote.on('click',function(){
         submitVote(1, message.attr('data-id'), $(this).parent());
+        $(this).parent().find('.vote').off();
       });
       dnvote.on('click',function(){
         submitVote(-1, message.attr('data-id'), $(this).parent());
+        $(this).parent().find('.vote').off();
       });
     }
     var votes = $('<div class="votes"></div>').append(upvote).append(dnvote).append(score);
