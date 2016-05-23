@@ -19,7 +19,6 @@ from django.views.generic.base import TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.decorators.csrf import csrf_exempt
 
-from django_gravatar.helpers import get_gravatar_url
 from ratelimit.mixins import RatelimitMixin
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
@@ -271,7 +270,8 @@ class RoomView(LoginRequiredMixin, TemplateView):
           "username": u.username,
           "email": u.email,
           "id": u.id,
-          "status": u.get_status(room.organisation)
+          "status": u.get_status(room.organisation),
+          "image": u.get_image()
       })
     status = OrgMembership.objects.get(user=self.request.user, organisation=room.organisation).status
     if status == OrgMembership.STATUS_OFFLINE:
@@ -377,7 +377,7 @@ class RoomMessageView(RoomPostMixin):
         'author': {
             'name': request.user.username,
             'id': request.user.id,
-            'img': get_gravatar_url(request.user.email, size=32)
+            'img': request.user.get_image()
         },
         'content': post.content,
         'raw': raw,

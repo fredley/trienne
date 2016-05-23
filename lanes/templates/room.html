@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% load safe_js %}
-{% load gravatar %}
 
 {% block title %}{{ room.name }}{% endblock %}
 
@@ -37,7 +36,7 @@
     <div class="user-list" id="users">
     {% for u in users %}
     	<div class="user user-{{ u.id }}{% if u.id == user.id %} me{% endif %}">
-    		<img src="{% gravatar_url u.email 32 %}" alt="" class="profile-picture">
+    		<img src="{{ u.image }}" alt="" class="profile-picture">
         <div class="dropdown">
           <a class="dropdown-toggle btn-block" type="button" id="user_dropdown_{{ u.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href='#'>
             {{ u.username }}
@@ -66,7 +65,7 @@
   <div id="entry">
   	<div class="row-container">
 	  	<div class="img-container">
-		  	<img src="{% gravatar_url user.email 64 %}" alt="" class="profile-picture">
+		  	<img src="{{ user.get_image }}" alt="" class="profile-picture">
 	  	</div>
       <div id="autocomplete"></div>
 	  	<div class="shout-container">
@@ -100,7 +99,7 @@ var post_history = [
       author: {
           name: '{{ post.author.username }}',
           id: {{ post.author.id }},
-          img: "{% gravatar_url post.author.email 32 %}"
+          img: "{{ post.author.get_image }}"
       },
       content: '{{ post.content|multiline|safe }}',
       raw: '{{ post.raw|multiline }}',

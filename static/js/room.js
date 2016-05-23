@@ -386,7 +386,6 @@ jQuery(document).ready(function($) {
           var num = parseInt(numStr, 10);
           return String.fromCharCode(num);
         });
-        image = image.replace('s=32','s=128');
         var opts = {
           body: text,
           icon: image

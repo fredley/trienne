@@ -1,8 +1,12 @@
-import string
-import random
+import base64
+import hashlib
 import json
 import logging
 import math
+import os
+import random
+import string
+import uuid
 
 from datetime import datetime, timedelta
 
@@ -10,15 +14,15 @@ from django.db import models
 from django.db.models import Sum
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.core.urlresolvers import reverse
 from django.utils import timezone
-
-from django_gravatar.helpers import get_gravatar_url
 
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
 
 from autoslug import AutoSlugField
 
+hasher = hashlib.new('ripemd160')
 
 logger = logging.getLogger('django')
 
@@ -70,6 +74,14 @@ def generate_token():
   return ''.join(random.SystemRandom().choice(
       string.ascii_uppercase + string.digits + string.ascii_lowercase
   ) for _ in range(20))
+
+
+def uuid_filename(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    name = base64.b64encode(uuid.uuid4().bytes).replace('==','').replace('/','-')
+    _, ext = os.path.splitext(filename)
+    name += ext
+    return 'user_{0}/{1}'.format(instance.user.id, name)
 
 
 class Invitation(models.Model):
@@ -125,6 +137,23 @@ class User(AbstractUser):
   bot = models.OneToOneField(Bot, null=True)
   organisations = models.ManyToManyField(Organisation, through='OrgMembership')
   subscribed = models.ManyToManyField(Organisation, related_name='subscribed', blank=True)
+  profile_image = models.ImageField(upload_to=uuid_filename, null=True, blank=True)
+  hash = models.CharField(max_length=40)
+
+  def save(self, *args, **kwargs):
+    if not self.hash:
+      h = hashlib.new('ripemd160')
+      h.update(self.username.encode('utf-8') + b'saltymcsaltface')
+      self.hash = h.hexdigest()
+    super(User, self).save(*args, **kwargs)
+
+  def get_image(self):
+    if self.profile_image:
+      logger.debug("profile pic")
+      return self.profile_image.url
+    else:
+      logger.debug("identicon")
+      return reverse("django_pydenticon:image", kwargs={"data": self.hash + '.png'})
 
   def is_admin(self, org):
     return self in org.admins.all()
@@ -161,7 +190,7 @@ class User(AbstractUser):
         "id": self.id,
         "status": m.status,
         "username": self.username,
-        "img": get_gravatar_url(self.email, size=32)
+        "img": self.get_image()
     }
     RedisPublisher(facility='org_' + org.slug, broadcast=True) \
         .publish_message(RedisMessage(json.dumps(message)))

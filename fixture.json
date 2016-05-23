@@ -9,6 +9,7 @@
       "username": "tom",
       "first_name": "",
       "last_name": "",
+      "hash": "ed7feb546b80af38c25a7c6fc3c3b4edf232c069",
       "email": "fredley@gmail.com",
       "is_staff": true,
       "is_active": true,
@@ -22,7 +23,7 @@
     }
   },
   {"model": "lanes.user", "pk": 2,
-  "fields": {"password": "pbkdf2_sha256$24000$BXhs9pgiSf92$jLKLzebmH/a7CPCk5Fq1xAk7tx6z7olN1QYE9t9rXqc=",
+  "fields": {"password": "pbkdf2_sha256$24000$BXhs9pgiSf92$jLKLzebmH/a7CPCk5Fq1xAk7tx6z7olN1QYE9t9rXqc=", "hash": "d50c78513dd30bc37f7804bae3d9e2c329ede833",
   "last_login": "2016-04-23T10:22:14Z", "is_superuser": false, "username": "bob", "first_name": "", "last_name": "",
   "email": "tom@tommedley.com", "is_staff": false, "is_active": true, "date_joined": "2016-04-21T12:18:53Z", "groups": [], "user_permissions": []}},
   {

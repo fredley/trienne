@@ -5114,7 +5114,8 @@ pre {
 
 /*   USER PROFILE   */
 .user-profile .profile-picture {
-  margin-bottom: 20px; }
+  margin-bottom: 20px;
+  width: 100%; }
 
 /*   ROOMS   */
 #rooms .room {

@@ -4,6 +4,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 
 from ajax_select import urls as ajax_select_urls
+import django_pydenticon.urls
 
 from .views import *
 admin.autodiscover()
@@ -59,6 +60,8 @@ urlpatterns = [
 
     url(r'^$', LandingView.as_view(), name='orgs'),
     url(r'^request_invitation/$', InvitationRequestView.as_view(), name='invitation_request'),
+
+    url(r'^identicon/', include(django_pydenticon.urls.get_patterns())),
 
     url(r'^admin/', include(admin.site.urls), name='home'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
