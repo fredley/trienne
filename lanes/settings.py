@@ -43,6 +43,9 @@ STATIC_URL = '/static/'
 
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
+MEDIA_ROOT = 'media'
+MEDIA_URL = '/up/'
+
 SESSION_ENGINE = 'redis_sessions.session'
 
 try:

@@ -899,6 +899,24 @@ class UserProfileView(LoginRequiredMixin, DetailView):
     return context
 
 
+class UserPictureView(LoginRequiredMixin, UpdateView):
+  model = User
+  fields = ['profile_image']
+  pk_url_kwarg = 'user_id'
+
+  def get_success_url(self):
+    return reverse('user_profile', kwargs={'user_id': self.object.id})
+
+  def form_invalid(self, form):
+    return HttpResponseRedirect(reverse('user_profile', kwargs={'user_id': self.object.id}))
+
+  def form_valid(self, form):
+    if self.object.id != self.request.user.id:
+      raise PermissionDenied
+    return super(UserPictureView, self).form_valid(form)
+
+
+
 class UserBanView(LoginRequiredMixin, View):
 
   def post(self, request, *args, **kwargs):

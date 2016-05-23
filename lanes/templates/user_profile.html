@@ -7,8 +7,20 @@
 <div class="row user-profile">
   <div class="col-sm-3">
     <img src="{{ puser.get_image }}" alt="profile picture" class="img-fluid profile-picture img-rounded">
+    {% if puser.id == user.id %}
+      <form action="{% url 'user_picture' puser.id %}" method="post" enctype='multipart/form-data'>
+        {% csrf_token %}
+        <label class="control-label">Upload a new profile picture:</label>
+        <div class="input-group">
+          <input type="file" class="form-control" name="profile_image">
+          <span class="input-group-btn">
+            <button type="submit" class="btn btn-success">Upload</button>
+          </span>
+        </div>
+      </form>
+    {% endif %}
     {% if can_manage %}
-      {% if manage_orgs %}
+      {% if manage_orgs and user.id != puser.id %}
         <label>Ban this user for (n) minutes{% if manage_orgs|length_is:"1" %} from {{ manage_orgs.0.name }}{% endif %}:
         </label>
         <form action="{% url 'user_ban' puser.id %}" method="post">

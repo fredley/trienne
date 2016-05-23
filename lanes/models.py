@@ -17,6 +17,8 @@ from django.contrib.auth.models import AbstractUser
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 
+from easy_thumbnails.files import get_thumbnailer
+
 from ws4redis.redis_store import RedisMessage
 from ws4redis.publisher import RedisPublisher
 
@@ -77,11 +79,10 @@ def generate_token():
 
 
 def uuid_filename(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    name = base64.b64encode(uuid.uuid4().bytes).replace('==','').replace('/','-')
+    name = base64.b64encode(uuid.uuid4().bytes).decode('utf-8').replace('==','').replace('/','-')
     _, ext = os.path.splitext(filename)
     name += ext
-    return 'user_{0}/{1}'.format(instance.user.id, name)
+    return 'user_{0}/{1}'.format(instance.id, name)
 
 
 class Invitation(models.Model):
@@ -149,10 +150,9 @@ class User(AbstractUser):
 
   def get_image(self):
     if self.profile_image:
-      logger.debug("profile pic")
-      return self.profile_image.url
+      options = {'size': (300, 300), 'crop': True}
+      return get_thumbnailer(self.profile_image).get_thumbnail(options).url
     else:
-      logger.debug("identicon")
       return reverse("django_pydenticon:image", kwargs={"data": self.hash + '.png'})
 
   def is_admin(self, org):

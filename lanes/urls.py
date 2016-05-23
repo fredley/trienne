@@ -50,6 +50,7 @@ urlpatterns = [
     url(r'^post/(?P<post_id>\d+)/history/$', PostHistoryView.as_view(), name='post_history'),
 
     url(r'^users/(?P<user_id>\d+)/$', UserProfileView.as_view(), name='user_profile'),
+    url(r'^users/(?P<user_id>\d+)/picture/$', UserPictureView.as_view(), name='user_picture'),
     url(r'^users/(?P<user_id>\d+)/ban/$', UserBanView.as_view(), name='user_ban'),
     url(r'^users/(?P<user_id>\d+)/unban/$', UserUnbanView.as_view(), name='user_unban'),
     url(r'^users/', include('django.contrib.auth.urls')),
@@ -64,7 +65,8 @@ urlpatterns = [
     url(r'^identicon/', include(django_pydenticon.urls.get_patterns())),
 
     url(r'^admin/', include(admin.site.urls), name='home'),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) \
+  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler400 = Error500.as_view()
 handler403 = Error404.as_view()
